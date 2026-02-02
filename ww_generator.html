@@ -78,7 +78,19 @@ async function downloadPosters() {
   const wordsCopy = bip39Words.slice();
   shuffle(wordsCopy, rng);
 
-  const totalCols = 98;
+  const headerColor = "#cccccc";
+let wordIndex = 0;
+
+// Determines which cells are allowed to contain words
+function isCellAllowed(globalCol, row) {
+  // globalCol is 1–100, row is 0–20
+  if (globalCol === 100) return false;
+  if (globalCol === 99) return false;
+  if (globalCol === 98 && row >= 11) return false; // bottom 10 rows
+  return true;
+}
+
+
   const totalRows = 21;
   const sheetCols = 20; // number of word columns per sheet
   const sheets = 5;
@@ -100,7 +112,7 @@ async function downloadPosters() {
     const ctx = canvas.getContext("2d");
 
     // Background
-    ctx.fillStyle = "#ffffff";
+    ctx.fillStyle = headerColor;
     ctx.fillRect(0,0,canvas.width,canvas.height);
 
     // Compute cell sizes
@@ -114,7 +126,7 @@ async function downloadPosters() {
     // -------- Column headers --------
     for(let c=0; c<sheetCols; c++){
       const x = rowHeaderWidth + c * cellWidth;
-      ctx.fillStyle = "#cccccc";
+      ctx.fillStyle = headerColor;
       ctx.fillRect(x, 0, cellWidth, colHeaderHeight);
       ctx.fillStyle = "#000000";
       const colNumber = (colStart + c + 1 <= totalCols) ? String(colStart + c + 1).padStart(2,"0") : "";
@@ -128,7 +140,7 @@ async function downloadPosters() {
       const y = colHeaderHeight + r * cellHeight;
 
       // Row header
-      ctx.fillStyle = "#cccccc";
+      ctx.fillStyle = headerColor;
       ctx.fillRect(0, y, rowHeaderWidth, cellHeight);
       ctx.fillStyle = "#000000";
       ctx.fillText(rowLetters[r], rowHeaderWidth/2, y + cellHeight/2);
@@ -138,16 +150,23 @@ async function downloadPosters() {
       // Word cells
       for(let c=0; c<sheetCols; c++){
         const x = rowHeaderWidth + c * cellWidth;
-        ctx.fillStyle = "#ffffff";
-        ctx.fillRect(x, y, cellWidth, cellHeight);
+        const globalCol = colStart + c + 1; // 1–100
+        const allowed = isCellAllowed(globalCol, r);
 
-        const idx = r * totalCols + (colStart + c);
-        const word = (idx < wordsCopy.length) ? wordsCopy[idx] : "";
-        ctx.fillStyle = "#000000";
-        ctx.fillText(word, x + cellWidth/2, y + cellHeight/2);
+ctx.fillStyle = allowed ? "#ffffff" : headerColor;
+ctx.fillRect(x, y, cellWidth, cellHeight);
 
-        ctx.strokeStyle = "#000000";
-        ctx.strokeRect(x, y, cellWidth, cellHeight);
+let word = "";
+if (allowed && wordIndex < wordsCopy.length) {
+  word = wordsCopy[wordIndex];
+  wordIndex++;
+}
+
+ctx.fillStyle = "#000000";
+ctx.fillText(word, x + cellWidth / 2, y + cellHeight / 2);
+
+ctx.strokeStyle = "#000000";
+ctx.strokeRect(x, y, cellWidth, cellHeight);
       }
     }
 
