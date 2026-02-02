@@ -1,22 +1,20 @@
 # USER MANUAL
 
-Absolutely — we now have all the pieces to draft a complete User Manual for BYOB.
+Contents:
 
-We have:
-
-1. Word Wall – public, canonical word table (physical + digital)
+1. WORD WALL – public, canonical word table (physical + digital)
 
 
 2. Mnemonic selection – 11 words + 12th checksum, position + direction
 
 
-3. Base passphrase – 24 random characters generated offline, QR output
+3. GENERATOR - Base passphrase – 24 random characters generated offline, QR output
 
 
-4. Suffix – human-memorable string for split custody
+4. Suffix – human-memorable string (8 characters) for Passphrase 
 
 
-5. SEEDCARD – engraved steel plate with base passphrase + wallet fingerprint
+5. KEYCARD – engraved steel plate with base passphrase + wallet fingerprint
 
 
 6. SeedSigner fork – QR scan of passphrase + mnemonic input, wallet derivation
@@ -133,7 +131,11 @@ Generator / SeedHammer maintenance
 
 9. Glossary
 
-Terms: mnemonic, passphrase, suffix, SEEDCARD, fingerprint, etc.
+Terms: mnemonic, passphrase, suffix, KEYCARD, fingerprint, etc.
+
+
+
+
 
 
 
