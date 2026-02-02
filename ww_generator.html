@@ -124,10 +124,11 @@ function isCellAllowed(globalCol, row) {
     const rowHeaderWidth = cellWidth;
     const colHeaderHeight = cellHeight;
 
-    const fontSize = Math.floor(
+    const wordFontSize = Math.floor(
     Math.min(cellHeight * 0.22, cellWidth * 0.18)
     );
-    ctx.font = `${fontSize}px sans-serif`;
+    const headerFontSize = Math.floor(cellHeight * 0.3);
+    const pageFontSize = Math.floor(cellHeight * 0.5);
 
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
@@ -168,14 +169,17 @@ function isCellAllowed(globalCol, row) {
       ctx.strokeStyle = "#000000";
       ctx.strokeRect(0, y, rowHeaderWidth, cellHeight);
 
-      // Word cells
+      // ---------  Word cells -------
       for(let c=0; c<sheetCols; c++){
         const x = rowHeaderWidth + c * cellWidth;
         const globalCol = colStart + c + 1; // 1–100
         const allowed = isCellAllowed(globalCol, r);
 
-ctx.fillStyle = allowed ? "#ffffff" : headerColor;
-ctx.fillRect(x, y, cellWidth, cellHeight);
+      ctx.font = `${wordFontSize}px sans-serif`;
+      ctx.fillText(word, x + cellWidth / 2, y + cellHeight / 2);
+
+      ctx.fillStyle = allowed ? "#ffffff" : headerColor;
+      ctx.fillRect(x, y, cellWidth, cellHeight);
 
 let word = "";
 if (allowed && wordIndex < wordsCopy.length) {
