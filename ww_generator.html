@@ -22,6 +22,7 @@
 <script src="bip39_words.js"></script> <!-- Load the word list dynamically -->
 
 <script>
+const rowLetters = Array.from({ length: totalRows }, (_, i) => String.fromCharCode(65 + i)); // Generates ['A', 'B', 'C', ..., 'U']
 const rowLetters = ["A","B","C","D","E","F","G","J","K","L","M","N","O","P","R","S","T","V","X","Y","Z"];
 let currentSeed = "";
 
