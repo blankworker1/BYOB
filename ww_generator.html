@@ -77,7 +77,7 @@ async function downloadPosters() {
   const rng = mulberry32(hashArray[0]);
   const wordsCopy = bip39Words.slice();
   shuffle(wordsCopy, rng);
-
+  const circledNumbers = ["①","②","③","④","⑤"];
   const headerColor = "#cccccc";
 let wordIndex = 0;
 
@@ -112,6 +112,17 @@ function isCellAllowed(globalCol, row) {
     // Background
     ctx.fillStyle = headerColor;
     ctx.fillRect(0,0,canvas.width,canvas.height);
+
+    // -------- Page number (top-left cell) --------
+    ctx.fillStyle = headerColor;
+    ctx.fillRect(0, 0, cellWidth, cellHeight);
+
+    ctx.fillStyle = "#000000";
+    ctx.font = `${Math.floor(cellHeight * 0.5)}px sans-serif`;
+    ctx.fillText(circledNumbers[s], cellWidth / 2, cellHeight / 2);
+
+    ctx.strokeStyle = "#000000";
+    ctx.strokeRect(0, 0, cellWidth, cellHeight);
 
     // Compute cell sizes
     const totalGridCols = sheetCols + 1; // +1 for row header
