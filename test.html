@@ -3,24 +3,36 @@
 <head>
   <meta charset="UTF-8">
   <title>JS Test</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+    .ok { color: green; }
+    .err { color: red; }
+  </style>
 </head>
 <body>
 
 <h1>JS Test Page</h1>
 
+<div id="status">Starting…</div>
+
 <script>
-  alert("Inline JS is running");
-  console.log("Inline JS executed");
+  document.getElementById("status").innerHTML =
+    "<p class='ok'>Inline JS executed</p>";
 </script>
 
 <script src="bip39_words.js"></script>
 
 <script>
-  alert(
-    typeof bip39Words === "object"
-      ? "Words loaded: " + bip39Words.length
-      : "bip39Words NOT loaded"
-  );
+  const status = document.getElementById("status");
+
+  if (typeof bip39Words === "object") {
+    status.innerHTML +=
+      "<p class='ok'>bip39Words loaded</p>" +
+      "<p class='ok'>Word count: " + bip39Words.length + "</p>";
+  } else {
+    status.innerHTML +=
+      "<p class='err'>bip39Words NOT loaded</p>";
+  }
 </script>
 
 </body>
