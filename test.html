@@ -1,9 +1,27 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>JS Test</title>
+</head>
 <body>
-<script src="bip39_words.js"></script>
+
+<h1>JS Test Page</h1>
+
 <script>
-  alert("Loaded words: " + (bip39Words ? bip39Words.length : "FAILED"));
+  alert("Inline JS is running");
+  console.log("Inline JS executed");
 </script>
+
+<script src="bip39_words.js"></script>
+
+<script>
+  alert(
+    typeof bip39Words === "object"
+      ? "Words loaded: " + bip39Words.length
+      : "bip39Words NOT loaded"
+  );
+</script>
+
 </body>
 </html>
