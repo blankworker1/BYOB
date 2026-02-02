@@ -1,4 +1,4 @@
-# GENERATOR
+# PASSPHRASE GENERATOR
 
 **Disclaimer**
 
