@@ -1,5 +1,15 @@
 #GENERATOR
 
+**Disclaimer**
+
+This software is provided for educational purposes.
+
+BYOB base passphrase generation is critical to wallet security; users are responsible for correct usage and secure storage.
+
+---
+
+**Overview**
+
 BYOB Base Passphrase Generator is a standalone, offline tool for securely generating high-entropy base passphrases compatible with the BYOB model.
 
 It is intended to run on air-gapped devices such as a SeedSigner Raspberry Pi.
@@ -190,7 +200,40 @@ Split custody for family protection
 Public ledger transparency for community
 
 
+---
 
+Pi-based Generator (SeedSigner hardware) Strengths:
+
+✅ Familiarity & trust
+SeedSigner hardware is already trusted by Bitcoiners
+Raspberry Pi + Linux + /dev/urandom is well understood
+No “new hardware trust leap”
+This matters enormously for first contact with the project.
+
+✅ Auditability
+Can be implemented as:
+~100–200 lines of Python
+Uses standard, well-reviewed libraries
+Community reviewers can easily inspect:
+Entropy sources
+Hashing
+Character mapping
+QR output
+
+✅ Integration simplicity
+Same hardware form factor as SeedSigner
+Same camera, screen, buttons
+Just a different microSD image
+This reinforces your two-SD-card model:
+SD A: Generator
+SD B: Signer
+That’s a very clean mental model.
+
+✅ Entropy story is defensible
+/dev/urandom + camera noise + timing input
+Explicit entropy mixing
+SHA-256 or SHA-512 finalization
+This is conservative, orthodox crypto engineering.
 
 
 ---
