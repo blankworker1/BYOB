@@ -1,8 +1,5 @@
 # WORDWALL GENERATOR
 
-Absolutely — here’s a detailed technical overview of your multi-sheet BIP39 poster generator, written in a way that explains the design, logic, and implementation step by step. This is suitable for documentation, presentations, or as a reference for developers.
-
-
 ---
 
 Technical Overview: Deterministic Multi-Sheet BIP39 Poster Generator
@@ -14,7 +11,7 @@ This web-based tool is designed to:
 1. Generate a deterministic shuffle of the BIP39 2048-word list using a user-defined seed.
 
 
-2. Split the resulting 21×98 word grid into five separate A1 landscape sheets for poster-quality printing.
+2. Split the resulting 21 x 98 word grid into five separate A1 landscape sheets for poster-quality printing.
 
 
 3. Preserve headers, colors, grid lines, and sequential row/column data.
@@ -54,7 +51,7 @@ Seed string format:
 
 become-your-own-bank[DD/MM/YYYY][name]
 
-Used to deterministically shuffle the 2048-word list.
+Used to deterministically shuffle the 2048 word list.
 
 
 
@@ -111,7 +108,7 @@ Columns: 98 (columns numbered 01–98)
 
 Sheets: 5 A1 landscape pages
 
-Split: [20, 20, 20, 20, 18] columns per sheet
+Split: [20, 20, 20, 20, 20] columns per sheet
 
 
 Headers:
@@ -155,9 +152,6 @@ Height per row: 594 mm / 21 ≈ 28.3 mm
 Width per column (varies by sheet):
 
 Sheets 1–4 (20 columns): 841 / 20 ≈ 42 mm
-
-Sheet 5 (18 columns): 841 / 18 ≈ 46.7 mm
-
 
 
 Font scaling:
@@ -253,7 +247,7 @@ Sheet 3: 40–59
 
 Sheet 4: 60–79
 
-Sheet 5: 80–97
+Sheet 5: 80–99
 
 
 Each sheet generates its own canvas and PNG file
