@@ -1,4 +1,3 @@
-<script>
 const bip39Words = [
     "abandon",
     "ability",
@@ -2049,4 +2048,4 @@ const bip39Words = [
     "zone",
     "zoo"
 ];
-</script>
+
