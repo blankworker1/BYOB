@@ -133,16 +133,26 @@ Generator / SeedHammer maintenance
 
 Terms: mnemonic, passphrase, suffix, KEYCARD, fingerprint, etc.
 
-
-
-
-
-
-
-
-
 ---
 
-We can draft a full, readable User Manual page next, with step-by-step instructions, diagrams, and security reminders.
+(to add to expanded GENERATOR section)
 
-Do you want me to do that now?
+The BYOB base passphrase MUST be generated using a pure random number generator.
+
+The base passphrase:
+
+MUST NOT be derived from a wallet, private key, address, seed, brainwallet, or any cryptographic output
+MUST NOT be human-invented
+MUST NOT be reused across wallets
+Only raw randomness is acceptable.
+
+Prohibited sources include (non-exhaustive):
+Wallet Import Format (WIF) keys
+Bitcoin addresses
+Brainwallet tools (even if memory-hard)
+Hashes of phrases
+Mnemonics or seed words
+Any value that can independently control funds
+
+
+
