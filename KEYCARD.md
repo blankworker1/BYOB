@@ -1,4 +1,4 @@
-#KEYCARD
+# KEYCARD
 
 The KEYCARD is a credit‑card sized stainless steel plate used in the BYOB model to securely store the base passphrase and wallet fingerprint.
 
