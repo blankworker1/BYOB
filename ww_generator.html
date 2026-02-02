@@ -5,7 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>BYOB WW_GENERATOR</title>
 <style>
-/* Keep your existing styles or use previous generator styles */
+body {
+  font-family: sans-serif;
+  padding: 20px;
+}
+input { margin-bottom: 10px; }
+button { margin: 5px; }
 </style>
 </head>
 <body>
@@ -19,196 +24,187 @@
 <button id="copyButton" onclick="copySeed()" style="display:none;">Copy Seed</button>
 <button id="downloadButton" onclick="downloadPosters()" style="display:none;">Download 5 Sheet Posters</button>
 
-<script src="bip39_words.js"></script> <!-- Load the word list dynamically -->
+<script src="bip39_words.js"></script> <!-- Load your BIP39 word list -->
 
 <script>
 const rowLetters = ["A","B","C","D","E","F","G","J","K","L","M","N","O","P","R","S","T","V","X","Y","Z"];
 let currentSeed = "";
 
 // ---------- Seed generation ----------
-async function generateSeed() {
-  const name = document.getElementById("nameInput").value || "anon";
-  const today = new Date();
-  const dateStr = `[${String(today.getDate()).padStart(2,'0')}/${String(today.getMonth()+1).padStart(2,'0')}/${today.getFullYear()}]`;
-  currentSeed = `become-your-own-bank${dateStr}[${name}]`;
+function generateSeed() {
+    const name = document.getElementById("nameInput").value || "anon";
+    const today = new Date();
+    const dateStr = `[${String(today.getDate()).padStart(2,'0')}/${String(today.getMonth()+1).padStart(2,'0')}/${today.getFullYear()}]`;
+    currentSeed = `become-your-own-bank${dateStr}[${name}]`;
 
-  document.getElementById("seedDisplay").textContent = "Seed: " + currentSeed;
-  document.getElementById("copyButton").style.display = "inline";
-  document.getElementById("downloadButton").style.display = "inline";
+    document.getElementById("seedDisplay").textContent = "Seed: " + currentSeed;
+    document.getElementById("copyButton").style.display = "inline";
+    document.getElementById("downloadButton").style.display = "inline";
 }
 
 function copySeed() {
-  navigator.clipboard.writeText(currentSeed);
-  alert("Seed copied to clipboard! Save it to reproduce the same grid.");
+    navigator.clipboard.writeText(currentSeed);
+    alert("Seed copied to clipboard! Save it to reproduce the same grid.");
 }
 
 // ---------- Deterministic PRNG ----------
 async function hashSeed(seed) {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(seed);
-  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
-  return new Uint32Array(hashBuffer);
+    const encoder = new TextEncoder();
+    const data = encoder.encode(seed);
+    const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+    return new Uint32Array(hashBuffer);
 }
 
 function mulberry32(a) {
-  return function() {
-    let t = a += 0x6D2B79F5;
-    t = Math.imul(t ^ t >>> 15, t | 1);
-    t ^= t + Math.imul(t ^ t >>> 7, t | 61);
-    return ((t ^ t >>> 14) >>> 0) / 4294967296;
-  }
+    return function() {
+        let t = a += 0x6D2B79F5;
+        t = Math.imul(t ^ t >>> 15, t | 1);
+        t ^= t + Math.imul(t ^ t >>> 7, t | 61);
+        return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    }
 }
 
 function shuffle(array, rng) {
-  for(let i=array.length-1; i>0; i--){
-    const j = Math.floor(rng()*(i+1));
-    [array[i], array[j]] = [array[j], array[i]];
-  }
+    for(let i=array.length-1; i>0; i--){
+        const j = Math.floor(rng()*(i+1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
 }
 
-  // --------  Poster ---------
-
+// ---------- Multi-sheet Poster Download ----------
 async function downloadPosters() {
-  const totalRows = 21; // Moved to the top
-  const sheetCols = 20; // Moved to the top
-  const totalGridCols = sheetCols + 1; // +1 for row header
-  const totalGridRows = totalRows + 1; // +1 for column header
-
-  if (typeof bip39Words === "undefined" || bip39Words.length !== 2048) {
-    alert("BIP39 word list not loaded correctly!");
-    return;
-  }
-
-  const cellWidth = canvas.width / totalGridCols;
-  const cellHeight = canvas.height / totalGridRows;
-
-  const rowHeaderWidth = cellWidth;
-  const colHeaderHeight = cellHeight;
-
-  const circledNumbers = ["①", "②", "③", "④", "⑤"]; // Moved to the top
-  const headerColor = "#cccccc"; // Moved to the top
-  let wordIndex = 0;
-}
-  
-// -------- Page number (top-left cell) --------
-ctx.fillStyle = headerColor;
-ctx.fillRect(0, 0, cellWidth, cellHeight);
-ctx.font = `${pageFontSize}px sans-serif`;
-ctx.fillStyle = "#000000";
-ctx.fillText(circledNumbers[s], cellWidth / 2, cellHeight / 2);
-ctx.strokeStyle = "#000000";
-ctx.strokeRect(0, 0, cellWidth, cellHeight);
-
-
-  
-  const totalCols = 100; // max column index
-  const hashArray = await hashSeed(currentSeed);
-  const rng = mulberry32(hashArray[0]);
-  const wordsCopy = bip39Words.slice();
-  shuffle(wordsCopy, rng);
-
-  // Determines which cells are allowed to contain words
-  function isCellAllowed(globalCol, row) {
-    if (globalCol === 100) return false;
-    if (globalCol === 99) return false;
-    if (globalCol === 98 && row >= 11) return false; // bottom 10 rows
-    return true;
-  }
-
-  
-  
-  const sheets = 5;
-
-  const dpi = 300;
-  const width_mm = 841, height_mm = 594; // A1 landscape
-  const width_px = Math.floor(width_mm / 25.4 * dpi);
-  const height_px = Math.floor(height_mm / 25.4 * dpi);
-
-  for(let s=0; s<sheets; s++){
-    const colStart = s * sheetCols;
-
-    const canvas = document.createElement("canvas");
-    canvas.width = width_px;
-    canvas.height = height_px;
-    const ctx = canvas.getContext("2d");
-
-    // Background
-    ctx.fillStyle = "#ffffff";
-    ctx.fillRect(0,0,canvas.width,canvas.height);
-
-    const wordFontSize = Math.floor(Math.min(cellHeight*0.22, cellWidth*0.18));
-    const headerFontSize = Math.floor(cellHeight*0.3);
-    const pageFontSize = Math.floor(cellHeight*0.5);
-
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-
-    // -------- Column headers --------
-    for(let c=0; c<sheetCols; c++){
-      const x = rowHeaderWidth + c * cellWidth;
-      ctx.fillStyle = headerColor;
-      ctx.fillRect(x, 0, cellWidth, colHeaderHeight);
-
-      const colNumber = (colStart + c + 1 <= totalCols) ? String(colStart + c + 1).padStart(2,"0") : "";
-      ctx.font = `${headerFontSize}px sans-serif`;
-      ctx.fillStyle = "#000000";
-      ctx.fillText(colNumber, x + cellWidth/2, colHeaderHeight/2);
-
-      ctx.strokeStyle = "#000000";
-      ctx.strokeRect(x, 0, cellWidth, colHeaderHeight);
+    if (typeof bip39Words === "undefined" || bip39Words.length !== 2048) {
+        alert("BIP39 word list not loaded correctly!");
+        return;
     }
 
-    // -------- Row headers and word cells --------
-    for(let r=0; r<totalRows; r++){
-      const y = colHeaderHeight + r * cellHeight;
+    const totalRows = 21;
+    const sheetCols = 20;
+    const sheets = 5;
+    const totalCols = 100;
+    const circledNumbers = ["①","②","③","④","⑤"];
+    const headerColor = "#cccccc";
 
-      // Row header
-      ctx.fillStyle = headerColor;
-      ctx.fillRect(0, y, rowHeaderWidth, cellHeight);
+    const dpi = 300;
+    const width_mm = 841, height_mm = 594; // A1 landscape
+    const width_px = Math.floor(width_mm / 25.4 * dpi);
+    const height_px = Math.floor(height_mm / 25.4 * dpi);
 
-      ctx.font = `${headerFontSize}px sans-serif`;
-      ctx.fillStyle = "#000000";
-      ctx.fillText(rowLetters[r], rowHeaderWidth/2, y + cellHeight/2);
+    const hashArray = await hashSeed(currentSeed);
+    const rng = mulberry32(hashArray[0]);
+    const wordsCopy = bip39Words.slice();
+    shuffle(wordsCopy, rng);
+    let wordIndex = 0;
 
-      ctx.strokeStyle = "#000000";
-      ctx.strokeRect(0, y, rowHeaderWidth, cellHeight);
+    function isCellAllowed(globalCol, row) {
+        if (globalCol === 100) return false;
+        if (globalCol === 99) return false;
+        if (globalCol === 98 && row >= 11) return false;
+        return true;
+    }
 
-      // Word cells
-      for(let c=0; c<sheetCols; c++){
-        const x = rowHeaderWidth + c * cellWidth;
-        const globalCol = colStart + c + 1; // 1–100
-        const allowed = isCellAllowed(globalCol, r);
+    for(let s=0; s<sheets; s++){
+        const colStart = s * sheetCols;
+        const canvas = document.createElement("canvas");
+        canvas.width = width_px;
+        canvas.height = height_px;
+        const ctx = canvas.getContext("2d");
 
-        // Determine word
-        let word = "";
-        if (allowed && wordIndex < wordsCopy.length) {
-          word = wordsCopy[wordIndex];
-          wordIndex++;
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0,0,canvas.width,canvas.height);
+
+        const totalGridCols = sheetCols + 1; // +1 for row header
+        const totalGridRows = totalRows + 1; // +1 for column header
+        const cellWidth = canvas.width / totalGridCols;
+        const cellHeight = canvas.height / totalGridRows;
+
+        const rowHeaderWidth = cellWidth;
+        const colHeaderHeight = cellHeight;
+
+        const wordFontSize = Math.floor(Math.min(cellHeight*0.22, cellWidth*0.18));
+        const headerFontSize = Math.floor(cellHeight*0.3);
+        const pageFontSize = Math.floor(cellHeight*0.5);
+
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+
+        // -------- Page number (top-left cell) --------
+        ctx.fillStyle = headerColor;
+        ctx.fillRect(0, 0, cellWidth, cellHeight);
+        ctx.font = `${pageFontSize}px sans-serif`;
+        ctx.fillStyle = "#000000";
+        ctx.fillText(circledNumbers[s], cellWidth/2, cellHeight/2);
+        ctx.strokeStyle = "#000000";
+        ctx.strokeRect(0,0,cellWidth,cellHeight);
+
+        // -------- Column headers --------
+        for(let c=0; c<sheetCols; c++){
+            const x = rowHeaderWidth + c*cellWidth;
+            ctx.fillStyle = headerColor;
+            ctx.fillRect(x, 0, cellWidth, colHeaderHeight);
+
+            const colNumber = (colStart+c+1 <= totalCols) ? String(colStart+c+1).padStart(2,"0") : "";
+            ctx.font = `${headerFontSize}px sans-serif`;
+            ctx.fillStyle = "#000000";
+            ctx.fillText(colNumber, x + cellWidth/2, colHeaderHeight/2);
+
+            ctx.strokeStyle = "#000000";
+            ctx.strokeRect(x, 0, cellWidth, colHeaderHeight);
         }
 
-        // Draw background
-        ctx.fillStyle = allowed ? "#ffffff" : headerColor;
-        ctx.fillRect(x, y, cellWidth, cellHeight);
+        // -------- Row headers and word cells --------
+        for(let r=0; r<totalRows; r++){
+            const y = colHeaderHeight + r*cellHeight;
 
-        // Draw word
-        ctx.font = `${wordFontSize}px sans-serif`;
-        ctx.fillStyle = "#000000";
-        ctx.fillText(word, x + cellWidth / 2, y + cellHeight / 2);
+            // Row header
+            ctx.fillStyle = headerColor;
+            ctx.fillRect(0, y, rowHeaderWidth, cellHeight);
+            ctx.font = `${headerFontSize}px sans-serif`;
+            ctx.fillStyle = "#000000";
+            ctx.fillText(rowLetters[r], rowHeaderWidth/2, y + cellHeight/2);
+            ctx.strokeStyle = "#000000";
+            ctx.strokeRect(0, y, rowHeaderWidth, cellHeight);
 
-        // Draw border
-        ctx.strokeStyle = "#000000";
-        ctx.strokeRect(x, y, cellWidth, cellHeight);
-      }
+            // Word cells
+            for(let c=0; c<sheetCols; c++){
+                const x = rowHeaderWidth + c*cellWidth;
+                const globalCol = colStart + c + 1;
+                const allowed = isCellAllowed(globalCol, r);
+
+                let word = "";
+                if(allowed && wordIndex < wordsCopy.length) {
+                    word = wordsCopy[wordIndex];
+                    wordIndex++;
+                }
+
+                ctx.fillStyle = allowed ? "#ffffff" : headerColor;
+                ctx.fillRect(x, y, cellWidth, cellHeight);
+
+                ctx.font = `${wordFontSize}px sans-serif`;
+                ctx.fillStyle = "#000000";
+                ctx.fillText(word, x + cellWidth/2, y + cellHeight/2);
+
+                ctx.strokeStyle = "#000000";
+                ctx.strokeRect(x, y, cellWidth, cellHeight);
+            }
+        }
+
+        // Download PNG
+        canvas.toBlob(function(blob){
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            const safeName = currentSeed.replace(/[^a-zA-Z0-9-_]/g,"_");
+            link.download = `${safeName}_Sheet${s+1}.png`;
+            link.click();
+        }, "image/png");
+      
     }
-
-    // Download PNG
-    canvas.toBlob(function(blob){
-      const link = document.createElement("a");
-      link.href = URL.createObjectURL(blob);
-      const safeName = currentSeed.replace(/[^a-zA-Z0-9-_]/g,"_");
-      link.download = `${safeName}_Sheet${s+1}.png`;
-      link.click();
-    }, "image/png");
-  }
 }
 </script>
+
+
+
+  
+
+</body>
+</html>
