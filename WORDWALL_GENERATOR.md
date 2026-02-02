@@ -338,8 +338,10 @@ Printable grids: headers, row/column numbering, colors, and footer included
 This tool combines deterministic cryptographic shuffling, dynamic grid layout, and high-resolution canvas rendering to produce print-ready multi-sheet BIP39 word posters. It is fully client-side, reproducible, and ready for offline printing.
 
 
----
 
-If you want, I can also create a diagram showing the 5-sheet split with cell dimensions, headers, and footers to include in documentation — this makes it very easy to visualize for printing.
 
-Do you want me to do that?
+
+
+
+
+
