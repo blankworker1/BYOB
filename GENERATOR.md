@@ -1,4 +1,4 @@
-#GENERATOR
+# GENERATOR
 
 **Disclaimer**
 
@@ -8,7 +8,7 @@ BYOB base passphrase generation is critical to wallet security; users are respon
 
 ---
 
-**Overview**
+## Overview
 
 BYOB Base Passphrase Generator is a standalone, offline tool for securely generating high-entropy base passphrases compatible with the BYOB model.
 
@@ -113,7 +113,7 @@ No logs or temporary files containing passphrase
 
 ---
 
-Example Workflow
+ ## Example Workflow
 
 1. Boot SeedSigner with generator microSD
 
@@ -143,7 +143,7 @@ Example Workflow
 
 ---
 
-Implementation Notes
+## Implementation Notes
 
 Language: Python recommended (minimal dependencies)
 
@@ -159,7 +159,7 @@ Open-source: Encourage peer review and reproducibility
 
 ---
 
-Recommended Best Practices
+## Recommended Best Practices
 
 Verify generator firmware hash before use
 
@@ -175,7 +175,7 @@ Store QR and steel plate securely with trusted family members
 
 ---
 
-Integration with BYOB
+## Integration with BYOB
 
 Base passphrase QR is scanned by SeedSigner fork
 
@@ -202,7 +202,7 @@ Public ledger transparency for community
 
 ---
 
-Pi-based Generator (SeedSigner hardware) Strengths:
+## Pi-based Generator (SeedSigner hardware) Strengths:
 
 ✅ Familiarity & trust
 SeedSigner hardware is already trusted by Bitcoiners
@@ -236,10 +236,7 @@ SHA-256 or SHA-512 finalization
 This is conservative, orthodox crypto engineering.
 
 
----
 
-Disclaimer
 
-This software is provided for educational purposes.
-BYOB base passphrase generation is critical to wallet security; users are responsible for correct usage and secure storage.
+
 
