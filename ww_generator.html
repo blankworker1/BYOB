@@ -100,8 +100,6 @@ function isCellAllowed(globalCol, row) {
   const width_px = Math.floor(width_mm / 25.4 * dpi);
   const height_px = Math.floor(height_mm / 25.4 * dpi);
 
-  const rowHeaderWidth = 50; // px reserved for row letters
-  const colHeaderHeight = 50; // px reserved for column numbers
 
   for(let s=0; s<sheets; s++){
     const colStart = s * sheetCols;
@@ -116,8 +114,14 @@ function isCellAllowed(globalCol, row) {
     ctx.fillRect(0,0,canvas.width,canvas.height);
 
     // Compute cell sizes
-    const cellWidth = (canvas.width - rowHeaderWidth) / sheetCols;
-    const cellHeight = (canvas.height - colHeaderHeight) / totalRows;
+    const totalGridCols = sheetCols + 1; // +1 for row header
+    const totalGridRows = totalRows + 1; // +1 for column header
+
+    const cellWidth = canvas.width / totalGridCols;
+    const cellHeight = canvas.height / totalGridRows;
+
+    const rowHeaderWidth = cellWidth;
+    const colHeaderHeight = cellHeight;
 
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
@@ -170,9 +174,6 @@ ctx.strokeRect(x, y, cellWidth, cellHeight);
       }
     }
 
-    // -------- Footer with seed --------
-    ctx.font = `${Math.floor(cellHeight*0.2)}px sans-serif`;
-    ctx.fillText(`Seed: ${currentSeed}`, canvas.width/2, canvas.height - cellHeight/2);
 
     // Download PNG
     canvas.toBlob(function(blob){
