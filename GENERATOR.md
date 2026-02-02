@@ -1,30 +1,25 @@
 #GENERATOR
 
-
----
-
-BYOB Base Passphrase Generator
-
-This page describes the BYOB Base Passphrase Generator, a standalone, offline tool for securely generating high-entropy base passphrases compatible with the BYOB model.
+BYOB Base Passphrase Generator is a standalone, offline tool for securely generating high-entropy base passphrases compatible with the BYOB model.
 
 It is intended to run on air-gapped devices such as a SeedSigner Raspberry Pi.
 
 
 ---
 
-Purpose
+## Purpose
 
 The base passphrase is the primary entropy source for BYOB wallets.
 
 Its purpose is to:
 
-Generate a truly random 24-character string
+- Generate a truly random 24-character string
 
-Output the passphrase only as a QR code
+- Output the passphrase only as a QR code
 
-Avoid manual typing or memory entry
+- Avoid manual typing or memory entry
 
-Integrate with SeedSigner for wallet creation
+- Integrate with SeedSigner hardware for wallet creation
 
 
 > Note: This generator does not create wallets or mnemonics; it only creates base passphrases.
@@ -34,9 +29,9 @@ Integrate with SeedSigner for wallet creation
 
 ---
 
-Technical Requirements
+## Technical Requirements
 
-1. Offline Operation
+**1. Offline Operation**
 
 Must run entirely offline
 
