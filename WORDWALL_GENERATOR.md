@@ -338,6 +338,84 @@ Printable grids: headers, row/column numbering, colors, and footer included
 This tool combines deterministic cryptographic shuffling, dynamic grid layout, and high-resolution canvas rendering to produce print-ready multi-sheet BIP39 word posters. It is fully client-side, reproducible, and ready for offline printing.
 
 
+---
+
+## BIP39 5-Sheet Poster Generator: Create and Download Seed Posters
+
+## Introduction
+
+The HTML code implements a web application that generates a BIP39 seed phrase and allows users to create and download a series of posters containing this seed phrase. The application is designed to be user-friendly, guiding users through the process of generating a seed, copying it, and downloading the corresponding posters.
+
+## Key Concepts
+
+BIP39: A standard for mnemonic phrases used in cryptocurrency wallets to generate deterministic keys.
+
+HTML Structure: The document is structured with a head and body section, containing styles, input fields, buttons, and a script for functionality.
+
+Canvas API: Utilized to create and manipulate images dynamically, allowing for the generation of poster graphics.
+
+Random Number Generation: A custom pseudo-random number generator (PRNG) is implemented to shuffle the BIP39 word list based on the generated seed.
+
+## Code Structure
+
+The code is organized into several key sections:
+
+HTML Elements: Input fields for user interaction, buttons for actions, and a display area for the generated seed.
+
+CSS Styles: Basic styling for layout and aesthetics.
+
+JavaScript Functions: Core functionality for generating the seed, copying it, shuffling words, and downloading the posters.
+
+## Code Examples
+
+Here are some critical parts of the code explained:
+
+**HTML Structure**
+
+```
+
+<label>Name: <input type="text" id="nameInput" placeholder="Your name"></label><br>
+<button onclick="generateSeed()">Generate Seed</button>
+
+```
+
+This section allows users to input their name and generate a seed phrase by clicking the button.
+
+
+**Seed Generation Function**
+
+```
+async function generateSeed() {
+  const name = document.getElementById("nameInput").value || "anon";
+  const today = new Date();
+  const dateStr = `[${String(today.getDate()).padStart(2,'0')}/${String(today.getMonth()+1).padStart(2,'0')}/${today.getFullYear()}]`;
+  currentSeed = `become-your-own-bank${dateStr}[${name}]`;
+  document.getElementById("seedDisplay").textContent = "Seed: " + currentSeed;
+}
+
+```
+
+This function generates a unique seed phrase based on the user's name and the current date, displaying it on the webpage.
+
+**Downloading Posters**
+
+```
+
+async function downloadPosters() {
+  const hashArray = await hashSeed(currentSeed);
+  const rng = mulberry32(hashArray[0]);
+  const wordsCopy = bip39Words.slice();
+  shuffle(wordsCopy, rng);
+  // Poster generation logic follows...
+}
+
+```
+
+This function handles the creation of the posters by shuffling the BIP39 words and drawing them onto a canvas, which is then converted to a downloadable PNG file.
+
+ 
+
+
 
 
 
