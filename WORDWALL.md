@@ -1,16 +1,13 @@
-Here’s a draft WORDWALL.md page for GitHub, describing the Word Wall in physical and digital forms for BYOB. It explains purpose, usage, and community responsibilities.
+# WORDWALL 
 
-
----
-
-BYOB Word Wall
+**BYOB Word Wall**
 
 The Word Wall is the cornerstone of the BYOB model. It provides a canonical, public reference for all 2048 BIP‑39 English words, enabling deterministic wallet reconstruction without storing full seed phrases.
 
 
 ---
 
-Purpose
+## Purpose
 
 Acts as shared community memory for mnemonic word derivation
 
@@ -28,7 +25,7 @@ Supports physical, digital, and mirrored implementations
 
 ---
 
-Physical Word Wall
+## 1. Physical Word Wall
 
 Description
 
@@ -62,7 +59,7 @@ Photograph and store as a digital “wallshot” for redundancy
 
 ---
 
-Digital Word Wall
+## 2. Digital Word Wall
 
 Description
 
@@ -101,7 +98,7 @@ Use the digital version for offline printing or offline software usage
 
 ---
 
-Usage in Wallet Creation
+## Usage in Wallet Creation
 
 1. Individual chooses a starting position and direction on the Word Wall
 
@@ -123,7 +120,7 @@ Usage in Wallet Creation
 
 ---
 
-Community Responsibilities
+## Community Responsibilities
 
 Maintain physical integrity of the Word Wall
 
@@ -142,7 +139,7 @@ Ensure canonical consistency across physical and digital forms
 
 ---
 
-Security Notes
+## Security Notes
 
 The Word Wall is completely safe to be public
 
@@ -171,8 +168,7 @@ Digital: GitHub repository, IPFS hash, public website mirror
 
 
 
----
 
-If you want, I can also draft a “Community Ledger + Word Wall Integration” page, showing exactly how Word Wall positions and public addresses work together, including diagrams of position + direction selection for users.
 
-Do you want me to do that next?
+
+
