@@ -235,6 +235,264 @@ Explicit entropy mixing
 SHA-256 or SHA-512 finalization
 This is conservative, orthodox crypto engineering.
 
+---
+
+## Technical Specification
+
+Purpose
+
+The BYOB Base Passphrase Generator is a standalone, offline program that runs on SeedSigner-compatible Raspberry Pi hardware and generates a high-entropy base passphrase for use in the BYOB model.
+
+The generator must not create wallets, keys, or mnemonics.
+
+It produces entropy only.
+
+
+---
+
+## Target Platform
+
+Hardware: SeedSigner-compatible Raspberry Pi (Pi Zero / Zero 2)
+
+Boot Medium: microSD card (SD A)
+
+Operating Mode: Fully offline / air-gapped
+
+Networking: Disabled / not required
+
+
+
+---
+
+## Output Requirements
+
+Generate a 24-character base passphrase
+
+Character set:
+
+A–Z a–z 0–9 !@#$%^&*()-_=+
+
+Characters must be selected uniformly at random
+
+Output format:
+
+QR code only (default)
+
+Optional plaintext display behind explicit warning
+
+
+
+
+---
+
+## Entropy Requirements (Critical)
+
+Required entropy sources
+
+The generator must use a cryptographically secure random number generator and must not rely on a single entropy source.
+
+Minimum requirements:
+
+1. OS CSPRNG
+
+Use /dev/urandom or equivalent
+
+Do not use language-level PRNGs (e.g. Python random)
+
+
+
+2. Additional entropy source (at least one)
+
+- Camera sensor noise (preferred, if available)
+
+- User timing input (button presses, delays)
+
+- System timing jitter
+
+
+Entropy mixing
+
+All entropy sources must be combined and hashed using:
+
+SHA-256 or stronger
+
+
+Final passphrase characters must be derived from the hashed entropy
+
+Do not expose raw entropy directly
+
+
+
+---
+
+## Security Requirements
+
+Stateless operation 
+
+No passphrase stored on disk
+
+No logging of sensitive data
+
+No reuse of entropy between runs
+
+Offline only
+
+No network access
+
+No USB mass storage output
+
+Single-use session
+
+Generate one passphrase per execution
+
+Power-off recommended after generation
+
+
+
+
+---
+
+## QR Code Requirements
+
+Encode the raw 24-character passphrase
+
+QR must be:
+
+Compatible with SeedSigner camera scanning
+
+High contrast
+
+No additional metadata
+
+
+
+
+---
+
+## User Interface (Minimal)
+
+Simple, deterministic flow:
+
+1. Boot
+
+
+2. (Optional) Entropy collection step
+
+
+3. Generate passphrase
+
+
+4. Display QR
+
+
+5. Exit / power off
+
+
+
+Explicit warnings:
+
+Passphrase will not be shown again
+
+Do not photograph or transmit
+
+This is not a wallet or private key
+
+
+
+
+---
+
+## Prohibited Behavior
+
+The generator must not:
+
+Derive or display:
+
+Wallets
+
+Private keys
+
+Public addresses
+
+Mnemonics
+
+
+Accept user-entered phrases
+
+Hash or transform user-created text
+
+Use brainwallet-style derivation
+
+Store output after display
+
+
+
+---
+
+## Recommended Implementation Stack
+
+Language: Python 3
+
+Libraries:
+
+os / secrets (for CSPRNG access)
+
+hashlib (SHA-256)
+
+qrcode (QR generation)
+
+
+Code size: Small, auditable (<300 LOC preferred)
+
+
+
+---
+
+## Verification & Testing
+
+Developer should provide:
+
+Deterministic test mode (non-production)
+
+Entropy source documentation
+
+Hash of final SD image
+
+Reproducible build instructions
+
+
+
+---
+
+## Threat Model Assumptions
+
+Attacker does not have runtime access to the device
+
+User verifies firmware and SD image integrity
+
+Device is air-gapped during operation
+
+
+
+---
+
+## Design Principles
+
+One job only: generate entropy
+
+Human-safe: prevent misuse or misunderstanding
+
+Auditable: simple, readable code
+
+Composable: integrates with SeedSigner fork via QR
+
+
+
+
+
+
+
+
 
 
 
