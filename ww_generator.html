@@ -67,20 +67,29 @@ function shuffle(array, rng) {
 }
 
   // --------  Poster ---------
+
 async function downloadPosters() {
-  if(typeof bip39Words === "undefined" || bip39Words.length !== 2048){
+  const totalRows = 21; // Moved to the top
+  const sheetCols = 20; // Moved to the top
+  const totalGridCols = sheetCols + 1; // +1 for row header
+  const totalGridRows = totalRows + 1; // +1 for column header
+
+  if (typeof bip39Words === "undefined" || bip39Words.length !== 2048) {
     alert("BIP39 word list not loaded correctly!");
     return;
   }
-// Compute cell sizes first
-const totalGridCols = sheetCols + 1; // +1 for row header
-const totalGridRows = totalRows + 1; // +1 for column header
-const cellWidth = canvas.width / totalGridCols;
-const cellHeight = canvas.height / totalGridRows;
 
-const rowHeaderWidth = cellWidth;
-const colHeaderHeight = cellHeight;
+  const cellWidth = canvas.width / totalGridCols;
+  const cellHeight = canvas.height / totalGridRows;
 
+  const rowHeaderWidth = cellWidth;
+  const colHeaderHeight = cellHeight;
+
+  const circledNumbers = ["①", "②", "③", "④", "⑤"]; // Moved to the top
+  const headerColor = "#cccccc"; // Moved to the top
+  let wordIndex = 0;
+}
+  
 // -------- Page number (top-left cell) --------
 ctx.fillStyle = headerColor;
 ctx.fillRect(0, 0, cellWidth, cellHeight);
@@ -98,10 +107,6 @@ ctx.strokeRect(0, 0, cellWidth, cellHeight);
   const wordsCopy = bip39Words.slice();
   shuffle(wordsCopy, rng);
 
-  const circledNumbers = ["①","②","③","④","⑤"];
-  const headerColor = "#cccccc";
-  let wordIndex = 0;
-
   // Determines which cells are allowed to contain words
   function isCellAllowed(globalCol, row) {
     if (globalCol === 100) return false;
@@ -110,8 +115,8 @@ ctx.strokeRect(0, 0, cellWidth, cellHeight);
     return true;
   }
 
-  const totalRows = 21;
-  const sheetCols = 20; // number of word columns per sheet
+  
+  
   const sheets = 5;
 
   const dpi = 300;
