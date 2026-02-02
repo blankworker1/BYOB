@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BYOB WW_GENERATOR</title>
+<style>
+/* Keep your existing styles or use previous generator styles */
+</style>
+</head>
+<body>
+
+<h2>BIP39 Deterministic Poster Generator</h2>
+
+<label>Name: <input type="text" id="nameInput" placeholder="Your name"></label><br>
+<button onclick="generateSeed()">Generate Seed</button>
+
+<div id="seedDisplay"></div>
+<button id="copyButton" onclick="copySeed()" style="display:none;">Copy Seed</button>
+<button id="downloadButton" onclick="downloadPosters()" style="display:none;">Download 5 Sheet Posters</button>
+
+<script src="bip39_words.html"></script> <!-- Load the word list dynamically -->
+
+<script>
+const rowLetters = ["A","B","C","D","E","F","G","J","K","L","M","N","O","P","R","S","T","V","X","Y","Z"];
+let currentSeed = "";
+
+// ---------- Seed generation ----------
+async function generateSeed() {
+  const name = document.getElementById("nameInput").value || "anon";
+  const today = new Date();
+  const dateStr = `[${String(today.getDate()).padStart(2,'0')}/${String(today.getMonth()+1).padStart(2,'0')}/${today.getFullYear()}]`;
+  currentSeed = `become-your-own-bank${dateStr}[${name}]`;
+
+  document.getElementById("seedDisplay").textContent = "Seed: " + currentSeed;
+  document.getElementById("copyButton").style.display = "inline";
+  document.getElementById("downloadButton").style.display = "inline";
+}
+
+function copySeed() {
+  navigator.clipboard.writeText(currentSeed);
+  alert("Seed copied to clipboard! Save it to reproduce the same grid.");
+}
+
+// ---------- Deterministic PRNG ----------
+async function hashSeed(seed) {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(seed);
+  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+  return new Uint32Array(hashBuffer);
+}
+
+function mulberry32(a) {
+  return function() {
+    let t = a += 0x6D2B79F5;
+    t = Math.imul(t ^ t >>> 15, t | 1);
+    t ^= t + Math.imul(t ^ t >>> 7, t | 61);
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  }
+}
+
+function shuffle(array, rng) {
+  for(let i=array.length-1; i>0; i--){
+    const j = Math.floor(rng()*(i+1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+}
+
+// ---------- Multi-sheet Poster Download ----------
+async function downloadPosters() {
+  if(typeof bip39Words === "undefined" || bip39Words.length !== 2048){
+    alert("BIP39 word list not loaded correctly!");
+    return;
+  }
+
+  const hashArray = await hashSeed(currentSeed);
+  const rng = mulberry32(hashArray[0]);
+  const wordsCopy = bip39Words.slice();
+  shuffle(wordsCopy, rng);
+
+  const totalCols = 98;
+  const totalRows = 21;
+  const sheetCols = 20; // equal columns per sheet
+  const sheets = 5;
+
+  const dpi = 300;
+  const width_mm = 841, height_mm = 594;
+  const width_px = Math.floor(width_mm / 25.4 * dpi);
+  const height_px = Math.floor(height_mm / 25.4 * dpi);
+
+  for(let s=0; s<sheets; s++){
+    const colStart = s*sheetCols;
+    const canvas = document.createElement("canvas");
+    canvas.width = width_px;
+    canvas.height = height_px;
+    const ctx = canvas.getContext("2d");
+
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+
+    const cellWidth = canvas.width / sheetCols;
+    const cellHeight = canvas.height / totalRows;
+
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.font = `${Math.floor(cellHeight*0.3)}px sans-serif`;
+
+    // Column headers
+    for(let c=0;c<sheetCols;c++){
+      const x = c*cellWidth + cellWidth;
+      ctx.fillStyle="#cccccc";
+      ctx.fillRect(x,0,cellWidth,cellHeight);
+      ctx.fillStyle="#000000";
+      const colNumber = (colStart+c+1 <= totalCols) ? String(colStart+c+1).padStart(2,"0") : "";
+      ctx.fillText(colNumber, x+cellWidth/2, cellHeight/2);
+      ctx.strokeStyle="#000000";
+      ctx.strokeRect(x,0,cellWidth,cellHeight);
+    }
+
+    // Row headers
+    for(let r=0;r<totalRows;r++){
+      const y = (r+1)*cellHeight;
+      ctx.fillStyle="#cccccc";
+      ctx.fillRect(0,y,cellWidth,cellHeight);
+      ctx.fillStyle="#000000";
+      ctx.fillText(rowLetters[r], cellWidth/2, y+cellHeight/2);
+      ctx.strokeStyle="#000000";
+      ctx.strokeRect(0,y,cellWidth,cellHeight);
+    }
+
+    // Words + grid
+    for(let r=0;r<totalRows;r++){
+      for(let c=0;c<sheetCols;c++){
+        const x = c*cellWidth + cellWidth;
+        const y = (r+1)*cellHeight;
+        ctx.fillStyle="#ffffff";
+        ctx.fillRect(x,y,cellWidth,cellHeight);
+
+        const idx = r*totalCols + (colStart+c);
+        const word = (idx < wordsCopy.length) ? wordsCopy[idx] : "";
+        ctx.fillStyle="#000000";
+        ctx.fillText(word, x+cellWidth/2, y+cellHeight/2);
+
+        ctx.strokeStyle="#000000";
+        ctx.strokeRect(x,y,cellWidth,cellHeight);
+      }
+    }
+
+    // Footer
+    ctx.font = `${Math.floor(cellHeight*0.2)}px sans-serif`;
+    ctx.fillText(`Seed: ${currentSeed}`, canvas.width/2, canvas.height - cellHeight/2);
+
+    // Download PNG
+    canvas.toBlob(function(blob){
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      const safeName = currentSeed.replace(/[^a-zA-Z0-9-_]/g,"_");
+      link.download = `${safeName}_Sheet${s+1}.png`;
+      link.click();
+    }, "image/png");
+  }
+}
+</script>
+
+</body>
+</html>
