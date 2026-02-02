@@ -72,7 +72,7 @@ async function downloadPosters() {
     alert("BIP39 word list not loaded correctly!");
     return;
   }
-
+  const totalCols = 100; // Define totalCols to represent the maximum number of columns
   const hashArray = await hashSeed(currentSeed);
   const rng = mulberry32(hashArray[0]);
   const wordsCopy = bip39Words.slice();
