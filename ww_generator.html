@@ -124,9 +124,14 @@ function isCellAllowed(globalCol, row) {
     const rowHeaderWidth = cellWidth;
     const colHeaderHeight = cellHeight;
 
+    const fontSize = Math.floor(
+    Math.min(cellHeight * 0.22, cellWidth * 0.18)
+    );
+    ctx.font = `${fontSize}px sans-serif`;
+
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.font = `${Math.floor(cellHeight*0.22)}px sans-serif`;
+    
 
     // -------- Page number (top-left cell) --------
     ctx.fillStyle = headerColor;
