@@ -302,36 +302,6 @@ JavaScript Functions: Core functionality for generating the seed, copying it, sh
 
 ## Code Examples
 
-Here are some critical parts of the code explained:
-
-**HTML Structure**
-
-```
-
-<label>Name: <input type="text" id="nameInput" placeholder="Your name"></label><br>
-<button onclick="generateSeed()">Generate Seed</button>
-
-```
-
-This section allows users to input their name and generate a seed phrase by clicking the button.
-
-
-**Seed Generation Function**
-
-```
-async function generateSeed() {
-  const name = document.getElementById("nameInput").value || "anon";
-  const today = new Date();
-  const dateStr = `[${String(today.getDate()).padStart(2,'0')}/${String(today.getMonth()+1).padStart(2,'0')}/${today.getFullYear()}]`;
-  currentSeed = `become-your-own-bank${dateStr}[${name}]`;
-  document.getElementById("seedDisplay").textContent = "Seed: " + currentSeed;
-}
-
-```
-
-This function generates a unique seed phrase based on the user's name and the current date, displaying it on the webpage.
-
-**Downloading Posters**
 
 
 ---
