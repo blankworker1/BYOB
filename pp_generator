@@ -7,7 +7,6 @@ import time
 import qrcode
 import picamera
 
-
 def get_camera_entropy(num_frames=8):
     """
     Collect entropy from the Pi camera by XORing multiple small frames.
@@ -35,8 +34,13 @@ def get_camera_entropy(num_frames=8):
     for frame in frames[1:]:
         noise = bytearray(a ^ b for a, b in zip(noise, frame))
 
+    # Ensure the noise is at least 32 bytes
+    if len(noise) < 32:
+        raise ValueError("Insufficient entropy collected from camera frames.")
+
     # Hash the noise for uniform 32-byte entropy
     return hashlib.sha256(noise).digest()
+
 
 
 def generate_secure_passphrase(length=24):
