@@ -21,25 +21,27 @@ def get_camera_entropy(num_frames=8):
 
     frames = []
 
-    for _ in range(num_frames):
-        stream = io.BytesIO()
-        camera.capture(stream, format='rgb', use_video_port=True)
-        frames.append(stream.getvalue())
-        time.sleep(0.03)
+    try:
+        for _ in range(num_frames):
+            stream = io.BytesIO()
+            camera.capture(stream, format='rgb', use_video_port=True)
+            frames.append(stream.getvalue())
+            time.sleep(0.03)
 
-    camera.close()
+        # XOR frames to isolate sensor noise
+        noise = bytearray(frames[0])
+        for frame in frames[1:]:
+            noise = bytearray(a ^ b for a, b in zip(noise, frame))
 
-    # XOR frames to isolate sensor noise
-    noise = bytearray(frames[0])
-    for frame in frames[1:]:
-        noise = bytearray(a ^ b for a, b in zip(noise, frame))
+        # Ensure the noise is at least 32 bytes
+        if len(noise) < 32:
+            raise ValueError("Insufficient entropy collected from camera frames.")
 
-    # Ensure the noise is at least 32 bytes
-    if len(noise) < 32:
-        raise ValueError("Insufficient entropy collected from camera frames.")
+        # Hash the noise for uniform 32-byte entropy
+        return hashlib.sha256(noise).digest()
 
-    # Hash the noise for uniform 32-byte entropy
-    return hashlib.sha256(noise).digest()
+    finally:
+        camera.close()
 
 
 
