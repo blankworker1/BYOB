@@ -4,7 +4,7 @@
 
 ## Overview
 
-Passphrase Generator is a standalone Python program designed to generate a secure, 24-character alphanumeric passphrase on Raspberry Pi Zero hardware (SeedSigner) and is compatible with the BYOB protocol.
+Passphrase Generator is a standalone [Python program](https://github.com/blankworker1/BYOB/blob/main/pp_generator.py) designed to generate a secure, 24-character alphanumeric passphrase on Raspberry Pi Zero hardware (SeedSigner) and is compatible with the BYOB protocol.
 
 The program uses true randomness from both the operating system's cryptographically secure random generator and camera sensor noise to create high-entropy passphrases.
 
@@ -98,7 +98,7 @@ Enable the Pi Camera in /boot/config.txt (start_x=1 and gpu_mem=128)
 
 2. Copy script to SD card:
 
-Clone or copy the .py file from this repository to /home/pi/ on the SD card
+Clone or copy the [.py file](https://github.com/blankworker1/BYOB/blob/main/pp_generator.py) from this repository to /home/pi/ on the SD card
 
 
 
