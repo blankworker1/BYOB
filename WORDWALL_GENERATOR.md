@@ -29,25 +29,13 @@ This ensures reproducible grids that can be shared or printed for offline use, w
 
 **2. User Inputs**
 
-1. Name Input
-
-Free text input (<input> HTML element)
-
-Used as part of the seed.
+1. Name Input: Free text input (<input> HTML element). Used as part of the seed.
 
 
-
-2. Date
-
-Automatically taken from the user’s system date.
+2. Date: Automatically taken from the user’s system date.
 
 
-
-3. Seed Generation
-
-Seed string format:
-
-become-your-own-bank[DD/MM/YYYY][name]
+3. Seed Generation: Seed string format - become-your-own-bank[DD/MM/YYYY][name]
 
 Used to deterministically shuffle the 2048 word list.
 
