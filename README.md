@@ -2,7 +2,7 @@
 
 **Become Your Own Bank**
 
-BYOB is an open, decentralized community protocol for financial emergency preparedness using self custodial Bitcoin wallets.
+BYOB is an open, decentralized community protocol for financial preparedness using self custodial Bitcoin wallets.
 
 It enables individuals to generate and recreate a Bitcoin wallet from memory and public infrastructure, without storing seed words, without relying on a personal hardware device, and without trusting any central authority.
 
