@@ -1,0 +1,48 @@
+import hashlib
+import os
+import secrets
+import string
+import qrcode
+from picamera import PiCamera # Use libcamera-python for newer Pi OS
+from time import sleep
+
+def get_camera_entropy():
+    """Captures a low-res image to extract physical entropy from sensor noise."""
+    camera = PiCamera()
+    camera.resolution = (64, 64)
+    camera.start_preview()
+    sleep(2) # Allow sensor to adjust
+    stream = io.BytesIO()
+    camera.capture(stream, format='jpeg')
+    camera.close()
+    return stream.getvalue()
+
+def generate_secure_passphrase(length=24):
+    # Source 1: OS/Hardware Entropy (/dev/urandom)
+    # On Raspberry Pi, /dev/urandom is fed by the HWRNG
+    ent1 = os.urandom(32) 
+    
+    # Source 2: Camera Sensor Noise
+    ent2 = get_camera_entropy()
+    
+    # Combine sources using a cryptographic hash (SHA-256)
+    combined_hash = hashlib.sha256(ent1 + ent2).digest()
+    
+    # Use the result to seed a CSPRNG for character selection
+    alphabet = string.ascii_letters + string.digits
+    # secrets.choice is cryptographically secure
+    passphrase = ''.join(secrets.choice(alphabet) for _ in range(length))
+    return passphrase
+
+def create_qr(data):
+    qr = qrcode.QRCode(version=1, box_size=10, border=5)
+    qr.add_data(data)
+    qr.make(fit=True)
+    img = qr.make_image(fill_color="black", back_color="white")
+    img.save("passphrase_qr.png")
+    print(f"Passphrase generated and saved to passphrase_qr.png")
+
+if __name__ == "__main__":
+    secret_str = generate_secure_passphrase(24)
+    print(f"Your Secret: {secret_str}")
+    create_qr(secret_str)
