@@ -50,9 +50,6 @@ def get_camera_entropy(num_frames=8):
         print(f"An error occurred while capturing camera entropy: {e}")
         raise
 
-    finally:
-        camera.close()
-
 
 
 def generate_secure_passphrase(length=24):
