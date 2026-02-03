@@ -10,16 +10,17 @@ Create and download BIP39 Seed Word Posters
 
 This web-based tool is designed to:
 
-1. Generate a deterministic shuffle of the BIP39 2048-word list using a user-defined seed.
+
+- Generate a deterministic shuffle of the BIP39 2048-word list using a user-defined seed.
 
 
-2. Split the resulting 21 x 98 word grid into five separate numbered A1 landscape sheets for poster-quality printing.
+- Split the resulting 21 x 98 word grid into five separate numbered A1 landscape sheets for poster-quality printing.
 
 
-3. Preserve headers, colors, grid lines, and sequential row/column data.
+- Preserve headers, colors, grid lines, and sequential row/column data.
 
 
-4. Export each sheet as a high-resolution PNG with automatic, descriptive file names.
+- Export each sheet as a high-resolution PNG with automatic, descriptive file names.
 
 
 This ensures reproducible grids that can be shared or printed for offline use, while remaining fully client-side (browser-based).
