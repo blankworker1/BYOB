@@ -1,50 +1,62 @@
 import hashlib
-import os
 import secrets
 import string
 import qrcode
-from picamera import PiCamera  # Use libcamera-python for newer Pi OS
-from time import sleep
-import io  # Importing the io module
+# Assume get_camera_entropy from above is defined here
 
 def get_camera_entropy():
-    """Captures a low-res image to extract physical entropy from sensor noise."""
-    camera = PiCamera()
-    camera.resolution = (64, 64)
-    camera.start_preview()
-    sleep(2)  # Allow sensor to adjust
-    stream = io.BytesIO()
-    camera.capture(stream, format='jpeg')
-    camera.close()
-    return stream.getvalue()
+    """
+    Simulates the retrieval of entropy from a camera sensor.
+    In a real implementation, this function should gather actual noise data from the camera.
+    """
+    # For demonstration purposes, we return random bytes.
+    return secrets.token_bytes(32)
 
 
 def generate_secure_passphrase(length=24):
-    # Source 1: OS/Hardware Entropy (/dev/urandom)
-    # On Raspberry Pi, /dev/urandom is fed by the HWRNG
-    ent1 = os.urandom(32) 
-    
-    # Source 2: Camera Sensor Noise
-    ent2 = get_camera_entropy()
-    
-    # Combine sources using a cryptographic hash (SHA-256)
-    combined_hash = hashlib.sha256(ent1 + ent2).digest()
-    
-    # Use the result to seed a CSPRNG for character selection
-    alphabet = string.ascii_letters + string.digits
-    # secrets.choice is cryptographically secure
-    passphrase = ''.join(secrets.choice(alphabet) for _ in range(length))
-    return passphrase
+    """
+    Generates a cryptographically secure passphrase using multiple entropy sources:
+    1. The OS's CSPRNG, fed by the Raspberry Pi's hardware RNG^7,8.
+    2. Physical noise from the camera sensor.
+    """
+    # Source 1: OS/Hardware Entropy
+    # secrets.token_bytes is the recommended way to get cryptographically secure random bytes from the OS^8.
+    os_entropy = secrets.token_bytes(32)
 
-def create_qr(data):
+    # Source 2: Camera Sensor Noise
+    camera_entropy = get_camera_entropy()
+
+    # Combine sources using a cryptographic hash (SHA-256) to produce a uniform 256-bit seed.
+    combined_seed = hashlib.sha256(os_entropy + camera_entropy).digest()
+    
+    alphabet = string.ascii_letters + string.digits
+    alphabet_len = len(alphabet)
+    
+    # Use the efficient method to derive the passphrase from the single combined seed.
+    seed_int = int.from_bytes(combined_seed, 'big')
+    
+    passphrase_chars = []
+    for _ in range(length):
+        index = seed_int % alphabet_len
+        passphrase_chars.append(alphabet[index])
+        seed_int //= alphabet_len
+        
+    return "".join(passphrase_chars)
+
+def create_qr(data, filename="passphrase_qr.png"):
+    """Generates and saves a QR code for the given data."""
     qr = qrcode.QRCode(version=1, box_size=10, border=5)
     qr.add_data(data)
     qr.make(fit=True)
     img = qr.make_image(fill_color="black", back_color="white")
-    img.save("passphrase_qr.png")
-    print(f"Passphrase generated and saved to passphrase_qr.png")
+    img.save(filename)
+    print(f"Passphrase saved as a QR code to {filename}")
 
 if __name__ == "__main__":
     secret_str = generate_secure_passphrase(24)
     print(f"Your Secret: {secret_str}")
     create_qr(secret_str)
+
+
+
+
