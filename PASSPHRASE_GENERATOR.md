@@ -150,12 +150,10 @@ Seedsigner Fork - using this version allows the user to enter a Passphrase by sc
 
 
 
-
+---
 
 
 **<<<<<< OLDER VERSION >>>>>>>>>**
-
-
 
 ---
 
