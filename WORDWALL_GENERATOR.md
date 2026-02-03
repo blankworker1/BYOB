@@ -1,35 +1,32 @@
 # WORDWALL GENERATOR V0.1
 
+Create and download BIP39 Seed Word Posters
+
 ---
 
-Technical Overview: Deterministic Multi-Sheet BIP39 Poster Generator
+## Technical Overview
 
-1. Purpose and Goals
+**1. Purpose and Goals**
 
 This web-based tool is designed to:
 
 1. Generate a deterministic shuffle of the BIP39 2048-word list using a user-defined seed.
 
 
-2. Split the resulting 21 x 98 word grid into five separate A1 landscape sheets for poster-quality printing.
+2. Split the resulting 21 x 98 word grid into five separate numbered A1 landscape sheets for poster-quality printing.
 
 
 3. Preserve headers, colors, grid lines, and sequential row/column data.
 
 
-4. Include a footer with the seed, date, and name on each sheet.
-
-
-5. Export each sheet as a high-resolution PNG with automatic, descriptive file names.
-
+4. Export each sheet as a high-resolution PNG with automatic, descriptive file names.
 
 
 This ensures reproducible grids that can be shared or printed for offline use, while remaining fully client-side (browser-based).
 
 
----
 
-2. User Inputs
+**2. User Inputs**
 
 1. Name Input
 
@@ -55,11 +52,7 @@ Used to deterministically shuffle the 2048 word list.
 
 
 
-
-
----
-
-3. Deterministic Shuffle
+**3. Deterministic Shuffle**
 
 Algorithm Overview:
 
@@ -88,8 +81,6 @@ Deterministic due to the seeded PRNG.
 Produces a reproducible random ordering of all 2048 words.
 
 
-
-
 Outcome:
 
 Same seed → identical shuffle.
@@ -98,9 +89,7 @@ Different seed or name → different grid.
 
 
 
----
-
-4. Grid Layout
+**4. Grid Layout**
 
 Rows: 21 (row headers A–Z, skipping some letters to match BIP39 layout)
 
@@ -129,9 +118,7 @@ Grid lines: black
 
 
 
----
-
-5. Poster Rendering via JS Canvas
+**5. Poster Rendering via JS Canvas**
 
 Canvas setup:
 
@@ -164,7 +151,7 @@ Ensures readability on A1 posters.
 
 ---
 
-Canvas Drawing Steps
+## Canvas Drawing Steps
 
 1. Initialize Canvas
 
@@ -229,11 +216,7 @@ Example: become-your-own-bank[01-02-2026][Alice]_Sheet1.png
 
 
 
-
-
----
-
-6. Multi-Sheet Handling
+8. Multi-Sheet Handling
 
 Loop through the 5 sheet splits
 
@@ -256,9 +239,7 @@ Ensures consistent row headers and sequential column numbering
 
 
 
----
-
-7. Grid Lines Implementation
+9. Grid Lines Implementation
 
 Grid lines drawn using ctx.strokeRect(x, y, width, height)
 
@@ -275,9 +256,8 @@ Visual effect: clear separation for readability on large poster
 
 
 
----
 
-8. Automatic File Naming
+10. Automatic File Naming
 
 Converts seed string to filesystem-safe format: [a-zA-Z0-9-_]
 
@@ -291,7 +271,7 @@ Allows users to easily identify and print the sheets in order
 
 ---
 
-9. Technical Highlights
+## Technical Highlights
 
 Fully client-side: runs in any modern browser
 
@@ -306,55 +286,7 @@ Dynamic scaling: cell size and font automatically calculated based on sheet colu
 Printable grids: headers, row/column numbering, colors, and footer included
 
 
-
 ---
-
-10. Potential Extensions
-
-1. Full 2048-word BIP39 list embedded
-
-
-2. Alternate row shading for readability
-
-
-3. Custom font selection
-
-
-4. High-DPI export (600 DPI) for extremely large prints
-
-
-5. Optional multi-page tiling for ultra-wide grids
-
-
-6. Rotate column headers to save horizontal space
-
-
-
-
----
-
-✅ Summary
-
-This tool combines deterministic cryptographic shuffling, dynamic grid layout, and high-resolution canvas rendering to produce print-ready multi-sheet BIP39 word posters. It is fully client-side, reproducible, and ready for offline printing.
-
-
----
-
-## BIP39 5-Sheet Poster Generator: Create and Download Seed Posters
-
-## Introduction
-
-The HTML code implements a web application that generates a BIP39 seed phrase and allows users to create and download a series of posters containing this seed phrase. The application is designed to be user-friendly, guiding users through the process of generating a seed, copying it, and downloading the corresponding posters.
-
-## Key Concepts
-
-BIP39: A standard for mnemonic phrases used in cryptocurrency wallets to generate deterministic keys.
-
-HTML Structure: The document is structured with a head and body section, containing styles, input fields, buttons, and a script for functionality.
-
-Canvas API: Utilized to create and manipulate images dynamically, allowing for the generation of poster graphics.
-
-Random Number Generation: A custom pseudo-random number generator (PRNG) is implemented to shuffle the BIP39 word list based on the generated seed.
 
 ## Code Structure
 
@@ -365,6 +297,8 @@ HTML Elements: Input fields for user interaction, buttons for actions, and a dis
 CSS Styles: Basic styling for layout and aesthetics.
 
 JavaScript Functions: Core functionality for generating the seed, copying it, shuffling words, and downloading the posters.
+
+--- 
 
 ## Code Examples
 
@@ -399,19 +333,18 @@ This function generates a unique seed phrase based on the user's name and the cu
 
 **Downloading Posters**
 
-```
 
-async function downloadPosters() {
-  const hashArray = await hashSeed(currentSeed);
-  const rng = mulberry32(hashArray[0]);
-  const wordsCopy = bip39Words.slice();
-  shuffle(wordsCopy, rng);
-  // Poster generation logic follows...
-}
+---
 
-```
+## Summary
 
-This function handles the creation of the posters by shuffling the BIP39 words and drawing them onto a canvas, which is then converted to a downloadable PNG file.
+This tool combines deterministic cryptographic shuffling, dynamic grid layout, and high-resolution canvas rendering to produce print-ready multi-sheet BIP39 word posters. It is fully client-side, reproducible, and ready for offline printing.
+
+`
+
+
+
+
 
  
 
