@@ -15,13 +15,13 @@ BYOB is a protocol, not a product.
 
 A Bitcoin wallet can be recreated using:
 
-A public, canonical Word Wall (shared by the community)
+- A public, canonical Word Wall (shared by the community)
 
-A small amount of private individual memory
+- A small amount of private individual memory
 
-A family‑held base passphrase
+- A family‑held base passphrase
 
-An offline signing device
+- An offline signing device
 
 
 No single person or system can access funds alone.
