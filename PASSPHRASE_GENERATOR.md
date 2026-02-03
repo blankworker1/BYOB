@@ -21,6 +21,12 @@ No sensitive data is written to the SD card; all data exists only in RAM. This m
 
 By using two separate SeedSigner devices, you can easily generate and scan passphrase QR codes, simplifying offline, air-gapped key management workflows.
 
+NOTE: stock Seedsigner software does not currently support Passphrase QR scanning. 
+
+Users will need to install the [Seedsigner Earthsaver](https://github.com/3rdIteration/seedsigner/releases) fork that has this functionality. 
+
+See their [GitHub](https://github.com/3rdIteration/seedsigner?tab=readme-ov-file) for more information.
+
 
 ---
 
