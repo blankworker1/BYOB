@@ -3,19 +3,21 @@ import os
 import secrets
 import string
 import qrcode
-from picamera import PiCamera # Use libcamera-python for newer Pi OS
+from picamera import PiCamera  # Use libcamera-python for newer Pi OS
 from time import sleep
+import io  # Importing the io module
 
 def get_camera_entropy():
     """Captures a low-res image to extract physical entropy from sensor noise."""
     camera = PiCamera()
     camera.resolution = (64, 64)
     camera.start_preview()
-    sleep(2) # Allow sensor to adjust
+    sleep(2)  # Allow sensor to adjust
     stream = io.BytesIO()
     camera.capture(stream, format='jpeg')
     camera.close()
     return stream.getvalue()
+
 
 def generate_secure_passphrase(length=24):
     # Source 1: OS/Hardware Entropy (/dev/urandom)
