@@ -3,36 +3,83 @@ import hashlib
 import string
 import io
 import time
-
 import qrcode
 import picamera
 
 def get_camera_entropy(num_frames=8):
-    """
-    Collect entropy from the Pi camera by XORing multiple small frames.
-    Returns 32 bytes of hashed entropy.
-    """
-    try:
-        camera = picamera.PiCamera()
-        camera.resolution = (320, 240)  # small frame for speed
-        camera.framerate = 30
+"""Collect entropy from the Pi camera by XORing multiple small frames."""
+camera = None
+try:
+camera = picamera.PiCamera()
+camera.resolution = (320, 240)
+camera.framerate = 30
+time.sleep(2)
 
-        # Warm up the camera
-        time.sleep(2)
+frames = []  
+    for _ in range(num_frames):  
+        stream = io.BytesIO()  
+        camera.capture(stream, format='rgb', use_video_port=True)  
+        frames.append(stream.getvalue())  
+        time.sleep(0.03)  
 
-        frames = []
+    if len(frames) < num_frames:  
+        raise ValueError("Not enough frames captured from the camera.")  
 
-        for _ in range(num_frames):
-            stream = io.BytesIO()
-            camera.capture(stream, format='rgb', use_video_port=True)
-            frames.append(stream.getvalue())
-            time.sleep(0.03)
+    # XOR frames to isolate sensor noise  
+    noise = bytearray(frames[0])  
+    for frame in frames[1:]:  
+        noise = bytearray(a ^ b for a, b in zip(noise, frame))  
 
+    if len(noise) < 32:  
+        raise ValueError("Insufficient entropy collected from camera frames.")  
+
+    return hashlib.sha256(noise).digest()  
+except Exception as e:  
+    print(f"An error occurred while capturing camera entropy: {e}")  
+    raise  
+finally:  
+    if camera:  
         camera.close()
 
-        # Check if we have captured enough frames
-        if len(frames) < num_frames:
-            raise ValueError("Not enough frames captured from the camera.")
+def generate_secure_passphrase(length=24):
+"""Generates a secure passphrase using OS CSPRNG and camera entropy."""
+os_entropy = secrets.token_bytes(32)
+camera_entropy = get_camera_entropy()
+
+combined_seed = hashlib.sha256(os_entropy + camera_entropy).digest()  
+
+alphabet = string.ascii_letters + string.digits  
+alphabet_len = len(alphabet)  
+seed_int = int.from_bytes(combined_seed, 'big')  
+
+passphrase_chars = []  
+for _ in range(length):  
+    index = seed_int % alphabet_len  
+    passphrase_chars.append(alphabet[index])  
+    # CONSUME the seed to get a new index for the next character  
+    seed_int //= alphabet_len  
+      
+return "".join(passphrase_chars)
+
+def create_qr(data, filename="passphrase_qr.png"):
+"""Generates a QR code encoding the passphrase as plain text."""
+qr = qrcode.QRCode(version=1, box_size=10, border=5)
+qr.add_data(data)
+qr.make(fit=True)
+img = qr.make_image(fill_color="black", back_color="white")
+img.save(filename)
+print(f"QR code saved as {filename}")
+
+if name == "main":
+show_passphrase = True
+passphrase = generate_secure_passphrase(length=24)
+if show_passphrase:
+print(f"Your Secret Passphrase: {passphrase}")
+create_qr(passphrase)
+
+
+
+from the camera.")
 
         # XOR frames to isolate sensor noise
         noise = bytearray(frames[0])
