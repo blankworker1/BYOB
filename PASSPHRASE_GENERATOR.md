@@ -1,18 +1,160 @@
 # PASSPHRASE GENERATOR
 
+
+
+## Overview
+
+Passphrase Generator is a standalone Python program designed to generate a secure, 24-character alphanumeric passphrase on Raspberry Pi Zero hardware (SeedSigner) and is compatible with the BYOB protocol.
+
+The program uses true randomness from both the operating system's cryptographically secure random generator and camera sensor noise to create high-entropy passphrases.
+
+The passphrase is displayed in two ways:
+
+1. QR Code (primary view, optimized for SeedSigner’s 240×240 display)
+
+
+2. Text view (3 lines × 8 characters), toggleable with a button
+
+
+
+No sensitive data is written to the SD card; all data exists only in RAM. This makes the process fully stateless and secure.
+
+By using two separate SeedSigner devices, you can easily generate and scan passphrase QR codes, simplifying offline, air-gapped key management workflows.
+
+
+---
+
+## Features
+
+- Generates 24-character cryptographically secure passphrases
+
+- Combines OS randomness and camera noise for entropy
+
+- Displays QR code in memory, no SD card storage
+
+- Toggle passphrase text on-screen (3×8 characters)
+
+- Optimized for SeedSigner hardware (Pi Zero + 240×240 screen + button)
+
+- Fully offline and stateless
+
+
+
+---
+
+## User Flow
+
+1. Home screen:
+
+BYOB
+PASSPHRASE
+GENERATOR
+
+Displayed for 5 seconds
+
+
+2. Generating screen:
+
+Creating 24-character random passphrase...
+
+Automatically shown while passphrase is generated
+
+
+3. Passphrase QR screen:
+
+Displays QR code indefinitely
+
+Press Button 1 to toggle to text view (3 lines × 8 characters)
+
+Press again to return to QR code
+
+
+
+
+
+---
+
+## Hardware Requirements
+
+- Raspberry Pi Zero (SeedSigner compatible) with 240×240 display
+
+- Raspberry Pi Camera Module
+
+- SeedSigner button (GPIO input)
+
+
+
+---
+
+## Quick Start – Build and Flash SD Card
+
+1. Prepare the SD card:
+
+Use Raspberry Pi OS Lite (32-bit) as base
+
+Enable the Pi Camera in /boot/config.txt (start_x=1 and gpu_mem=128)
+
+
+
+2. Copy script to SD card:
+
+Clone or copy the .py file from this repository to /home/pi/ on the SD card
+
+
+
+3. Install dependencies (offline or via pip if building the SD image before deployment):
+
+python3 -m pip install qrcode[pil] Pillow
+
+
+4. Optional: Auto-run on boot
+
+Create a systemd service or add to .bashrc if you want the program to start automatically
+
+
+
+5. Insert SD card into SeedSigner hardware and power on
+
+The device will display the home screen, generate the passphrase, and show the QR code
+
+Use Button 1 to toggle the passphrase text view
+
+
+
+
+
+---
+
+## Security Notes
+
+No passphrase data is written to the SD card; all sensitive data exists only in RAM
+
+Using two SeedSigner devices simplifies the process: one device generates the passphrase, the other scans the QR code for use in air-gapped workflows
+
 **Disclaimer**
 
 This software is provided for educational purposes.
 
 BYOB base passphrase generation is critical to wallet security; users are responsible for correct usage and secure storage.
 
+
 ---
 
-## Overview
+## References
 
-BYOB Base Passphrase Generator is a standalone, offline tool for securely generating high-entropy base passphrases compatible with the BYOB model.
+SeedSigner Official Site – Hardware wallet interface for air-gapped offline signing
 
-It is intended to run on air-gapped devices such as a SeedSigner Raspberry Pi.
+Seedsigner Fork - using this version allows the user to enter a Passphrase by scanning a QR code
+
+
+
+
+
+
+
+
+**<<<<<< OLDER VERSION >>>>>>>>>**
+
 
 
 ---
