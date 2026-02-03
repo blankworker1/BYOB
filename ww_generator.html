@@ -167,7 +167,7 @@ ctx.fillRect(x, y, cellWidth, cellHeight);
   
 let word = "";  
 if (allowed && wordIndex < wordsCopy.length) {  
-  word = wordsCopy[wordIndex];  
+  word = wordsCopy[wordIndex].slice(0, 4);
   wordIndex++;  
 }  
   
