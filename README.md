@@ -160,7 +160,7 @@ Funds can be sent to these addresses at any time.
 
 **Step 1 — Word Wall Setup**
 
-Community publishes a canonical Word Wall using Spreadsheet webapp.
+Community publishes a canonical Word Wall using WW GENERATOR webapp.
 
 Physical installation is ceremonially verified
 
