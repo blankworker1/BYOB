@@ -173,21 +173,31 @@ GitHub
 IPFS
 
 
+**Step 2 — Choose Memory Pattern**
+
+Each individual chooses:
+
+Starting Word Wall position
+
+Direction / traversal rule (11 words)
+
+
+This information is never shared publicly.
 
 
 ---
 
-**Step 2 — Generate Base Passphrase**
+**Step 3 — Generate Base Passphrase**
 
-Each individual boots SeedSigner hardware from a generator microSD
+Each individual boots their copy of Passphrase Generator from a micro SD card on SeedSigner hardware.
 
 Offline software:
 
 Collects entropy
 
-Generates a 24‑character random string
+Generates a 30 character random string
 
-Displays it as a QR code only
+Displays it as a QR code (with text option)
 
 
 Base passphrase is:
@@ -203,42 +213,37 @@ No wallet exists yet.
 
 ---
 
-**Step 3 — Choose Memory Pattern**
+**Step 3 — Suffix**
 
 Each individual chooses:
 
-Starting Word Wall position
-
-Direction / traversal rule (11 words)
-
-A personal suffix (e.g. :daily-wallet)
+Suffix - a short password type text (letters and numbers)
 
 
-This information is never shared publicly.
+This is 
 
 
 ---
 
 **Step 4 — Wallet Creation**
 
-Each individual uses SeedSigner/Wesatoshis card hardware to create an offline single sig wallet:
+Each individual uses SeedSigner hardware (running Earthdiver version) to create an offline single sig wallet with passphrase:
 
-1. Enter 11 mnemonic words (from Word Wall)
+1. Select TOOLS - Calculate 12th/24th word
+   
+2. Enter 11 mnemonic words manually (from Wordwall)
 
+3. Calculate 12th checksum word using dice rolls: 0000000
 
-2. Device calculates the 12th checksum word
+4. Memorize 12th word (dont write it down)
 
+5. Scan base passphrase QR (generated on second Seedsigner device)
 
-3. Scan base passphrase QR
+6. Edit and add Suffix manually
 
+7. Wallet fingerprint is displayed
 
-4. Append suffix manually
-
-
-5. Wallet fingerprint is displayed
-
-
-6. Public address is generated
+8. Public address is generated
 
 
 
@@ -254,7 +259,7 @@ Wallet fingerprint
 Public address
 
 
-Public address QR is added to the public ledger
+Public address QR is added to the public ledger website 
 
 
 Funds are not required at this stage.
