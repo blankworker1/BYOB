@@ -80,17 +80,15 @@ The base passphrase is the main entropy source in BYOB.
 
 Specification:
 
-Length: 24 characters
+Length: 30 characters
 
 Generated randomly offline
 
-Character set: uppercase, lowercase, numbers, symbols
+Character set: uppercase and numbers only
 
 Stored as:
 
-Engraved steel plate and/or
-
-QR code
+Engraved steel plate and/or printed QR code 
 
 
 
@@ -126,9 +124,6 @@ Wallet fingerprint
 
 Public address
 
-
-
-A forked version may allow QR‑based passphrase entry for usability.
 
 
 ---
@@ -213,7 +208,7 @@ No wallet exists yet.
 
 ---
 
-**Step 3 — Suffix**
+**Step 4 — Suffix**
 
 Each individual chooses:
 
@@ -225,7 +220,7 @@ This is
 
 ---
 
-**Step 4 — Wallet Creation**
+**Step 5 — Wallet Creation**
 
 Each individual uses SeedSigner hardware (running Earthdiver version) to create an offline single sig wallet with passphrase:
 
@@ -250,7 +245,7 @@ Each individual uses SeedSigner hardware (running Earthdiver version) to create 
 
 ---
 
-**Step 5 — Verification & Registration**
+**Step 6 — Verification & Registration**
 
 Individual verifies:
 
