@@ -46,12 +46,12 @@ def get_camera_entropy(num_frames=8):
             camera.close()
 
 # --- Passphrase generation ---
-def generate_secure_passphrase(length=24):
+def generate_secure_passphrase(length=30):
     os_entropy = secrets.token_bytes(32)
     camera_entropy = get_camera_entropy()
     combined_seed = hashlib.sha256(os_entropy + camera_entropy).digest()
 
-    alphabet = string.ascii_letters + string.digits
+    alphabet = string.ascii_uppercase + string.digits
     alphabet_len = len(alphabet)
     seed_int = int.from_bytes(combined_seed, 'big')
 
@@ -94,8 +94,8 @@ try:
     time.sleep(5)
 
     # 2. Generating screen
-    display_text(["Creating 24-character", "random passphrase..."])
-    passphrase = generate_secure_passphrase(length=24)
+    display_text(["Creating 30-character", "random passphrase..."])
+    passphrase = generate_secure_passphrase(length=30)
 
     # 3. QR code in memory
     qr_img = generate_qr_image(passphrase)
@@ -111,11 +111,12 @@ try:
             if showing_qr:
                 display_image(qr_img)
             else:
-                # Split passphrase into 3 lines of 8 chars
-                lines = [passphrase[i:i+8] for i in range(0, 24, 8)]
+                # Split passphrase into 3 lines of 10 characters
+                lines = [passphrase[i:i+10] for i in range(0, 30, 10)]
                 display_text(lines)
-        time.sleep(0.1)
 
+        time.sleep(0.1)
+        
 finally:
     GPIO.cleanup()
     pygame.quit()
