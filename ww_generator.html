@@ -188,35 +188,31 @@ async function downloadPosters() {
 
       // Word cells
       for(let c=0; c<sheetCols; c++){
+      const x = cellWidth + c*cellWidth;
+      const globalCol = colStart + c + 1;
+      const allowed = isCellAllowed(globalCol, r, s);
 
-        const x = cellWidth + c*cellWidth;
-        const globalCol = colStart + c + 1;
-        const allowed = isCellAllowed(globalCol, r, s);
+      let word = "";
 
-        let word = "";
-
-        if (!allowed) {
-
-        const isBottomRight =
-        (r === totalRows - 1) &&
-        (globalCol === (s + 1) * sheetCols);
-
-        if (isBottomRight) {
+      const isBottomRight = (r === totalRows - 1) && (globalCol === (s + 1) * sheetCols);
+      if (isBottomRight) {
         word = wallID;
-        }
-        }
-
-      
-  
-        ctx.fillStyle = allowed ? "#ffffff" : headerColor;
-        ctx.fillRect(x,y,cellWidth,cellHeight);
-
-        ctx.font = `${wordFontSize}px sans-serif`;
-        ctx.fillStyle = "#000000";
-        ctx.fillText(word, x+cellWidth/2, y+cellHeight/2);
-
-        ctx.strokeRect(x,y,cellWidth,cellHeight);
+      } 
+      else if (allowed && wordIndex < wordsCopy.length) {
+        word = wordsCopy[wordIndex].slice(0,4);
+        wordIndex++;
       }
+
+      ctx.fillStyle = allowed ? "#ffffff" : headerColor;
+      ctx.fillRect(x, y, cellWidth, cellHeight);
+
+      ctx.font = `${wordFontSize}px sans-serif`;
+      ctx.fillStyle = "#000000";
+      ctx.fillText(word, x + cellWidth/2, y + cellHeight/2);
+
+      ctx.strokeRect(x, y, cellWidth, cellHeight);
+  }
+
     }
 
     // Download PNG
