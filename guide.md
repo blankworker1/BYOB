@@ -206,15 +206,15 @@ This guide shows you how to create a BYOB Zero Word Wall for your community. It 
 
 Term      	       Meaning
 
-Word Wall	       A printed grid of the first four letters of all 2048 BIP39                      words, shuffled into a reproducible layout.
+**Word Wall:** printed grid of the first four letters of all 2048 BIP39 words,shuffled into a reproducible layout.
 
-Community Label	   A 4-character name for your community that ensures your wall                    is unique.
+**Community Label:** 4-character name for your community that ensures your wall is unique.
 
-Canonical Files	   BYOB Zero’s official generator software and word list,                          hosted online. Using these ensures your wall is consistent                      and verifiable.
+**Canonical Files:** BYOB Zero official generator software and word list,hosted online. Using these ensures your wall is consistent and verifiable.
 
-Poster Sheet	   One page of the Word Wall. There are 5 sheets in total.
+**Poster Sheet:** One page of the Word Wall. There are 5 sheets in total.
 
-Bottom-Right Label Your community label printed in the bottom-right corner of                      each sheet.
+**Bottom-Right Label:** Your community label printed in the bottom-right corner of each sheet.
 
 
 
