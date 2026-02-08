@@ -186,7 +186,6 @@ async function downloadPosters() {
       ctx.fillText(rowLetters[r], cellWidth/2, y+cellHeight/2);
       ctx.strokeRect(0,y,cellWidth,cellHeight);
 
-
       // Word cells
 for(let c=0; c<sheetCols; c++){
     const x = cellWidth + c*cellWidth;
@@ -199,24 +198,26 @@ for(let c=0; c<sheetCols; c++){
     const isBottomRight = (r === totalRows - 1) && (globalCol === (s + 1) * sheetCols);
     if (isBottomRight) {
         word = wallID;
-        fontStyle = `${pageFontSize}px sans-serif`; // Wall ID: bold, same size as page number
+        fontStyle = `${pageFontSize}px sans-serif`; // Wall ID: same size as page number
     } 
     else if (allowed && wordIndex < wordsCopy.length) {
         word = wordsCopy[wordIndex].slice(0,4);
         wordIndex++;
-        fontStyle = `${Math.floor(cellHeight*0.3)}px sans-serif`; // slightly bigger words
+        fontStyle = `${Math.floor(cellHeight*0.3)}px sans-serif`; // BIP39 words larger
     }
 
     ctx.fillStyle = allowed ? "#ffffff" : headerColor;
     ctx.fillRect(x, y, cellWidth, cellHeight);
 
-    ctx.fillStyle = "#000000";
-    if(word) ctx.font = fontStyle;  // <-- set font just before drawing
-    ctx.fillText(word, x + cellWidth/2, y + cellHeight/2);
+    if(word) {
+        ctx.font = fontStyle;  // set font just before drawing
+        ctx.fillStyle = "#000000";
+        ctx.fillText(word, x + cellWidth/2, y + cellHeight/2);
+    }
 
     ctx.strokeRect(x, y, cellWidth, cellHeight);
 }
-      
+   
   
 
     }
