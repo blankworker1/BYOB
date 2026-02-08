@@ -100,20 +100,22 @@ async function downloadPosters() {
   const wallID = document.getElementById("nameInput").value || "WW05";
 
   // ---------- Disabled Cell Logic (52 total) ----------
-  function isCellAllowed(globalCol, row, sheetIndex) {
 
-    // Disable entire columns 100 & 99
-    if (globalCol === 100) return false;
-    if (globalCol === 99) return false;
+  function isCellAllowed(globalCol, row, colIndex) {
 
-    // Disable bottom 6 rows of column 98
-    if (globalCol === 98 && row >= 15) return false;
-
-    // Extra 4 cells (Z row col 98 on sheets 1–4)
-    if (sheetIndex < 4 && globalCol === 98 && row === 20) return false;
-
-    return true;
+  // Disable bottom-right cell of every sheet
+  if (colIndex === sheetCols - 1 && row === totalRows - 1) {
+    return false;
   }
+
+  // Disable bottom 6 rows of column 98
+  if (globalCol === 98 && row >= totalRows - 6) {
+    return false;
+  }
+
+  return true;
+}
+
 
   for(let s=0; s<sheets; s++){
 
@@ -180,21 +182,22 @@ async function downloadPosters() {
 
         const x = cellWidth + c*cellWidth;
         const globalCol = colStart + c + 1;
-        const allowed = isCellAllowed(globalCol, r, s);
+        const allowed = isCellAllowed(globalCol, r, c);
 
         let word = "";
 
-        // Bottom-right cell of each sheet → Wall ID
+        if (!allowed) {
+        // Bottom-right cell gets Wall ID
         if (c === sheetCols - 1 && r === totalRows - 1) {
         word = wallID;
         }
-
-  
-        else if (allowed && wordIndex < wordsCopy.length) {
-          word = wordsCopy[wordIndex].slice(0,4);
-          wordIndex++;
+        }
+        else if (wordIndex < wordsCopy.length) {
+        word = wordsCopy[wordIndex].slice(0,4);
+        wordIndex++;
         }
 
+  
         ctx.fillStyle = allowed ? "#ffffff" : headerColor;
         ctx.fillRect(x,y,cellWidth,cellHeight);
 
