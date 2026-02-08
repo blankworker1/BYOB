@@ -15,7 +15,7 @@ button { margin: 5px; }
 <h2>BYOB Word Wall Generator V1</h2>
 
 <label>Community Label: <input type="text" id="labelInput" placeholder="BOSA" maxlength="4"></label><br>
-<button onclick="generateWall()">Generate Canonical Wall</button>
+<button onclick="generateWall()">Generate Word Wall</button>
 
 <div id="seedDisplay"></div>
 <button id="downloadButton" onclick="downloadPosters()" style="display:none;">Download 5 Sheet Posters</button>
@@ -64,7 +64,7 @@ function isCellAllowed(globalCol, row, sheetIndex) {
 async function generateWall() {
     const label = document.getElementById("labelInput").value || "BYOBZERO";
     canonicalSeed = `BYOB_ZERO_WORDWALL_${label}_V1`;
-    document.getElementById("seedDisplay").textContent = "Canonical Seed: " + canonicalSeed;
+    document.getElementById("seedDisplay").textContent = "Seed: " + canonicalSeed;
     document.getElementById("downloadButton").style.display = "inline";
 }
 
