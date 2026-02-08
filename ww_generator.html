@@ -199,12 +199,12 @@ for(let c=0; c<sheetCols; c++){
     const isBottomRight = (r === totalRows - 1) && (globalCol === (s + 1) * sheetCols);
     if (isBottomRight) {
         word = wallID;
-        fontStyle = `bold ${pageFontSize}px sans-serif`; // Wall ID: bold, same size as page number
+        fontStyle = `${pageFontSize}px sans-serif`; // Wall ID: bold, same size as page number
     } 
     else if (allowed && wordIndex < wordsCopy.length) {
         word = wordsCopy[wordIndex].slice(0,4);
         wordIndex++;
-        fontStyle = `${Math.floor(cellHeight*0.28)}px sans-serif`; // slightly bigger words
+        fontStyle = `${Math.floor(cellHeight*0.3)}px sans-serif`; // slightly bigger words
     }
 
     ctx.fillStyle = allowed ? "#ffffff" : headerColor;
