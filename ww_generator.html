@@ -101,20 +101,29 @@ async function downloadPosters() {
 
   // ---------- Disabled Cell Logic (52 total) ----------
 
-  function isCellAllowed(globalCol, row, colIndex) {
+  function isCellAllowed(globalCol, row, sheetIndex) {
 
-  // Disable bottom-right cell of every sheet
-  if (colIndex === sheetCols - 1 && row === totalRows - 1) {
+  // Bottom-right cell on ALL sheets
+  if (row === totalRows - 1 && globalCol === (sheetIndex + 1) * sheetCols) {
     return false;
   }
 
-  // Disable bottom 6 rows of column 98
-  if (globalCol === 98 && row >= totalRows - 6) {
-    return false;
+  // Extra rules only apply to Sheet 5
+  if (sheetIndex === 4) {
+
+    // Disable entire column 100
+    if (globalCol === 100) return false;
+
+    // Disable entire column 99
+    if (globalCol === 99) return false;
+
+    // Disable bottom 6 rows of column 98
+    if (globalCol === 98 && row >= totalRows - 6) return false;
   }
 
   return true;
-}
+  }
+
 
 
   for(let s=0; s<sheets; s++){
@@ -182,7 +191,7 @@ async function downloadPosters() {
 
         const x = cellWidth + c*cellWidth;
         const globalCol = colStart + c + 1;
-        const allowed = isCellAllowed(globalCol, r, c);
+        const allowed = isCellAllowed(globalCol, r, s);
 
         let word = "";
 
