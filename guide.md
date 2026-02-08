@@ -204,8 +204,6 @@ This guide shows you how to create a BYOB Zero Word Wall for your community. It 
 **Key Terms (Glossary):**
 
 
-Term      	       Meaning
-
 **Word Wall:** printed grid of the first four letters of all 2048 BIP39 words,shuffled into a reproducible layout.
 
 **Community Label:** 4-character name for your community that ensures your wall is unique.
