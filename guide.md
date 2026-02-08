@@ -142,7 +142,7 @@ Optional: Printer for producing posters.
 - Community name label in the bottom-right corner
 
 
-
+![Example Poster](become-your-own-bank_08_02_2026__WW01__Sheet1.png)
 
 
 ---
@@ -153,12 +153,11 @@ Print the posters at your desired size (A1 is recommended for workshops).
 
 Use them for:
 
-Workshops
+- Personal preparedness activities
+  
+- Community verification exercises
 
-Community verification exercises
-
-BYOB Zero preparedness activities
-
+- BYOB Workshops
 
 
 
@@ -174,8 +173,6 @@ BYOB Zero preparedness activities
 Consistency across workshops
 
 Easy verification by other community members
-
-
 
 
 
@@ -199,18 +196,6 @@ By following this guide, you will have a fully reproducible BYOB Zero Word Wall,
 
 
 
-
-
----
-
-## WORDWALL POSTERS
-
-The **posters** are multi-page sheets:
-
-- Each page is numbered and has a 20 x 21 grid of words.
-- The bottom-right cell always shows your Wall ID.
-
-![Example Poster](become-your-own-bank_08_02_2026__WW01__Sheet1.png)
 
 ---
 
