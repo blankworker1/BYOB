@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BYOB Guidebook</title>
+<style>
+  body {
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+    padding: 40px;
+    background-color: #ffffff;
+    color: #212529;
+    line-height: 1.6;
+    max-width: 900px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  h1, h2, h3 {
+    color: #0d6efd;
+    margin-top: 1.5em;
+    margin-bottom: 0.5em;
+  }
+
+  p {
+    margin-bottom: 1em;
+  }
+
+  a {
+    color: #0d6efd;
+    text-decoration: none;
+  }
+
+  a:hover {
+    text-decoration: underline;
+  }
+
+  img {
+    max-width: 100%;
+    margin: 1em 0;
+  }
+
+  hr {
+    border: none;
+    border-top: 1px solid #ccc;
+    margin: 2em 0;
+  }
+
+  .top-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-bottom: 2em;
+  }
+
+  .top-buttons a {
+    display: inline-block;
+    background-color: #0d6efd;
+    color: #fff;
+    font-size: 1em;
+    padding: 10px 20px;
+    border-radius: 6px;
+    transition: background 0.3s;
+  }
+
+  .top-buttons a:hover {
+    background-color: #0b5ed7;
+  }
+
+</style>
+</head>
+<body>
+
+<h1>BYOB Guidebook</h1>
+
+<div class="top-buttons">
+  <a href="index.html">Back to Home</a>
+  <a href="ww_generator.html">Go to WW_GENERATOR</a>
+</div>
+
+<div id="guidebook">Loading guidebook...</div>
+
+<!-- Marked.js library to parse Markdown -->
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script>
+fetch('guide.md')
+  .then(response => {
+    if (!response.ok) throw new Error('Could not load guide.md');
+    return response.text();
+  })
+  .then(md => {
+    document.getElementById('guidebook').innerHTML = marked.parse(md);
+  })
+  .catch(err => {
+    document.getElementById('guidebook').innerHTML = `<p style="color:red;">Error loading guidebook: ${err.message}</p>`;
+  });
+</script>
+
+</body>
+</html>
