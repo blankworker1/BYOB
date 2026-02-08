@@ -36,7 +36,7 @@ This guide shows you how to create a BYOB Zero Word Wall for your community. It 
 
 ---
 
-Key Terms (Glossary):
+**Key Terms (Glossary):**
 
 ```
 
