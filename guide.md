@@ -1,6 +1,7 @@
 # BYOB Guidebook
 
-Welcome to the **BYOB Guidebook**. This manual guides you through using the Wall ID Generator, Posters, and safety tips.  
+Welcome to the **BYOB Guidebook**. This manual guides you through using the WORDWALL Poster Generator, Personal Preparedness, and safety tips.
+
 Use the table of contents to jump to any section.
 
 ---
@@ -8,8 +9,8 @@ Use the table of contents to jump to any section.
 ## Contents
 
 - [Introduction](#introduction)
-- [WW_GENERATOR](#ww_generator)
-- [Wall ID Posters](#wall-id-posters)
+- [WORDWALL GENERATOR](#ww_generator)
+- [Posters](#posters)
 - [Safety Notes](#safety-notes)
 - [FAQ](#faq)
 - [Resources](#resources)
@@ -19,17 +20,17 @@ Use the table of contents to jump to any section.
 ## Introduction
 
 BYOB (**Become Your Own Bank**) is an educational project for managing and visualizing cryptographic assets safely.  
-This guide helps you navigate the tools, understand your Wall ID, and generate posters.
+This guide helps you navigate the tools, understand how to participate, and generate posters.
 
 ---
 
-## WW_GENERATOR
+## GENERATOR
 
-The **WW_GENERATOR** page lets you:
+The **GENERATOR** page lets you:
 
-- Generate a deterministic Wall ID using your name and date.
-- Copy your Wall ID to clipboard.
-- Download multi-sheet posters with unique BIP39 words.
+- Generate a five separate poster image files, using a four character code (Wall ID) and date as a seed, to randomize the layout of the 2048 BIP-39 seed words.
+- Copy the image files to clipboard.
+- Download five A1 size poster image files for printing.
 
 ### Steps:
 
@@ -39,14 +40,13 @@ The **WW_GENERATOR** page lets you:
 
 ---
 
-## Wall ID Posters
+## WORDWALL Posters
 
 The **posters** are multi-page sheets:
 
 - Each page has a numbered grid of words.
 - The bottom-right cell always shows your Wall ID.
 - Certain columns are reserved (98–100) for security and formatting.
-- Keep your posters safe—they reproduce the same Wall ID.
 
 ![Example Poster](poster_example.png)
 
@@ -56,8 +56,7 @@ The **posters** are multi-page sheets:
 
 - BYOB is **not a bank** and holds **no funds**.
 - Always **store seeds offline**.
-- Never share your Wall ID publicly if it contains sensitive info.
-- Loss of seed = loss of ability to reproduce your poster.
+- You can share the WORDWALL publicly as it contains no sensitive info.
 
 ---
 
