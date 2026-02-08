@@ -110,10 +110,10 @@ Optional: Printer for producing posters.
 
 **Step 4: Generate the Seed**
 
-1. Click the “Generate Seed” button.
+1. Click the “Generate Word Wall” button.
 
 
-2. A seed string will appear on the page — this is used internally to shuffle the words deterministically.
+2. A Seed string will appear on the page — this is used internally to shuffle the words deterministically.
 
 
 3. You do not need to understand the seed — it guarantees your wall is reproducible.
