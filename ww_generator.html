@@ -3,238 +3,181 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BYOB WW_GENERATOR</title>
+<title>BYOB Word Wall Generator V1</title>
 <style>
-body {
-  font-family: sans-serif;
-  padding: 20px;
-}
+body { font-family: sans-serif; padding: 20px; }
 input { margin-bottom: 10px; }
 button { margin: 5px; }
 </style>
 </head>
 <body>
 
-<h2>BIP39 WORDWALL Poster Generator</h2>
+<h2>BYOB Word Wall Generator V1</h2>
 
-<label>Wall ID: <input type="text" id="nameInput" placeholder="WW05" maxlength="4"></label><br>
-<button onclick="generateSeed()">Generate Seed</button>
+<label>Community Label: <input type="text" id="labelInput" placeholder="Example: LONDON" maxlength="20"></label><br>
+<button onclick="generateWall()">Generate Canonical Wall</button>
 
 <div id="seedDisplay"></div>
-<button id="copyButton" onclick="copySeed()" style="display:none;">Copy Seed</button>
 <button id="downloadButton" onclick="downloadPosters()" style="display:none;">Download 5 Sheet Posters</button>
 
-<script src="bip39_words.js"></script>
+<script src="bip39_words.js"></script> <!-- Must be exact frozen 2048 English words -->
 
 <script>
 const rowLetters = ["A","B","C","D","E","F","G","J","K","L","M","N","O","P","R","S","T","V","X","Y","Z"];
-let currentSeed = "";
+const sheets = 5;
+const totalRows = 21;
+const sheetCols = 20;
+let canonicalSeed = "";
 
-// ---------- Seed generation ----------
-function generateSeed() {
-  const name = document.getElementById("nameInput").value || "WW05";
-  const today = new Date();
-  const dateStr = `[${String(today.getDate()).padStart(2,'0')}/${String(today.getMonth()+1).padStart(2,'0')}/${today.getFullYear()}]`;
-  currentSeed = `become-your-own-bank${dateStr}[${name}]`;
-
-  document.getElementById("seedDisplay").textContent = "Seed: " + currentSeed;
-  document.getElementById("copyButton").style.display = "inline";
-  document.getElementById("downloadButton").style.display = "inline";
-}
-
-function copySeed() {
-  navigator.clipboard.writeText(currentSeed);
-  alert("Seed copied to clipboard!");
-}
-
-// ---------- Deterministic PRNG ----------
 async function hashSeed(seed) {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(seed);
-  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
-  return new Uint32Array(hashBuffer);
+    const encoder = new TextEncoder();
+    const data = encoder.encode(seed);
+    const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+    return new Uint32Array(hashBuffer);
 }
 
 function mulberry32(a) {
-  return function() {
-    let t = a += 0x6D2B79F5;
-    t = Math.imul(t ^ t >>> 15, t | 1);
-    t ^= t + Math.imul(t ^ t >>> 7, t | 61);
-    return ((t ^ t >>> 14) >>> 0) / 4294967296;
-  }
+    return function() {
+        let t = a += 0x6D2B79F5;
+        t = Math.imul(t ^ t >>> 15, t | 1);
+        t ^= t + Math.imul(t ^ t >>> 7, t | 61);
+        return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    }
 }
 
 function shuffle(array, rng) {
-  for(let i=array.length-1; i>0; i--){
-    const j = Math.floor(rng()*(i+1));
-    [array[i], array[j]] = [array[j], array[i]];
-  }
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(rng() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
 }
 
-// ---------- Poster Generator ----------
+function isCellAllowed(globalCol, row, sheetIndex) {
+    if (row === totalRows - 1 && globalCol === (sheetIndex + 1) * sheetCols) return false;
+    if (sheetIndex === 4) {
+        if (globalCol === 100 || globalCol === 99) return false;
+        if (globalCol === 98 && row >= totalRows - 6) return false;
+    }
+    return true;
+}
+
+async function generateWall() {
+    const label = document.getElementById("labelInput").value || "BYOBZERO";
+    canonicalSeed = `BYOB_ZERO_WORDWALL_${label}_V1`;
+    document.getElementById("seedDisplay").textContent = "Canonical Seed: " + canonicalSeed;
+    document.getElementById("downloadButton").style.display = "inline";
+}
+
 async function downloadPosters() {
-
-  if(typeof bip39Words === "undefined" || bip39Words.length !== 2048){
-    alert("BIP39 word list not loaded correctly!");
-    return;
-  }
-
-  const totalRows = 21;
-  const sheetCols = 20;
-  const sheets = 5;
-  const totalCols = 100;
-  const headerColor = "#cccccc";
-  const circledNumbers = ["①","②","③","④","⑤"];
-
-  const dpi = 300;
-  const width_mm = 841, height_mm = 594;
-  const width_px = Math.floor(width_mm / 25.4 * dpi);
-  const height_px = Math.floor(height_mm / 25.4 * dpi);
-
-  const hashArray = await hashSeed(currentSeed);
-  const rng = mulberry32(hashArray[0]);
-  const wordsCopy = bip39Words.slice();
-  shuffle(wordsCopy, rng);
-
-  let wordIndex = 0;
-  const wallID = document.getElementById("nameInput").value || "WW05";
-
-  // ---------- Disabled Cell Logic (52 total) ----------
-
-  function isCellAllowed(globalCol, row, sheetIndex) {
-
-  // Bottom-right cell on ALL sheets
-  if (row === totalRows - 1 && globalCol === (sheetIndex + 1) * sheetCols) {
-    return false;
-  }
-
-  // Extra rules only apply to Sheet 5
-  if (sheetIndex === 4) {
-
-    // Disable entire column 100
-    if (globalCol === 100) return false;
-
-    // Disable entire column 99
-    if (globalCol === 99) return false;
-
-    // Disable bottom 6 rows of column 98
-    if (globalCol === 98 && row >= totalRows - 6) return false;
-  }
-
-  return true;
-  }
-
-
-
-  for(let s=0; s<sheets; s++){
-
-    const colStart = s * sheetCols;
-
-    const canvas = document.createElement("canvas");
-    canvas.width = width_px;
-    canvas.height = height_px;
-    const ctx = canvas.getContext("2d");
-
-    ctx.fillStyle = "#ffffff";
-    ctx.fillRect(0,0,canvas.width,canvas.height);
-
-    const totalGridCols = sheetCols + 1;
-    const totalGridRows = totalRows + 1;
-
-    const cellWidth = canvas.width / totalGridCols;
-    const cellHeight = canvas.height / totalGridRows;
-
-    const wordFontSize = Math.floor(Math.min(cellHeight*0.22, cellWidth*0.18));
-    const headerFontSize = Math.floor(cellHeight*0.3);
-    const pageFontSize = Math.floor(cellHeight*0.5);
-
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-
-    // -------- Page Number --------
-    ctx.fillStyle = headerColor;
-    ctx.fillRect(0,0,cellWidth,cellHeight);
-    ctx.font = `${pageFontSize}px sans-serif`;
-    ctx.fillStyle = "#000000";
-    ctx.fillText(circledNumbers[s], cellWidth/2, cellHeight/2);
-    ctx.strokeRect(0,0,cellWidth,cellHeight);
-
-    // -------- Column Headers --------
-    for(let c=0; c<sheetCols; c++){
-      const x = cellWidth + c*cellWidth;
-      ctx.fillStyle = headerColor;
-      ctx.fillRect(x,0,cellWidth,cellHeight);
-
-      const colNumber = String(colStart+c+1).padStart(2,"0");
-      ctx.font = `${headerFontSize}px sans-serif`;
-      ctx.fillStyle = "#000000";
-      ctx.fillText(colNumber, x+cellWidth/2, cellHeight/2);
-
-      ctx.strokeRect(x,0,cellWidth,cellHeight);
+    if (typeof bip39Words === "undefined" || bip39Words.length !== 2048) {
+        alert("BIP39 word list not loaded correctly!");
+        return;
     }
 
-    // -------- Rows --------
-    for(let r=0; r<totalRows; r++){
+    const hashArray = await hashSeed(canonicalSeed);
+    const combinedSeed = hashArray[0] ^ hashArray[1] ^ hashArray[2] ^ hashArray[3];
+    const rng = mulberry32(combinedSeed);
 
-      const y = cellHeight + r*cellHeight;
+    const wordsCopy = bip39Words.slice();
+    shuffle(wordsCopy, rng);
 
-      // Row header
-      ctx.fillStyle = headerColor;
-      ctx.fillRect(0,y,cellWidth,cellHeight);
-      ctx.font = `${headerFontSize}px sans-serif`;
-      ctx.fillStyle = "#000000";
-      ctx.fillText(rowLetters[r], cellWidth/2, y+cellHeight/2);
-      ctx.strokeRect(0,y,cellWidth,cellHeight);
+    const dpi = 300, width_mm = 841, height_mm = 594;
+    const width_px = Math.floor(width_mm / 25.4 * dpi);
+    const height_px = Math.floor(height_mm / 25.4 * dpi);
+    const circledNumbers = ["①","②","③","④","⑤"];
+    let wordIndex = 0;
 
-      // Word cells
-for(let c=0; c<sheetCols; c++){
-    const x = cellWidth + c*cellWidth;
-    const globalCol = colStart + c + 1;
-    const allowed = isCellAllowed(globalCol, r, s);
+    for (let s = 0; s < sheets; s++) {
+        const colStart = s * sheetCols;
+        const canvas = document.createElement("canvas");
+        canvas.width = width_px;
+        canvas.height = height_px;
+        const ctx = canvas.getContext("2d");
 
-    let word = "";
-    let fontStyle = "";
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0,0,canvas.width,canvas.height);
 
-    const isBottomRight = (r === totalRows - 1) && (globalCol === (s + 1) * sheetCols);
-    if (isBottomRight) {
-        word = wallID;
-        fontStyle = `${pageFontSize}px sans-serif`; // Wall ID: same size as page number
-    } 
-    else if (allowed && wordIndex < wordsCopy.length) {
-        word = wordsCopy[wordIndex].slice(0,4);
-        wordIndex++;
-        fontStyle = `${Math.floor(cellHeight*0.5)}px sans-serif`; // BIP39 words larger
-    }
+        const totalGridCols = sheetCols + 1;
+        const totalGridRows = totalRows + 1;
+        const cellWidth = canvas.width / totalGridCols;
+        const cellHeight = canvas.height / totalGridRows;
 
-    ctx.fillStyle = allowed ? "#ffffff" : headerColor;
-    ctx.fillRect(x, y, cellWidth, cellHeight);
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
 
-    if(word) {
-        ctx.font = fontStyle;  // set font just before drawing
+        // Page Number / Header
+        ctx.fillStyle = "#cccccc";
+        ctx.fillRect(0,0,cellWidth,cellHeight);
+        ctx.font = `${Math.floor(cellHeight*0.5)}px sans-serif`;
         ctx.fillStyle = "#000000";
-        ctx.fillText(word, x + cellWidth/2, y + cellHeight/2);
+        ctx.fillText(circledNumbers[s], cellWidth/2, cellHeight/2);
+        ctx.strokeRect(0,0,cellWidth,cellHeight);
+
+        // Column Headers
+        for (let c=0;c<sheetCols;c++) {
+            const x = cellWidth + c*cellWidth;
+            ctx.fillStyle = "#cccccc";
+            ctx.fillRect(x,0,cellWidth,cellHeight);
+            ctx.font = `${Math.floor(cellHeight*0.3)}px sans-serif`;
+            ctx.fillStyle = "#000000";
+            ctx.fillText(String(colStart+c+1).padStart(2,"0"), x+cellWidth/2, cellHeight/2);
+            ctx.strokeRect(x,0,cellWidth,cellHeight);
+        }
+
+        // Rows
+        for (let r=0;r<totalRows;r++) {
+            const y = cellHeight + r*cellHeight;
+            // Row header
+            ctx.fillStyle = "#cccccc";
+            ctx.fillRect(0,y,cellWidth,cellHeight);
+            ctx.font = `${Math.floor(cellHeight*0.3)}px sans-serif`;
+            ctx.fillStyle = "#000000";
+            ctx.fillText(rowLetters[r], cellWidth/2, y+cellHeight/2);
+            ctx.strokeRect(0,y,cellWidth,cellHeight);
+
+            // Word cells
+            for (let c=0;c<sheetCols;c++) {
+                const x = cellWidth + c*cellWidth;
+                const globalCol = colStart + c + 1;
+                const allowed = isCellAllowed(globalCol, r, s);
+                let word = "";
+                if (allowed && wordIndex < wordsCopy.length) {
+                    word = wordsCopy[wordIndex].slice(0,4);
+                    wordIndex++;
+                }
+                ctx.fillStyle = allowed ? "#ffffff" : "#cccccc";
+                ctx.fillRect(x,y,cellWidth,cellHeight);
+                if (word) {
+                    ctx.font = `${Math.floor(cellHeight*0.5)}px sans-serif`;
+                    ctx.fillStyle = "#000000";
+                    ctx.fillText(word, x+cellWidth/2, y+cellHeight/2);
+                }
+                ctx.strokeRect(x,y,cellWidth,cellHeight);
+            }
+        }
+
+        // Download PNG
+        canvas.toBlob(function(blob){
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            const safeName = canonicalSeed.replace(/[^a-zA-Z0-9-_]/g,"_");
+            link.download = `${safeName}_Sheet${s+1}.png`;
+            link.click();
+        }, "image/png");
     }
 
-    ctx.strokeRect(x, y, cellWidth, cellHeight);
-}
-   
-  
-
-    }
-
-    // Download PNG
-    canvas.toBlob(function(blob){
-      const link = document.createElement("a");
-      link.href = URL.createObjectURL(blob);
-      const safeName = currentSeed.replace(/[^a-zA-Z0-9-_]/g,"_");
-      link.download = `${safeName}_Sheet${s+1}.png`;
-      link.click();
-    }, "image/png");
-  }
+    alert("Canonical Word Wall generated and downloaded.");
 }
 </script>
 </body>
 </html>
+
+
+
+
+
+
+
 
 
 
