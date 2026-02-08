@@ -209,7 +209,7 @@ By following this guide, you will have a fully reproducible BYOB Zero Word Wall,
 ## FAQ
 
 **Q: Can I use the same name twice?**  
-A: Yes, the generator is deterministic, but seeds will be the same if the name and date match.
+A: Yes, the generator is deterministic, but seeds will be the same if the community name matches the name on the bottom right corner of the Word Wall.
 
 **Q: Can I edit the poster after download?**  
 A: You can annotate manually, but changing BIP39 words breaks determinism.
