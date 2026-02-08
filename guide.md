@@ -9,8 +9,8 @@ Use the table of contents to jump to any section.
 ## Contents
 
 - [Introduction](#introduction)
-- [WORDWALL GENERATOR](#ww_generator)
-- [Posters](#posters)
+- [GENERATOR](#ww_generator)
+- [WORDWALL Posters](#posters)
 - [Safety Notes](#safety-notes)
 - [FAQ](#faq)
 - [Resources](#resources)
