@@ -95,7 +95,7 @@ Optional: Printer for producing posters.
 1. Locate the field labeled “Community Label (max 4 chars)” at the top of the page.
 
 
-2. Type your 4-character community label (for example, BOSA).
+2. Type your 4-character community name (for example, BOSA).
 
 
 3. This label will appear in the bottom-right corner of each poster sheet.
@@ -133,13 +133,13 @@ Optional: Printer for producing posters.
 
 3. Each sheet includes:
 
-Shuffled words (first four letters displayed)
+- Page number in the top-left corner
 
-Row and column headers
+- Row and column headers
 
-Page number in the top-left corner
+- Grid of 20 x 21 shuffled BIP39 words (first four letters)
 
-Your community label in the bottom-right corner
+- Community name label in the bottom-right corner
 
 
 
