@@ -24,13 +24,178 @@ This guide helps you navigate the tools, understand how to participate, and gene
 
 ---
 
-## BYOB Zero
+## BYOB Zero Protocol — Layered Overview
 
-(overview)
+BYOB Zero is designed for zero-risk community preparedness. Each layer builds on the previous, combining physical artifacts, private memory, and non-custodial workflows.
+
 
 ---
 
-### Word Wall Workshop Guide
+**Layer 1: Word Wall Generator**
+
+Purpose: Create a canonical shuffled map of all 2048 BIP39 words, divided into five sheets.
+
+Components:
+
+Generator software hosted on GitHub (link)
+
+BIP39 word list: bip39_words.js hosted on GitHub (link)
+
+Community label: 4-character identifier (e.g., BOSA)
+
+
+Function & Design:
+
+1. Deterministic shuffle using SHA-256 hash + Mulberry32 PRNG.
+
+
+2. Disabled cells logic ensures consistent poster layout.
+
+
+3. Outputs 5 printable poster sheets with headers, row/column labels, page numbers, and the community label in the bottom-right cell.
+
+
+
+Best Practice: Use the canonical generator and word list for reproducibility. Do not modify.
+
+
+---
+
+**Layer 2: Word Wall Poster (Physical + Digital Artifact)**
+
+Purpose: Provide a human-readable, verifiable map of the BIP39 words for participants.
+
+Artifacts:
+
+Physical poster sheets: Printed from the generator PNG files.
+
+Digital poster files: Stored in GitHub for public reference.
+
+
+Function & Design:
+
+First 4 letters of each BIP39 word are displayed for memorization.
+
+Grid: 5 sheets × 21 rows × 20 columns.
+
+Bottom-right cell contains community label.
+
+Optional: SHA-256 hash of canonical seed displayed for verification.
+
+
+Best Practice: Keep posters in safe, visible workshop locations. The digital version allows verification without touching the physical poster.
+
+
+---
+
+**Layer 3: Coordinator (Private Memory Layer)**
+
+Purpose: Provide a personalized, non-custodial memory system for participants to regenerate wallets.
+
+Components:
+
+Coordinator: Sheet + row + column starting point in Word Wall.
+
+Pattern: Stepwise traversal pattern to select 11 words.
+
+Full Passphrase selection: Two extra words from specific cells to complete the deterministic process.
+
+
+Best Practices:
+
+1. Keep private — do not record online.
+
+
+2. Patterns: Use easy-to-remember shapes (e.g., zig-zag, diagonal).
+
+
+3. Store all words as positions in the Word Wall (not as words themselves) to reduce attack risk.
+
+
+
+
+---
+
+**Layer 4: Seedsigner Workflow**
+
+Purpose: Turn the Word Wall memory into a deterministic wallet with verifiable public outputs.
+
+Steps:
+
+1. Enter first 11 words using Coordinator + Pattern.
+
+
+2. Generate 12th word using deterministic checksum (0000000).
+
+
+3. Add Passphrase. Enter both four letter words from Word Wall in correct order.
+
+5. Output:
+
+Public address QR code
+
+Wallet fingerprint
+
+
+Best Practices:
+
+Always confirm fingerprints.
+
+Keep private memory secure — do not store Coordinator or Pattern online.
+
+Use PSBT and BlueWallet for spend operations to avoid leaking private keys.
+
+
+
+---
+
+**Layer 5: Public Ledger Website**
+
+Purpose: Provide transparent verification of public addresses without connecting wallets to legal identities.
+
+Components:
+
+Public ledger page on BYOB site.
+
+Fields: Public address QR + fingerprint + optional BYOB cardname.
+
+Best Practices:
+
+Only upload public outputs.
+
+No personal identifiers.
+
+Verify QR/fingerprint match before publishing.
+
+
+
+---
+
+**Summary Table: BYOB Zero Layers**
+
+Layer	Purpose	Key Artifact	Privacy / Security Notes
+
+1	    Generate canonical map	Generator software + BIP39 word list + label	          Open-source, public
+
+2	    Physical/digital poster	5 Word Wall sheets	Safe to share publicly
+
+3	    Private memory	Coordinator start + pattern + suffix	Keep secret
+
+4	    Wallet creation	Seedsigner wallet, fingerprint, public address
+      Fingerprint optional to share; private keys remain offline
+
+5	    Public ledger	Online QR + fingerprint registry	Anonymous verification,         no personal data
+
+
+
+---
+
+This gives you a complete, structured BYOB Zero protocol, from canonical Word Wall generation to public verification of wallets, with privacy preserved at every layer.
+
+
+---
+
+### Appendix #1 - Word Wall Workshop Guide
 
 This guide shows you how to create a BYOB Zero Word Wall for your community. It is designed for anyone, with no technical knowledge required.
 
