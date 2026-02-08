@@ -6,73 +6,105 @@
 <title>WORDWALL</title>
 <style>
   body {
-    background-color: #ffffff;
-    font-family: sans-serif;
-    padding: 20px;
-    color: #000;
+    margin: 0;
+    font-family: 'Arial', sans-serif;
+    background: #ffffff; /* white background */
+    color: #212529;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px;
   }
+
   h1 {
-    text-align: center;
     font-size: 3em;
-    margin-bottom: 0.2em;
+    margin-bottom: 0.5em;
     color: #0d6efd;
-    
+    text-align: center;
   }
+
   .info {
     font-size: 1.6em;
+    margin-bottom: 40px;
     text-align: center;
-    margin-bottom: 40px;
-  
   }
-  .info label {
-    font-weight: bold;
-    margin-bottom: 40px;
-  }
+
   .info span {
     display: inline-block;
-    margin: 0 20px; /* space between ID and Location */
-     }
-  
+    margin: 0 40px; /* space between ID and Location */
   }
+
   .sheet-container {
+    display: flex;
     flex-direction: column; /* vertical layout */
     gap: 40px; /* space between images */
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 20px;
+    align-items: center;
+    width: 100%;
+    max-width: 1200px;
   }
+
   .sheet-container img {
-    max-width: 45%;
+    width: 100%;
+    max-width: 1200px;
     height: auto;
-    border: 1px solid #ccc;
-    box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
+    border: 2px solid #0d6efd;
+    border-radius: 8px;
+    box-shadow: 2px 2px 10px rgba(0,0,0,0.1);
   }
+
+  a.button {
+    display: inline-block;
+    background-color: #0d6efd;
+    color: #fff;
+    font-size: 1.2em;
+    text-decoration: none;
+    padding: 15px 30px;
+    border-radius: 8px;
+    transition: background 0.3s;
+    margin: 20px 0; /* space around buttons */
+  }
+
+  a.button:hover {
+    background-color: #0b5ed7;
+  }
+
+  footer {
+    font-size: 0.9em;
+    color: #6c757d;
+    margin-top: 60px;
+  }
+
 </style>
 </head>
 <body>
 
-<h1>WORDWALL</h1>
+  <h1>WORDWALL</h1>
 
-<div class="info">
-  <div><label>ID:</label> <span id="wallID">WW01</span></div>
-  <div><label>Location:</label> <span id="location">Bosa (OR) ITA</span></div>
-</div>
+  <div class="info">
+    <span>ID: WW05</span><span>Location: London</span>
+  </div>
 
-<div class="sheet-container">
+  <!-- Buttons -->
+  <a class="button" href="ww_generator.html">Go to WW_GENERATOR</a>
 
+  <!-- Sheets images -->
+  <div class="sheet-container">
+    <img src="become-your-own-bank_08_02_2026__WW01__Sheet1.png" alt="Sheet 1">
+    <img src="become-your-own-bank_08_02_2026__WW01__Sheet2.png" alt="Sheet 2">
+    <img src="become-your-own-bank_08_02_2026__WW01__Sheet3.png" alt="Sheet 3">
+    <img src="become-your-own-bank_08_02_2026__WW01__Sheet4.png" alt="Sheet 4">
+    <img src="become-your-own-bank_08_02_2026__WW01__Sheet5.png" alt="Sheet 5">
+  </div>
 
-
-  
-  <img src="become-your-own-bank_08_02_2026__WW01__Sheet1.png" alt="Sheet 1">
-  <img src="Sheet2.png" alt="Sheet 2">
-  <img src="Sheet3.png" alt="Sheet 3">
-  <img src="Sheet4.png" alt="Sheet 4">
-  <img src="Sheet5.png" alt="Sheet 5">
-</div>
+  <footer>
+    &copy; 2026 BYOB Project. All rights reserved.
+  </footer>
 
 </body>
 </html>
+
+
+
 
 
 
