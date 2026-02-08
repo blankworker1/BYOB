@@ -186,34 +186,38 @@ async function downloadPosters() {
       ctx.fillText(rowLetters[r], cellWidth/2, y+cellHeight/2);
       ctx.strokeRect(0,y,cellWidth,cellHeight);
 
+
       // Word cells
-      for(let c=0; c<sheetCols; c++){
-      const x = cellWidth + c*cellWidth;
-      const globalCol = colStart + c + 1;
-      const allowed = isCellAllowed(globalCol, r, s);
+for(let c=0; c<sheetCols; c++){
+    const x = cellWidth + c*cellWidth;
+    const globalCol = colStart + c + 1;
+    const allowed = isCellAllowed(globalCol, r, s);
 
-      let word = "";
+    let word = "";
+    let fontStyle = "";
 
-      const isBottomRight = (r === totalRows - 1) && (globalCol === (s + 1) * sheetCols);
-      if (isBottomRight) {
+    const isBottomRight = (r === totalRows - 1) && (globalCol === (s + 1) * sheetCols);
+    if (isBottomRight) {
         word = wallID;
-        ctx.font = `${pageFontSize}px sans-serif`;
-      } 
-      else if (allowed && wordIndex < wordsCopy.length) {
+        fontStyle = `bold ${pageFontSize}px sans-serif`; // Wall ID: bold, same size as page number
+    } 
+    else if (allowed && wordIndex < wordsCopy.length) {
         word = wordsCopy[wordIndex].slice(0,4);
         wordIndex++;
-      ctx.font = `${Math.floor(cellHeight*0.28)}px sans-serif`;
-      }
+        fontStyle = `${Math.floor(cellHeight*0.28)}px sans-serif`; // slightly bigger words
+    }
 
-      ctx.fillStyle = allowed ? "#ffffff" : headerColor;
-      ctx.fillRect(x, y, cellWidth, cellHeight);
+    ctx.fillStyle = allowed ? "#ffffff" : headerColor;
+    ctx.fillRect(x, y, cellWidth, cellHeight);
 
-    
-      ctx.fillStyle = "#000000";
-      ctx.fillText(word, x + cellWidth/2, y + cellHeight/2);
+    ctx.fillStyle = "#000000";
+    if(word) ctx.font = fontStyle;  // <-- set font just before drawing
+    ctx.fillText(word, x + cellWidth/2, y + cellHeight/2);
 
-      ctx.strokeRect(x, y, cellWidth, cellHeight);
-  }
+    ctx.strokeRect(x, y, cellWidth, cellHeight);
+}
+      
+  
 
     }
 
