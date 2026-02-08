@@ -203,7 +203,7 @@ for(let c=0; c<sheetCols; c++){
     else if (allowed && wordIndex < wordsCopy.length) {
         word = wordsCopy[wordIndex].slice(0,4);
         wordIndex++;
-        fontStyle = `${Math.floor(cellHeight*0.3)}px sans-serif`; // BIP39 words larger
+        fontStyle = `${Math.floor(cellHeight*0.4)}px sans-serif`; // BIP39 words larger
     }
 
     ctx.fillStyle = allowed ? "#ffffff" : headerColor;
