@@ -44,9 +44,8 @@ The **GENERATOR** page lets you:
 
 The **posters** are multi-page sheets:
 
-- Each page has a numbered grid of words.
+- Each page is numbered and has a 20 x 21 grid of words.
 - The bottom-right cell always shows your Wall ID.
-- Certain columns are reserved (98–100) for security and formatting.
 
 ![Example Poster](become-your-own-bank_08_02_2026__WW01__Sheet1.png)
 
