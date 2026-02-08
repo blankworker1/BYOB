@@ -202,13 +202,13 @@ async function downloadPosters() {
       else if (allowed && wordIndex < wordsCopy.length) {
         word = wordsCopy[wordIndex].slice(0,4);
         wordIndex++;
-        ctx.font = `${Math.floor(cellHeight*0.25)}px sans-serif`;
+      ctx.font = `${Math.floor(cellHeight*0.25)}px sans-serif`;
       }
 
       ctx.fillStyle = allowed ? "#ffffff" : headerColor;
       ctx.fillRect(x, y, cellWidth, cellHeight);
 
-      ctx.font = `${wordFontSize}px sans-serif`;
+    
       ctx.fillStyle = "#000000";
       ctx.fillText(word, x + cellWidth/2, y + cellHeight/2);
 
