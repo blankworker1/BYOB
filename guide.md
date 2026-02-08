@@ -142,7 +142,7 @@ Optional: Printer for producing posters.
 - Community name label in the bottom-right corner
 
 
-![Example Poster](BYOB_ZERO_WORDWALL_BOSA_V1_Sheet1 (1).png)
+![Example Poster](BYOB_ZERO_WORDWALL_BOSA_V1_Sheet1(1).png)
 
 
 ---
