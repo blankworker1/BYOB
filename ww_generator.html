@@ -14,7 +14,7 @@ button { margin: 5px; }
 
 <h2>BYOB Word Wall Generator V1</h2>
 
-<label>Community Label: <input type="text" id="labelInput" placeholder="Example: LONDON" maxlength="20"></label><br>
+<label>Community Label: <input type="text" id="labelInput" placeholder="BOSA" maxlength="4"></label><br>
 <button onclick="generateWall()">Generate Canonical Wall</button>
 
 <div id="seedDisplay"></div>
@@ -154,6 +154,13 @@ async function downloadPosters() {
                 }
                 ctx.strokeRect(x,y,cellWidth,cellHeight);
             }
+            // Draw 4-character label in bottom-right corner
+            const label = (document.getElementById("labelInput").value || "BYOB").toUpperCase();
+            ctx.font = `${Math.floor(cellHeight * 0.4)}px sans-serif`;
+            ctx.fillStyle = "#000000";
+            ctx.textAlign = "right";
+            ctx.textBaseline = "bottom";
+            ctx.fillText(label, canvas.width - 10, canvas.height - 10); // 10px padding
         }
 
         // Download PNG
