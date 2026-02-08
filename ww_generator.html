@@ -196,16 +196,17 @@ async function downloadPosters() {
         let word = "";
 
         if (!allowed) {
-        // Bottom-right cell gets Wall ID
-        if (c === sheetCols - 1 && r === totalRows - 1) {
+
+        const isBottomRight =
+        (r === totalRows - 1) &&
+        (globalCol === (s + 1) * sheetCols);
+
+        if (isBottomRight) {
         word = wallID;
         }
         }
-        else if (wordIndex < wordsCopy.length) {
-        word = wordsCopy[wordIndex].slice(0,4);
-        wordIndex++;
-        }
 
+      
   
         ctx.fillStyle = allowed ? "#ffffff" : headerColor;
         ctx.fillRect(x,y,cellWidth,cellHeight);
