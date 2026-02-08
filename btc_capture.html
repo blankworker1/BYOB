@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BYOB Zero – Address Capture</title>
+
+<style>
+body {
+  font-family: sans-serif;
+  max-width: 500px;
+  margin: auto;
+  padding: 20px;
+  text-align: center;
+}
+
+h2 { margin-bottom: 5px; }
+input {
+  width: 100%;
+  padding: 10px;
+  font-size: 16px;
+  margin-top: 10px;
+}
+button {
+  margin-top: 10px;
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+}
+video {
+  width: 100%;
+  margin-top: 15px;
+  border: 1px solid #ccc;
+}
+#previewCanvas {
+  margin-top: 20px;
+  border: 1px solid #ccc;
+}
+.warning {
+  font-size: 14px;
+  color: red;
+  margin-top: 15px;
+}
+</style>
+</head>
+
+<body>
+
+<h2>BYOB Zero – Public Address Capture</h2>
+<p>Scan or enter your SeedSigner public address and enter the fingerprint.</p>
+
+<input type="text" id="addressInput" placeholder="Enter or scan Bitcoin address">
+
+<button onclick="startScanner()">Scan QR</button>
+
+<video id="video" autoplay></video>
+
+<input type="text" id="fingerprintInput" placeholder="Enter fingerprint (8 chars)" maxlength="8">
+
+<button onclick="generateArtifact()">Generate Artifact PNG</button>
+
+<canvas id="previewCanvas" width="300" height="400"></canvas>
+
+<div class="warning">
+⚠ Public address only. Never enter seed words or private keys.
+</div>
+
+<script src="https://unpkg.com/jsqr/dist/jsQR.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+<script>
+let videoStream;
+let lastScannedAddress = "";
+
+// ---------------- QR SCANNER ----------------
+async function startScanner() {
+  const video = document.getElementById("video");
+  video.style.display = "block";
+
+  try {
+    videoStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+    video.srcObject = videoStream;
+
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+
+    const scan = () => {
+      if (video.readyState === video.HAVE_ENOUGH_DATA) {
+        canvas.height = video.videoHeight;
+        canvas.width = video.videoWidth;
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const code = jsQR(imageData.data, imageData.width, imageData.height);
+
+        if (code) {
+          let addr = code.data.trim();
+
+          // Clean bitcoin: prefix if present
+          if (addr.startsWith("bitcoin:")) addr = addr.replace("bitcoin:", "");
+          if (addr.includes("?")) addr = addr.split("?")[0];
+
+          document.getElementById("addressInput").value = addr;
+          lastScannedAddress = addr;
+
+          // Stop camera
+          videoStream.getTracks().forEach(track => track.stop());
+          video.style.display = "none";
+
+          return;
+        }
+      }
+      requestAnimationFrame(scan);
+    };
+
+    scan();
+
+  } catch (err) {
+    alert("Camera access denied or not available.");
+  }
+}
+
+// ---------------- GENERATE ARTIFACT ----------------
+function generateArtifact() {
+  const address = document.getElementById("addressInput").value.trim();
+  const fingerprint = document.getElementById("fingerprintInput").value.trim();
+  const canvas = document.getElementById("previewCanvas");
+  const ctx = canvas.getContext("2d");
+
+  if (!address) {
+    alert("Enter or scan a Bitcoin address.");
+    return;
+  }
+
+  if (!fingerprint || fingerprint.length !== 8) {
+    alert("Fingerprint must be exactly 8 characters.");
+    return;
+  }
+
+  // Clear canvas
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // Generate QR code to temporary canvas
+  const qrTemp = document.createElement("div");
+  new QRCode(qrTemp, {
+    text: address,
+    width: 250,
+    height: 250,
+    correctLevel: QRCode.CorrectLevel.H
+  });
+
+  // Wait a short time for QR to render
+  setTimeout(() => {
+    const qrImg = qrTemp.querySelector("img");
+    if (!qrImg) {
+      alert("QR generation failed.");
+      return;
+    }
+
+    const img = new Image();
+    img.src = qrImg.src;
+
+    img.onload = () => {
+      // Draw QR
+      const qrX = (canvas.width - img.width) / 2;
+      ctx.drawImage(img, qrX, 20);
+
+      // Draw fingerprint below
+      ctx.fillStyle = "#000000";
+      ctx.font = "bold 20px sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("Fingerprint: " + fingerprint, canvas.width/2, img.height + 50);
+
+      // Optional: draw address below fingerprint
+      ctx.font = "14px monospace";
+      ctx.fillText(address, canvas.width/2, img.height + 80);
+
+      // Download link
+      const link = document.createElement("a");
+      link.download = `BYOB_Artifact_${fingerprint}.png`;
+      link.href = canvas.toDataURL();
+      link.click();
+    };
+
+  }, 200);
+}
+</script>
+
+</body>
+</html>
