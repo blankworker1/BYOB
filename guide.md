@@ -203,7 +203,6 @@ This guide shows you how to create a BYOB Zero Word Wall for your community. It 
 
 **Key Terms (Glossary):**
 
-```
 
 Term      	       Meaning
 
@@ -217,7 +216,7 @@ Poster Sheet	   One page of the Word Wall. There are 5 sheets in total.
 
 Bottom-Right Label Your community label printed in the bottom-right corner of                      each sheet.
 
-```
+
 
 ---
 
