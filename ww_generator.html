@@ -197,12 +197,12 @@ async function downloadPosters() {
       const isBottomRight = (r === totalRows - 1) && (globalCol === (s + 1) * sheetCols);
       if (isBottomRight) {
         word = wallID;
-        ctx.font = `bold ${pageFontSize}px sans-serif`;
+        ctx.font = `${pageFontSize}px sans-serif`;
       } 
       else if (allowed && wordIndex < wordsCopy.length) {
         word = wordsCopy[wordIndex].slice(0,4);
         wordIndex++;
-      ctx.font = `${Math.floor(cellHeight*0.25)}px sans-serif`;
+      ctx.font = `${Math.floor(cellHeight*0.28)}px sans-serif`;
       }
 
       ctx.fillStyle = allowed ? "#ffffff" : headerColor;
