@@ -184,10 +184,12 @@ async function downloadPosters() {
 
         let word = "";
 
-        // Bottom-right cell (Z,100) → Wall ID
-        if (globalCol === 100 && r === 20) {
-          word = wallID;
+        // Bottom-right cell of each sheet → Wall ID
+        if (c === sheetCols - 1 && r === totalRows - 1) {
+        word = wallID;
         }
+
+  
         else if (allowed && wordIndex < wordsCopy.length) {
           word = wordsCopy[wordIndex].slice(0,4);
           wordIndex++;
