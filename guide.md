@@ -10,7 +10,7 @@ Use the table of contents to jump to any section.
 
 - [Introduction](#introduction)
 - [Generator](#generator)
-- [Posters](#posters)
+- [Posters](#wordwall-posters)
 - [Safety Notes](#safety-notes)
 - [FAQ](#faq)
 - [Resources](#resources)
