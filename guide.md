@@ -48,7 +48,7 @@ The **posters** are multi-page sheets:
 - The bottom-right cell always shows your Wall ID.
 - Certain columns are reserved (98–100) for security and formatting.
 
-![Example Poster](poster_example.png)
+![Example Poster](become-your-own-bank_08_02_2026__WW01__Sheet1.png)
 
 ---
 
@@ -71,9 +71,9 @@ A: You can annotate manually, but changing BIP39 words breaks determinism.
 
 ## Resources
 
-- [BYOB Project GitHub](https://github.com/your-repo)
+- [BYOB - GitHub](https://github.com/blankworker1/BYOB)
 - [BIP39 Word List](https://github.com/bitcoin/bips/blob/master/bip-0039/english.txt)
-- [Markdown Guide](https://www.markdownguide.org/)
+
 
 ---
 
