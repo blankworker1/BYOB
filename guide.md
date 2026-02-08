@@ -9,8 +9,8 @@ Use the table of contents to jump to any section.
 ## Contents
 
 - [Introduction](#introduction)
-- [GENERATOR](#ww_generator)
-- [WORDWALL Posters](#posters)
+- [Generator](#generator)
+- [Posters](#posters)
 - [Safety Notes](#safety-notes)
 - [FAQ](#faq)
 - [Resources](#resources)
@@ -40,7 +40,7 @@ The **GENERATOR** page lets you:
 
 ---
 
-## WORDWALL Posters
+## WORDWALL POSTERS
 
 The **posters** are multi-page sheets:
 
