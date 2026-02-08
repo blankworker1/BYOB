@@ -156,13 +156,24 @@ async function downloadPosters() {
                 }
                 ctx.strokeRect(x,y,cellWidth,cellHeight);
             }
-            // Draw 4-character label in bottom-right corner
+
+            
+            // ------------------- Draw bottom-right label -------------------
             const label = (document.getElementById("labelInput").value || "BYOB").toUpperCase();
-            ctx.font = `${Math.floor(cellHeight * 0.4)}px sans-serif`;
+
+            // Calculate the bottom-right cell coordinates
+            const labelCol = sheetCols - 1; // last column of current sheet
+            const labelRow = totalRows - 1; // last row
+
+            const labelCellX = cellWidth + labelCol * cellWidth + cellWidth / 2; // center of last column
+            const labelCellY = cellHeight + labelRow * cellHeight + cellHeight / 2; // center of last row
+
+            ctx.font = `${Math.floor(cellHeight * 0.4)}px sans-serif`; // font scaled to cell
             ctx.fillStyle = "#000000";
-            ctx.textAlign = "right";
-            ctx.textBaseline = "bottom";
-            ctx.fillText(label, canvas.width - 10, canvas.height - 10); // 10px padding
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText(label, labelCellX, labelCellY);
+            
         }
 
         // Download PNG
