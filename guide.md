@@ -55,7 +55,6 @@ The **posters** are multi-page sheets:
 ## Safety Notes
 
 - BYOB is **not a bank** and holds **no funds**.
-- Always **store seeds offline**.
 - You can share the WORDWALL publicly as it contains no sensitive info.
 
 ---
@@ -77,3 +76,11 @@ A: You can annotate manually, but changing BIP39 words breaks determinism.
 - [Markdown Guide](https://www.markdownguide.org/)
 
 ---
+
+
+
+
+
+
+
+
