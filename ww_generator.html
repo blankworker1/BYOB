@@ -148,7 +148,9 @@ async function downloadPosters() {
                 ctx.fillStyle = allowed ? "#ffffff" : "#cccccc";
                 ctx.fillRect(x,y,cellWidth,cellHeight);
                 if (word) {
-                    ctx.font = `${Math.floor(cellHeight*0.5)}px sans-serif`;
+                    ctx.font = `${Math.floor(cellHeight * 0.5)}px sans-serif`;
+                    ctx.textAlign = "center"; // Centering the text horizontally
+                    ctx.textBaseline = "middle"; // Centering the text vertically
                     ctx.fillStyle = "#000000";
                     ctx.fillText(word, x+cellWidth/2, y+cellHeight/2);
                 }
