@@ -356,7 +356,402 @@ Easy verification by other community members
 
 By following this guide, you will have a fully reproducible BYOB Zero Word Wall, ready to display in workshops or use in your community. Each wall is unique to your community label but can be regenerated at any time for verification.
 
+---
 
+## Appendix #2 - Memory-Based Wallet Creation Protocol Workshop Guide
+
+
+This workshop teaches financial preparedness without custody risk.
+
+Participants learn:
+
+- How Bitcoin wallets are generated
+
+- How deterministic systems work
+
+- How public and private information differ
+
+- How to create a wallet without writing down seed words
+
+
+This system uses:
+
+A public Word Wall (all 2048 BIP39 words)
+
+A private geometric memory pattern
+
+A private passphrase derived from positions
+
+An offline device (SeedSigner)
+
+
+Nothing is stored online. Nothing is written down digitally. No central issuer exists.
+
+The Word Wall is public.
+
+Your memory mapping is private.
+
+That separation is the security model.
+
+
+---
+
+**Overview of the System**
+
+To generate a wallet you need:
+
+Public:
+
+Community Label (e.g., BOSA)
+
+Canonical Word Wall
+
+
+Private (Memory Only):
+
+Coordinator Sheet
+
+Starting Cell
+
+Pattern Type
+
+4 Passphrase Cells (one on each of Sheets 1–4)
+
+
+Output:
+
+Public Address
+
+Wallet Fingerprint
+
+Wallet Number (on public ledger)
+
+
+
+---
+
+### Part 1 — Choosing Your Coordinator (Seed Words)
+
+The Coordinator generates the first 11 words.
+
+These must:
+
+Stay on one sheet only
+
+Follow a simple geometric rule
+
+Be easy to redraw from memory
+
+
+
+---
+
+**Step 1:** Choose Your Sheet
+
+Select one sheet (1–5).
+
+Best Practice:
+
+Choose a sheet that feels meaningful to you.
+
+Do not always choose Sheet 1.
+
+Avoid obvious defaults.
+
+
+You only need to remember the number.
+
+Example:
+“My seed is on Sheet 5.”
+
+
+---
+
+**Step 2:** Choose a Starting Cell
+
+Select one valid cell (Row + Column).
+
+Example: Row M, Column 08
+
+Best Practice:
+
+Choose something visually anchored.
+
+Avoid extreme corners.
+
+Avoid bottom-right disabled cells.
+
+Avoid patterns that start at A01.
+
+
+Good choices feel intentional.
+
+
+---
+
+**Step 3:** Choose a Pattern (11 Cells)
+
+You must select exactly 11 connected cells.
+
+Allowed geometric patterns:
+
+1. Straight Line
+
+Horizontal or vertical
+
+One direction only
+
+
+2. L Shape
+
+One straight line
+
+90-degree turn
+
+Continue
+
+
+3. Stairs
+
+Consistent diagonal stepping
+
+Same direction each step
+
+
+Rules:
+
+Must remain on one sheet
+
+Must be continuous
+
+Must not cross disabled cells
+
+Must be drawable in 3 seconds from memory
+
+
+Avoid:
+
+Random jumps
+
+Zig-zags without rule
+
+Complex spirals
+
+Counting backwards
+
+
+Simplicity = reliability.
+
+
+---
+
+**What You Now Have**
+
+From this geometry you will obtain:
+
+11 words
+
+12th word generated automatically via checksum (0000000 in SeedSigner)
+
+
+You do NOT memorize words. You memorize shape.
+
+
+---
+
+### Part 2 — Choosing Your Passphrase (4 Words)
+
+The passphrase adds major entropy.
+
+It uses:
+
+4 cells
+
+One cell on each of remaining Sheets 1–4
+
+Sheet order defines word order
+
+
+Sheet 1 → first word
+Sheet 2 → second word
+Sheet 3 → third word
+Sheet 4 → fourth word
+
+You never remember the words. Only positions.
+
+
+---
+
+**Step 1:** Choose a Cell Rule
+
+Best options:
+
+Option A — Same Position Across Sheets
+
+Example: Row K, Column 12 on Sheets 1–4
+
+Very easy to remember. Strong and structured.
+
+
+---
+
+Option B — Same Row, Different Columns
+
+Example: Row R
+Different meaningful columns per sheet.
+
+
+---
+
+Option C — Visual Pattern Across Sheets
+
+Example: Top-left quadrant positions on each sheet. Or diagonal corner anchors.
+
+
+---
+
+Avoid
+
+Four completely random cells
+
+Similar adjacent cells (e.g., B05 and B06)
+
+Positions that require counting each time
+
+Storing them digitally
+
+
+Memory rule: If you can’t explain it simply, it’s too complex.
+
+
+---
+
+**Security Logic (Why This Works)**
+
+The Word Wall is public.
+
+An attacker would need to guess:
+
+Which sheet you used
+
+Which starting cell
+
+Which geometric rule
+
+Which direction
+
+Four passphrase positions across four sheets
+
+
+Even with full knowledge of the system, the private geometry and passphrase mapping remain unknown.
+
+For Zero-level preparedness, this provides strong protection without complexity.
+
+
+---
+
+Layer Separation
+
+Seed Geometry = Private
+Passphrase Positions = Private
+Public Address = Public
+Fingerprint = Public
+
+Never publish:
+
+Coordinator sheet
+
+Starting cell
+
+Pattern
+
+Passphrase positions
+
+
+Only publish:
+
+Public receive address
+
+Wallet fingerprint
+
+Ledger number
+
+
+
+---
+
+**Practical Workshop Flow**
+
+1. Introduce Word Wall
+
+
+2. Explain geometry concept
+
+
+3. Participants privately choose:
+
+Sheet
+
+Starting cell
+
+Pattern
+
+
+
+4. Enter 11 words into SeedSigner
+
+
+5. Generate 12th word (checksum 0000000)
+
+
+6. Enter 4 passphrase words from Sheets 1–4
+
+
+7. Record public address + fingerprint
+
+
+8. Upload QR artifact to public ledger
+
+
+
+No seed words written. No screenshots of private steps. No cloud storage.
+
+
+---
+
+**Important Boundary**
+
+BYOB Zero is for:
+
+Education
+
+Preparedness
+
+Small community funds
+
+Learning sovereignty
+
+
+It is NOT:
+
+Institutional custody
+
+Nation-state resistance
+
+High net worth storage
+
+
+Higher layers (BYOB One / Communities) are for that.
+
+
+---
+
+**Core Principle**
+
+The wall is public.
+The pattern is private.
+Memory is the key.
+Math does the rest.
 
 
 ---
