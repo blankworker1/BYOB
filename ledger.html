@@ -48,8 +48,11 @@ async function loadLedger() {
     const div = document.createElement('div');
     div.className = 'artifact';
     div.id = 'wallet-' + item.id;
-    div.innerHTML = `<h4>Wallet #${item.id}</h4>
-                     <img src="artifacts/${item.file}" alt="Wallet #${item.id}">`;
+    const paddedID = String(item.id).padStart(3, '0');
+
+    div.innerHTML = `<h4>Wallet #${paddedID}</h4>
+    <img src="artifacts/${item.file}" alt="Wallet #${paddedID}">`;
+    
     container.appendChild(div);
   });
 }
