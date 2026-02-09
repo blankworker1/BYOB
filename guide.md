@@ -754,6 +754,9 @@ Memory is the key.
 Math does the rest.
 
 
+
+---
+
 ## Appendix #3 - SeedSigner User Guide
 
 What You Need:
@@ -806,31 +809,71 @@ Full control over wallet generation
 1. Power On the SeedSigner with your SD card inserted
 
 
-2. Select Create New Wallet
+2. Select Tools - Calc 12th/24th word - 12 words 
 
 
-3. Enter the 11 seed words from your Word Wall (via memory: Coordinator sheet + pattern + starting cell)
+3. Enter each of the 11 seed words from the Word Wall from memory.
+   (Coordinator: sheet + starting cell + pattern)
+
+   Example: Sheet 2, Column 22, Row B, zigzag down
+
+   (add image of sheet 2 with all 11 cells outlined in red + arrow to show direction)
 
 
-4. Enter the 12th checksum word (deterministic: 0000000)
+4. Build final word (the 12th checksum word) - Select Finalize with zeros
+   
+   
+5. Final word Calc Your input: 0000000
+   
+   12th Word "word" shown on screen - Click Load Seed
+   
 
+6. Finalize Seed - Select Type Passphrase
+   
+   Enter four Passphrase words from the four selected cells as they appear on      the Word Wall from memory.
+   
+   Follow the remembered sheet sequence (1,3,4,5). Use same position on each       sheet for the four selected cells, selecting one word from each sheet.
 
-5. Enter your Passphrase words:
+   Example: First word - Sheet 1, Column 01, Row A
+   Second word - Sheet 3, Column 41, Row A
+   Third word - Sheet 4, Column 61, Row A
+   Fourth word - Sheet 5, Cooumn 81, Row A
 
-Four words from the four selected cells (Sheets 1–4)
+   Select uppercase (ABC). Enter the four Passphrase words from the four           selected cells as they appear on the Word Wall from memory.
 
-Follow the remembered sheet order
+   Click ✅
+   
 
+7. Verify Passphrase - check words correspond with the words on the Word Wall.
 
+8. Write down / confirm changed Fingerprint: 78fe6009 (8c99abee)
 
-6. Confirm wallet Fingerprint
+   Click Done
 
+9. Select Seeds on main menu - In Memory Seeds
+   Click Fingerprint
+   Select Address Explorer - Native Segwit - Receive Addresses
 
-7. Generate Public Address
+   Click top address to display as QR code 
+   
 
-Display QR code on screen
+10. Open BTC Capture webapp on a mobile device using the CAPTURE button on BYOB     website (Link).
+    
+    Click SCAN QR in webapp and scan QR code on Seedsigner
 
-Scan with BTC Capture webapp for public ledger submission.
+    Enter Fingerprint
+
+    Click Generate Artifact PNG
+
+    Artifact will be saved as a .png image file on the mobile device
+    
+
+12. Upload png file to  BYOB GitHub.
+
+    
+13. Open BTC Ledger webapp on mobile device using the LEDGER button on BYOB         website (Link).
+
+    Enter Wallet# to find public address qr code and fingerprint details 
 
 
 
