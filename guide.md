@@ -754,6 +754,105 @@ Memory is the key.
 Math does the rest.
 
 
+## Appendix #3 - SeedSigner User Guide
+
+What You Need:
+
+SeedSigner device 
+(single unit per workshop is enough)
+
+Micro SD card 
+(flash your own copy of the SeedSigner software from SeedSigner GitHub LINK)
+
+Word Wall poster or digital Word Wall reference
+
+Your memory of Coordinator pattern and Passphrase positions
+
+
+
+---
+
+**Why Flash Your Own SD Card**
+
+Ownership is tied to the micro SD card, not the device.
+
+Flashing your own card ensures:
+
+Device is stateless
+
+No pre-loaded seeds or wallets
+
+Full control over wallet generation
+
+
+
+
+---
+
+**Device Characteristics**
+
+**Stateless:** No data is stored internally
+
+**Deterministic:** Generates the same wallet if the same words + passphrase are entered
+
+**Offline:** Never connects to the internet
+
+
+
+---
+
+**User Flow – Entering Seed Words**
+
+1. Power On the SeedSigner with your SD card inserted
+
+
+2. Select Create New Wallet
+
+
+3. Enter the 11 seed words from your Word Wall (via memory: Coordinator sheet + pattern + starting cell)
+
+
+4. Enter the 12th checksum word (deterministic: 0000000)
+
+
+5. Enter your Passphrase words:
+
+Four words from the four selected cells (Sheets 1–4)
+
+Follow the remembered sheet order
+
+
+
+6. Confirm wallet Fingerprint
+
+
+7. Generate Public Address
+
+Display QR code on screen
+
+Scan with BTC Capture webapp for public ledger submission.
+
+
+
+
+
+---
+
+**Key Points**
+
+- No seed words are stored; device is stateless.
+
+- Passphrase is essential: memory-only layer for additional security.
+
+- Fingerprint must always be confirmed: ensures wallet was entered correctly.
+
+- Public outputs only (QR, fingerprint) can be shared; everything else remains private.
+
+
+
+(Add step-by-step visuals of SeedSigner screens)
+
+
 ---
 
 ## Safety Notes
