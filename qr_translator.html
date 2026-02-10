@@ -39,12 +39,12 @@ hr {
   margin: 40px 0;
 }
 
-/* Canvas wrapper for perfect square display */
+/* Canvas wrapper for display only */
 .canvas-wrapper {
-  width: 40%;
-  max-width: 100px;      /* Display size cap */
-  aspect-ratio: 1 / 1;   /* Force square */
-  margin: 20px auto;
+  width: 80%;            /* scale down for screen */
+  max-width: 300px;      /* display size cap */
+  aspect-ratio: 1 / 1;   /* always square */
+  margin: 20px auto;     /* center horizontally */
   border: 1px solid #ccc;
 }
 
@@ -68,8 +68,11 @@ hr {
 
 <button onclick="generateCoordinateQR()">Generate Coordinate QR</button>
 <div class="canvas-wrapper">
-  <canvas id="coordinateQRCanvas"></canvas>
+  <canvas id="coordinateQRDisplay"></canvas>
 </div>
+
+<!-- Hidden high-res canvas for download -->
+<canvas id="coordinateQRDownload" style="display:none;"></canvas>
 
 <hr>
 
@@ -86,8 +89,10 @@ hr {
 
 <button onclick="generateSeedQRFromDecoded()">Generate Seed QR</button>
 <div class="canvas-wrapper">
-  <canvas id="decodedSeedQRCanvas"></canvas>
+  <canvas id="decodedSeedQRDisplay"></canvas>
 </div>
+
+<canvas id="decodedSeedQRDownload" style="display:none;"></canvas>
 
 <script>
 let canonicalWall = {};
@@ -105,62 +110,7 @@ fetch('BOSA_canonical_wall.json')
       alert("Error loading canonical wall JSON.");
   });
 
-// -------- HIGH RES QR FUNCTION --------
-function generateHighResQR(canvasId, text, filename){
-    const canvas = document.getElementById(canvasId);
-    const size = 1200; // print resolution
-    canvas.width = size;
-    canvas.height = size;
-
-    QRCode.toCanvas(canvas, text, {
-        width: size,
-        margin: 4,
-        errorCorrectionLevel: 'H'
-    }, function(error){
-        if(error){
-            console.error(error);
-            alert("QR generation error.");
-            return;
-        }
-        downloadCanvas(canvas, filename);
-    });
-}
-
-// -------- DOWNLOAD FUNCTION --------
-function downloadCanvas(canvas, filename){
-    const link = document.createElement("a");
-    link.download = filename;
-    link.href = canvas.toDataURL("image/png");
-    link.click();
-}
-
-// -------- SEED SCANNER --------
-function startSeedScanner(){
-    seedScanner = new Html5Qrcode("qr-reader-seed");
-    seedScanner.start(
-        { facingMode: "environment" },
-        { fps: 10, qrbox: 250 },
-        message => {
-            document.getElementById("seedInput").value = message.trim();
-            seedScanner.stop();
-        }
-    );
-}
-
-// -------- COORDINATE SCANNER --------
-function startCoordinateScanner(){
-    coordinateScanner = new Html5Qrcode("qr-reader-coord");
-    coordinateScanner.start(
-        { facingMode: "environment" },
-        { fps: 10, qrbox: 250 },
-        message => {
-            document.getElementById("coordinateInput").value = message.trim();
-            coordinateScanner.stop();
-        }
-    );
-}
-
-// -------- GENERATE COORDINATE QR --------
+// -------- DISPLAY + HIGH-RES QR GENERATION --------
 function generateCoordinateQR(){
     const seedWords = document.getElementById("seedInput")
                       .value.trim().toLowerCase().split(/\s+/);
@@ -180,11 +130,29 @@ function generateCoordinateQR(){
         coordinateString += canonicalWall[word];
     }
 
-    generateHighResQR(
-        "coordinateQRCanvas",
-        coordinateString,
-        "coordinate_seed_print.png"
-    );
+    // 1️⃣ Small display canvas
+    const displayCanvas = document.getElementById("coordinateQRDisplay");
+    QRCode.toCanvas(displayCanvas, coordinateString, {
+        width: displayCanvas.clientWidth,
+        margin: 2
+    });
+
+    // 2️⃣ Hidden high-res canvas for PNG download
+    const downloadCanvas = document.getElementById("coordinateQRDownload");
+    downloadCanvas.width = 1200;
+    downloadCanvas.height = 1200;
+    QRCode.toCanvas(downloadCanvas, coordinateString, {
+        width: 1200,
+        margin: 4,
+        errorCorrectionLevel: 'H'
+    }, function(err){
+        if(!err) downloadCanvas.toBlob(blob => {
+            const link = document.createElement("a");
+            link.download = "coordinate_seed_print.png";
+            link.href = URL.createObjectURL(blob);
+            link.click();
+        });
+    });
 }
 
 // -------- DECODE COORDINATES --------
@@ -210,7 +178,7 @@ function decodeCoordinates(){
     document.getElementById("decodedSeedOutput").value = words.join(" ");
 }
 
-// -------- GENERATE STANDARD SEED QR --------
+// -------- GENERATE STANDARD SEED QR FROM DECODED --------
 function generateSeedQRFromDecoded(){
     const seed = document.getElementById("decodedSeedOutput").value.trim();
     if(!seed){
@@ -218,10 +186,53 @@ function generateSeedQRFromDecoded(){
         return;
     }
 
-    generateHighResQR(
-        "decodedSeedQRCanvas",
-        seed,
-        "standard_seed_print.png"
+    // Small display
+    const displayCanvas = document.getElementById("decodedSeedQRDisplay");
+    QRCode.toCanvas(displayCanvas, seed, {
+        width: displayCanvas.clientWidth,
+        margin: 2
+    });
+
+    // Hidden high-res PNG
+    const downloadCanvas = document.getElementById("decodedSeedQRDownload");
+    downloadCanvas.width = 1200;
+    downloadCanvas.height = 1200;
+    QRCode.toCanvas(downloadCanvas, seed, {
+        width: 1200,
+        margin: 4,
+        errorCorrectionLevel: 'H'
+    }, function(err){
+        if(!err) downloadCanvas.toBlob(blob => {
+            const link = document.createElement("a");
+            link.download = "standard_seed_print.png";
+            link.href = URL.createObjectURL(blob);
+            link.click();
+        });
+    });
+}
+
+// -------- SCANNERS --------
+function startSeedScanner(){
+    seedScanner = new Html5Qrcode("qr-reader-seed");
+    seedScanner.start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: 250 },
+        message => {
+            document.getElementById("seedInput").value = message.trim();
+            seedScanner.stop();
+        }
+    );
+}
+
+function startCoordinateScanner(){
+    coordinateScanner = new Html5Qrcode("qr-reader-coord");
+    coordinateScanner.start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: 250 },
+        message => {
+            document.getElementById("coordinateInput").value = message.trim();
+            coordinateScanner.stop();
+        }
     );
 }
 </script>
