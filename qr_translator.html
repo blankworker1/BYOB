@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BYOB QR Translator</title>
+<style>
+body { font-family: sans-serif; padding: 20px; max-width: 600px; margin: auto; }
+h2 { text-align: center; margin-bottom: 20px; }
+textarea, input { width: 100%; margin: 10px 0; padding: 8px; font-size: 16px; }
+button { padding: 10px 15px; margin: 5px; font-size: 16px; }
+#qrOutput img, #standardQROutput img { max-width: 100%; margin-top: 20px; }
+#wordsOutput { margin-top: 20px; white-space: pre-wrap; }
+video { width: 100%; margin-top: 20px; border: 1px solid #ccc; }
+</style>
+</head>
+<body>
+
+<h2>BYOB QR Translator</h2>
+
+<h3>Encode Seed → Coordinate QR</h3>
+<textarea id="seedInput" rows="3" placeholder="Enter 12 BIP39 words separated by spaces"></textarea>
+<input type="text" id="versionInput" placeholder="Version prefix (2 digits, e.g., 01)" maxlength="2">
+<button onclick="encodeSeed()">Generate Coordinate QR</button>
+<div id="qrOutput"></div>
+
+<h3>Decode Coordinate QR → Words</h3>
+<textarea id="coordInput" rows="3" placeholder="Enter 74-digit coordinate string"></textarea>
+<button onclick="decodeCoords()">Decode</button>
+<div id="wordsOutput"></div>
+
+<h3>Scan Standard Seed QR (from Seedsigner)</h3>
+<button onclick="startScanner()">Start Camera Scanner</button>
+<video id="qrVideo" autoplay></video>
+
+<h3>Optional: Generate Standard SeedQR</h3>
+<button onclick="generateStandardSeedQR()">Generate SeedQR for SeedSigner</button>
+<div id="standardQROutput"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+
+<script>
+// Global variables
+let canonicalWall = {};
+let lastEncoded = "";
+
+// Load canonical wall mapping (local JSON)
+fetch('canonical_wall.json')
+  .then(resp => resp.json())
+  .then(data => canonicalWall = data)
+  .catch(err => alert("Error loading canonical wall: " + err));
+
+// Encode 12-word seed to coordinate string + QR
+function encodeSeed() {
+  const words = document.getElementById('seedInput').value.trim().split(/\s+/);
+  const version = document.getElementById('versionInput').value.padStart(2,'0');
+  if(words.length !== 12) { alert("Enter exactly 12 words"); return; }
+  if(!version.match(/^\d{2}$/)) { alert("Version must be 2 digits"); return; }
+
+  let coordStr = version;
+  for(let w of words){
+    const coord = canonicalWall[w];
+    if(!coord){ alert("Word not found in canonical wall: " + w); return; }
+    coordStr += coord; // coord is 6-digit SSRRCC
+  }
+  lastEncoded = coordStr;
+
+  // Generate QR
+  const qr = new QRious({ value: coordStr, size: 300 });
+  const container = document.getElementById('qrOutput');
+  container.innerHTML = "";
+  container.appendChild(qr.image);
+}
+
+// Decode 74-digit coordinate string to 12 words
+function decodeCoords(inputStr) {
+  const coordStr = inputStr || document.getElementById('coordInput').value.trim();
+  if(coordStr.length < 74){ alert("Coordinate string too short"); return; }
+  let words = [];
+  for(let i=2; i<coordStr.length; i+=6){ // skip 2-digit version
+    const chunk = coordStr.slice(i,i+6);
+    const word = Object.keys(canonicalWall).find(k => canonicalWall[k] === chunk);
+    if(!word){ alert("Coordinate not found in canonical wall: " + chunk); return; }
+    words.push(word);
+  }
+  document.getElementById('wordsOutput').textContent = words.join(" ");
+  return words;
+}
+
+// Optional: Generate standard SeedQR
+function generateStandardSeedQR() {
+  if(!lastEncoded){ alert("First encode seed to generate QR"); return; }
+  const words = decodeCoords(lastEncoded);
+  const qr = new QRious({ value: words.join(" "), size: 300 });
+  const container = document.getElementById('standardQROutput');
+  container.innerHTML = "";
+  container.appendChild(qr.image);
+}
+
+// Camera scanner setup
+let videoStream;
+function startScanner() {
+  const video = document.getElementById('qrVideo');
+  navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+    .then(stream => {
+      videoStream = stream;
+      video.srcObject = stream;
+      video.setAttribute("playsinline", true);
+      requestAnimationFrame(scanFrame);
+    })
+    .catch(err => alert("Camera access denied or unavailable: " + err));
+}
+
+function scanFrame() {
+  const video = document.getElementById('qrVideo');
+  if(video.readyState === video.HAVE_ENOUGH_DATA){
+    const canvas = document.createElement('canvas');
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(video,0,0,canvas.width,canvas.height);
+    const imageData = ctx.getImageData(0,0,canvas.width,canvas.height);
+    const code = jsQR(imageData.data, canvas.width, canvas.height);
+    if(code){
+      videoStream.getTracks().forEach(track => track.stop());
+      document.getElementById('qrVideo').style.display = 'none';
+      document.getElementById('coordInput').value = code.data;
+      decodeCoords(code.data);
+      alert("QR scanned successfully!");
+      return;
+    }
+  }
+  requestAnimationFrame(scanFrame);
+}
+</script>
+
+</body>
+</html>
