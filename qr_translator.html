@@ -46,10 +46,16 @@ let canonicalWall = {};
 let lastEncoded = "";
 
 // Load canonical wall mapping (local JSON)
-fetch('canonical_wall.json')
+  fetch('BOSA_canonical_wall.json')
   .then(resp => resp.json())
-  .then(data => canonicalWall = data)
-  .catch(err => alert("Error loading canonical wall: " + err));
+  .then(data => {
+      canonicalWall = data.mapping;
+      console.log("Loaded canonical wall for:", data.meta.community);
+  })
+  .catch(err => {
+      alert("Error loading canonical wall: " + err);
+  });
+  
 
 // Encode 12-word seed to coordinate string + QR
 function encodeSeed() {
