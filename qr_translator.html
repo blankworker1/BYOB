@@ -18,6 +18,10 @@ video { width: 100%; margin-top: 20px; border: 1px solid #ccc; }
 
 <h2>BYOB QR Translator</h2>
 
+<h3>Scan Plaintext QR (Seedsigner)</h3>
+<button onclick="startScanner()">Start Camera Scanner</button>
+<video id="qrVideo" autoplay></video>
+
 <h3>Encode Seed → Coordinate QR</h3>
 <textarea id="seedInput" rows="3" placeholder="Enter 12 BIP39 words separated by spaces"></textarea>
 <input type="text" id="versionInput" placeholder="Version prefix (2 digits, e.g., 01)" maxlength="2">
@@ -28,10 +32,6 @@ video { width: 100%; margin-top: 20px; border: 1px solid #ccc; }
 <textarea id="coordInput" rows="3" placeholder="Enter 74-digit coordinate string"></textarea>
 <button onclick="decodeCoords()">Decode</button>
 <div id="wordsOutput"></div>
-
-<h3>Scan Standard Seed QR (from Seedsigner)</h3>
-<button onclick="startScanner()">Start Camera Scanner</button>
-<video id="qrVideo" autoplay></video>
 
 <h3>Optional: Generate Standard SeedQR</h3>
 <button onclick="generateStandardSeedQR()">Generate SeedQR for SeedSigner</button>
@@ -46,7 +46,7 @@ let canonicalWall = {};
 let lastEncoded = "";
 
 // Load canonical wall mapping (local JSON)
-fetch('canonical_wall.json')
+fetch('BOSA_canonical_wall.json')
   .then(resp => resp.json())
   .then(data => canonicalWall = data)
   .catch(err => alert("Error loading canonical wall: " + err));
@@ -85,6 +85,9 @@ function decodeCoords(inputStr) {
     words.push(word);
   }
   document.getElementById('wordsOutput').textContent = words.join(" ");
+
+  // Also populate Encode Seed field for convenience
+  document.getElementById('seedInput').value = words.join(" ");
   return words;
 }
 
@@ -102,6 +105,7 @@ function generateStandardSeedQR() {
 let videoStream;
 function startScanner() {
   const video = document.getElementById('qrVideo');
+  video.style.display = "block";
   navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
     .then(stream => {
       videoStream = stream;
@@ -124,10 +128,10 @@ function scanFrame() {
     const code = jsQR(imageData.data, canvas.width, canvas.height);
     if(code){
       videoStream.getTracks().forEach(track => track.stop());
-      document.getElementById('qrVideo').style.display = 'none';
-      document.getElementById('coordInput').value = code.data;
-      decodeCoords(code.data);
-      alert("QR scanned successfully!");
+      video.style.display = 'none';
+      // Populate Encode Seed field and decode to coordinate
+      document.getElementById('seedInput').value = code.data;
+      alert("QR scanned successfully! Please verify 12 words.");
       return;
     }
   }
