@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -38,14 +39,18 @@ hr {
   margin: 40px 0;
 }
 
-/* Canvas display scaling for mobile/tablet */
-canvas.display-fit {
-  width: 100%;           /* scale to container */
-  max-width: 400px;      /* cap width */
-  height: auto;          /* maintain aspect ratio */
-  aspect-ratio: 1 / 1;   /* force square display */
-  border: 1px solid #ccc;
+/* Canvas wrapper for perfect square display */
+.canvas-wrapper {
+  width: 100%;
+  max-width: 400px;      /* Display size cap */
+  aspect-ratio: 1 / 1;   /* Force square */
   margin: 20px auto;
+  border: 1px solid #ccc;
+}
+
+.canvas-wrapper canvas {
+  width: 100%;
+  height: 100%;
   display: block;
 }
 </style>
@@ -62,7 +67,9 @@ canvas.display-fit {
 <textarea id="seedInput" placeholder="Enter 12 seed words here" rows="3"></textarea>
 
 <button onclick="generateCoordinateQR()">Generate Coordinate QR</button>
-<canvas id="coordinateQRCanvas" class="display-fit"></canvas>
+<div class="canvas-wrapper">
+  <canvas id="coordinateQRCanvas"></canvas>
+</div>
 
 <hr>
 
@@ -78,7 +85,9 @@ canvas.display-fit {
 <textarea id="decodedSeedOutput" placeholder="Decoded 12 seed words will appear here" rows="3"></textarea>
 
 <button onclick="generateSeedQRFromDecoded()">Generate Seed QR</button>
-<canvas id="decodedSeedQRCanvas" class="display-fit"></canvas>
+<div class="canvas-wrapper">
+  <canvas id="decodedSeedQRCanvas"></canvas>
+</div>
 
 <script>
 let canonicalWall = {};
@@ -218,7 +227,6 @@ function generateSeedQRFromDecoded(){
 </script>
 </body>
 </html>
-
 
 
 
