@@ -36,6 +36,15 @@ canvas {
 hr {
   margin: 40px 0;
 }
+  
+canvas.display-fit {
+  width: 100%;      /* fit container width */
+  height: auto;     /* maintain aspect ratio */
+  max-width: 400px; /* optional: cap display width on screen */
+  border: 1px solid #ccc;
+  margin-top: 20px;
+}
+
 </style>
 </head>
 <body>
@@ -60,7 +69,8 @@ rows="3"></textarea>
 
 <button onclick="generateCoordinateQR()">Generate Coordinate QR</button>
 
-<canvas id="coordinateQRCanvas"></canvas>
+
+<canvas id="coordinateQRCanvas" class="display-fit"></canvas>
 
 <hr>
 
@@ -92,7 +102,7 @@ rows="3"></textarea>
 
 <button onclick="generateSeedQRFromDecoded()">Generate Seed QR</button>
 
-<canvas id="decodedSeedQRCanvas"></canvas>
+<canvas id="decodedSeedQRCanvas" class="display-fit"></canvas>
 
 <script>
 
