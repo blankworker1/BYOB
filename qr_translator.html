@@ -46,7 +46,7 @@ let canonicalWall = {};
 let lastEncoded = "";
 
 // Load canonical wall mapping (local JSON)
-fetch('BOSA_canonical_wall.json')
+fetch('canonical_wall.json')
   .then(resp => resp.json())
   .then(data => canonicalWall = data)
   .catch(err => alert("Error loading canonical wall: " + err));
