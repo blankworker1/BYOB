@@ -1,149 +1,250 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BYOB QR Translator</title>
+<title>BYOB – QR Translator</title>
+
+<script src="https://unpkg.com/html5-qrcode"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+
 <style>
-body { font-family: sans-serif; padding: 20px; max-width: 600px; margin: auto; }
-h2 { text-align: center; margin-bottom: 20px; }
-textarea, input { width: 100%; margin: 10px 0; padding: 8px; font-size: 16px; }
-button { padding: 10px 15px; margin: 5px; font-size: 16px; }
-#qrOutput img, #standardQROutput img { max-width: 100%; margin-top: 20px; }
-#wordsOutput { margin-top: 20px; white-space: pre-wrap; }
-video { width: 100%; margin-top: 20px; border: 1px solid #ccc; }
+body {
+  font-family: sans-serif;
+  max-width: 600px;
+  margin: auto;
+  padding: 20px;
+}
+
+textarea {
+  width: 100%;
+  font-size: 14px;
+}
+
+button {
+  padding: 10px;
+  margin: 5px 0;
+  width: 100%;
+}
+
+canvas {
+  margin-top: 15px;
+  max-width: 100%;
+}
+
+hr {
+  margin: 40px 0;
+}
 </style>
 </head>
 <body>
 
-<h2>BYOB QR Translator</h2>
+<h2>BYOB – QR Translator</h2>
 
-<h3>Scan Plaintext QR (Seedsigner)</h3>
-<button onclick="startScanner()">Start Camera Scanner</button>
-<video id="qrVideo" autoplay></video>
+<!-- ================= ENCODE SECTION ================= -->
 
-<h3>Encode Seed → Coordinate QR</h3>
-<textarea id="seedInput" rows="3" placeholder="Enter 12 BIP39 words separated by spaces"></textarea>
-<input type="text" id="versionInput" placeholder="Version prefix (2 digits, e.g., 01)" maxlength="2">
-<button onclick="encodeSeed()">Generate Coordinate QR</button>
-<div id="qrOutput"></div>
+<h3>Scan Plaintext QR</h3>
 
-<h3>Decode Coordinate QR → Words</h3>
-<textarea id="coordInput" rows="3" placeholder="Enter 74-digit coordinate string"></textarea>
-<button onclick="decodeCoords()">Decode</button>
-<div id="wordsOutput"></div>
+<div id="qr-reader-seed" style="width:100%;"></div>
 
-<h3>Optional: Generate Standard SeedQR</h3>
-<button onclick="generateStandardSeedQR()">Generate SeedQR for SeedSigner</button>
-<div id="standardQROutput"></div>
+<button onclick="startSeedScanner()">Start Camera Scanner</button>
 
-<script src="https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+<br><br>
+
+<textarea id="seedInput"
+placeholder="Enter 12 seed words here"
+rows="3"></textarea>
+
+<br>
+
+<button onclick="generateCoordinateQR()">Generate Coordinate QR</button>
+
+<canvas id="coordinateQRCanvas"></canvas>
+
+<hr>
+
+<!-- ================= DECODE SECTION ================= -->
+
+<h3>Scan Coordinate QR</h3>
+
+<div id="qr-reader-coord" style="width:100%;"></div>
+
+<button onclick="startCoordinateScanner()">Start Camera Scanner</button>
+
+<br><br>
+
+<textarea id="coordinateInput"
+placeholder="72 digit coordinate string will appear here"
+rows="3"></textarea>
+
+<br>
+
+<button onclick="decodeCoordinates()">Decode</button>
+
+<br><br>
+
+<textarea id="decodedSeedOutput"
+placeholder="Decoded 12 seed words will appear here"
+rows="3"></textarea>
+
+<br>
+
+<button onclick="generateSeedQRFromDecoded()">Generate Seed QR</button>
+
+<canvas id="decodedSeedQRCanvas"></canvas>
 
 <script>
-// Global variables
-let canonicalWall = {};
-let lastEncoded = "";
 
-// Load canonical wall mapping (local JSON)
-  fetch('BOSA_canonical_wall.json')
+let canonicalWall = {};
+let seedScanner;
+let coordinateScanner;
+
+// -------- LOAD CANONICAL WALL --------
+
+fetch('BOSA_canonical_wall.json')
   .then(resp => resp.json())
   .then(data => {
       canonicalWall = data.mapping;
-      console.log("Loaded canonical wall for:", data.meta.community);
+      console.log("Loaded canonical wall:", data.meta.community);
   })
   .catch(err => {
-      alert("Error loading canonical wall: " + err);
+      alert("Error loading canonical wall JSON.");
   });
-  
 
-// Encode 12-word seed to coordinate string + QR
-function encodeSeed() {
-  const words = document.getElementById('seedInput').value.trim().split(/\s+/);
-  const version = document.getElementById('versionInput').value.padStart(2,'0');
-  if(words.length !== 12) { alert("Enter exactly 12 words"); return; }
-  if(!version.match(/^\d{2}$/)) { alert("Version must be 2 digits"); return; }
+// -------- SEED SCANNER --------
 
-  let coordStr = version;
-  for(let w of words){
-    const coord = canonicalWall[w];
-    if(!coord){ alert("Word not found in canonical wall: " + w); return; }
-    coordStr += coord; // coord is 6-digit SSRRCC
+function startSeedScanner() {
+  seedScanner = new Html5Qrcode("qr-reader-seed");
+  seedScanner.start(
+    { facingMode: "environment" },
+    { fps: 10, qrbox: 250 },
+    message => {
+      document.getElementById("seedInput").value = message.trim();
+      seedScanner.stop();
+    }
+  );
+}
+
+// -------- COORDINATE SCANNER --------
+
+function startCoordinateScanner() {
+  coordinateScanner = new Html5Qrcode("qr-reader-coord");
+  coordinateScanner.start(
+    { facingMode: "environment" },
+    { fps: 10, qrbox: 250 },
+    message => {
+      document.getElementById("coordinateInput").value = message.trim();
+      coordinateScanner.stop();
+    }
+  );
+}
+
+// -------- GENERATE COORDINATE QR --------
+
+function generateCoordinateQR() {
+
+  const seedWords = document.getElementById("seedInput").value
+                      .trim()
+                      .toLowerCase()
+                      .split(/\s+/);
+
+  if(seedWords.length !== 12){
+    alert("Enter exactly 12 seed words.");
+    return;
   }
-  lastEncoded = coordStr;
 
-  // Generate QR
-  const qr = new QRious({ value: coordStr, size: 300 });
-  const container = document.getElementById('qrOutput');
-  container.innerHTML = "";
-  container.appendChild(qr.image);
-}
+  let coordinateString = "";
 
-// Decode 74-digit coordinate string to 12 words
-function decodeCoords(inputStr) {
-  const coordStr = inputStr || document.getElementById('coordInput').value.trim();
-  if(coordStr.length < 74){ alert("Coordinate string too short"); return; }
-  let words = [];
-  for(let i=2; i<coordStr.length; i+=6){ // skip 2-digit version
-    const chunk = coordStr.slice(i,i+6);
-    const word = Object.keys(canonicalWall).find(k => canonicalWall[k] === chunk);
-    if(!word){ alert("Coordinate not found in canonical wall: " + chunk); return; }
-    words.push(word);
-  }
-  document.getElementById('wordsOutput').textContent = words.join(" ");
+  for(let word of seedWords){
 
-  // Also populate Encode Seed field for convenience
-  document.getElementById('seedInput').value = words.join(" ");
-  return words;
-}
-
-// Optional: Generate standard SeedQR
-function generateStandardSeedQR() {
-  if(!lastEncoded){ alert("First encode seed to generate QR"); return; }
-  const words = decodeCoords(lastEncoded);
-  const qr = new QRious({ value: words.join(" "), size: 300 });
-  const container = document.getElementById('standardQROutput');
-  container.innerHTML = "";
-  container.appendChild(qr.image);
-}
-
-// Camera scanner setup
-let videoStream;
-function startScanner() {
-  const video = document.getElementById('qrVideo');
-  video.style.display = "block";
-  navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
-    .then(stream => {
-      videoStream = stream;
-      video.srcObject = stream;
-      video.setAttribute("playsinline", true);
-      requestAnimationFrame(scanFrame);
-    })
-    .catch(err => alert("Camera access denied or unavailable: " + err));
-}
-
-function scanFrame() {
-  const video = document.getElementById('qrVideo');
-  if(video.readyState === video.HAVE_ENOUGH_DATA){
-    const canvas = document.createElement('canvas');
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    const ctx = canvas.getContext('2d');
-    ctx.drawImage(video,0,0,canvas.width,canvas.height);
-    const imageData = ctx.getImageData(0,0,canvas.width,canvas.height);
-    const code = jsQR(imageData.data, canvas.width, canvas.height);
-    if(code){
-      videoStream.getTracks().forEach(track => track.stop());
-      video.style.display = 'none';
-      // Populate Encode Seed field and decode to coordinate
-      document.getElementById('seedInput').value = code.data;
-      alert("QR scanned successfully! Please verify 12 words.");
+    if(!canonicalWall[word]){
+      alert("Word not found in canonical wall: " + word);
       return;
     }
+
+    coordinateString += canonicalWall[word];
   }
-  requestAnimationFrame(scanFrame);
+
+  const canvas = document.getElementById("coordinateQRCanvas");
+
+  QRCode.toCanvas(canvas, coordinateString, function(error){
+    if(error) console.error(error);
+  });
+
+  downloadCanvas(canvas, "coordinate_seed.png");
 }
+
+// -------- DOWNLOAD CANVAS --------
+
+function downloadCanvas(canvas, filename){
+  const link = document.createElement("a");
+  link.download = filename;
+  link.href = canvas.toDataURL("image/png");
+  link.click();
+}
+
+// -------- DECODE COORDINATES --------
+
+function decodeCoordinates(){
+
+  const input = document.getElementById("coordinateInput")
+                .value.trim();
+
+  if(!/^\d{72}$/.test(input)){
+    alert("Coordinate string must be exactly 72 digits.");
+    return;
+  }
+
+  const words = [];
+
+  for(let i=0;i<72;i+=6){
+
+    const coord = input.slice(i,i+6);
+
+    const word = Object.keys(canonicalWall)
+                  .find(key => canonicalWall[key] === coord);
+
+    if(!word){
+      alert("Invalid coordinate: " + coord);
+      return;
+    }
+
+    words.push(word);
+  }
+
+  document.getElementById("decodedSeedOutput")
+          .value = words.join(" ");
+}
+
+// -------- GENERATE STANDARD SEED QR --------
+
+function generateSeedQRFromDecoded(){
+
+  const seed = document.getElementById("decodedSeedOutput")
+              .value.trim();
+
+  if(!seed){
+    alert("No decoded seed words found.");
+    return;
+  }
+
+  const canvas = document.getElementById("decodedSeedQRCanvas");
+
+  QRCode.toCanvas(canvas, seed, function(error){
+    if(error) console.error(error);
+  });
+
+}
+
 </script>
 
 </body>
 </html>
+
+
+
+
+
+
+  
+  
