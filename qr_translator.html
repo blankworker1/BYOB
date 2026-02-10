@@ -28,8 +28,9 @@ button {
 }
 
 canvas {
-  margin-top: 15px;
-  max-width: 100%;
+  width: 100%;
+  height: auto;
+  margin-top: 20px;
 }
 
 hr {
@@ -111,129 +112,151 @@ fetch('BOSA_canonical_wall.json')
       alert("Error loading canonical wall JSON.");
   });
 
+// -------- HIGH RES QR FUNCTION --------
+
+function generateHighResQR(canvasId, text, filename){
+
+    const canvas = document.getElementById(canvasId);
+    const size = 1200; // print resolution
+
+    canvas.width = size;
+    canvas.height = size;
+
+    QRCode.toCanvas(canvas, text, {
+        width: size,
+        margin: 4,
+        errorCorrectionLevel: 'H'
+    }, function(error){
+        if(error){
+            console.error(error);
+            alert("QR generation error.");
+            return;
+        }
+
+        downloadCanvas(canvas, filename);
+    });
+}
+
+// -------- DOWNLOAD FUNCTION --------
+
+function downloadCanvas(canvas, filename){
+    const link = document.createElement("a");
+    link.download = filename;
+    link.href = canvas.toDataURL("image/png");
+    link.click();
+}
+
 // -------- SEED SCANNER --------
 
-function startSeedScanner() {
-  seedScanner = new Html5Qrcode("qr-reader-seed");
-  seedScanner.start(
-    { facingMode: "environment" },
-    { fps: 10, qrbox: 250 },
-    message => {
-      document.getElementById("seedInput").value = message.trim();
-      seedScanner.stop();
-    }
-  );
+function startSeedScanner(){
+    seedScanner = new Html5Qrcode("qr-reader-seed");
+    seedScanner.start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: 250 },
+        message => {
+            document.getElementById("seedInput").value = message.trim();
+            seedScanner.stop();
+        }
+    );
 }
 
 // -------- COORDINATE SCANNER --------
 
-function startCoordinateScanner() {
-  coordinateScanner = new Html5Qrcode("qr-reader-coord");
-  coordinateScanner.start(
-    { facingMode: "environment" },
-    { fps: 10, qrbox: 250 },
-    message => {
-      document.getElementById("coordinateInput").value = message.trim();
-      coordinateScanner.stop();
-    }
-  );
+function startCoordinateScanner(){
+    coordinateScanner = new Html5Qrcode("qr-reader-coord");
+    coordinateScanner.start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: 250 },
+        message => {
+            document.getElementById("coordinateInput").value = message.trim();
+            coordinateScanner.stop();
+        }
+    );
 }
 
 // -------- GENERATE COORDINATE QR --------
 
-function generateCoordinateQR() {
+function generateCoordinateQR(){
 
-  const seedWords = document.getElementById("seedInput").value
-                      .trim()
+    const seedWords = document.getElementById("seedInput")
+                      .value.trim()
                       .toLowerCase()
                       .split(/\s+/);
 
-  if(seedWords.length !== 12){
-    alert("Enter exactly 12 seed words.");
-    return;
-  }
-
-  let coordinateString = "";
-
-  for(let word of seedWords){
-
-    if(!canonicalWall[word]){
-      alert("Word not found in canonical wall: " + word);
-      return;
+    if(seedWords.length !== 12){
+        alert("Enter exactly 12 seed words.");
+        return;
     }
 
-    coordinateString += canonicalWall[word];
-  }
+    let coordinateString = "";
 
-  const canvas = document.getElementById("coordinateQRCanvas");
+    for(let word of seedWords){
 
-  QRCode.toCanvas(canvas, coordinateString, function(error){
-    if(error) console.error(error);
-  });
+        if(!canonicalWall[word]){
+            alert("Word not found in canonical wall: " + word);
+            return;
+        }
 
-  downloadCanvas(canvas, "coordinate_seed.png");
-}
+        coordinateString += canonicalWall[word];
+    }
 
-// -------- DOWNLOAD CANVAS --------
-
-function downloadCanvas(canvas, filename){
-  const link = document.createElement("a");
-  link.download = filename;
-  link.href = canvas.toDataURL("image/png");
-  link.click();
+    generateHighResQR(
+        "coordinateQRCanvas",
+        coordinateString,
+        "coordinate_seed_print.png"
+    );
 }
 
 // -------- DECODE COORDINATES --------
 
 function decodeCoordinates(){
 
-  const input = document.getElementById("coordinateInput")
+    const input = document.getElementById("coordinateInput")
                 .value.trim();
 
-  if(!/^\d{72}$/.test(input)){
-    alert("Coordinate string must be exactly 72 digits.");
-    return;
-  }
-
-  const words = [];
-
-  for(let i=0;i<72;i+=6){
-
-    const coord = input.slice(i,i+6);
-
-    const word = Object.keys(canonicalWall)
-                  .find(key => canonicalWall[key] === coord);
-
-    if(!word){
-      alert("Invalid coordinate: " + coord);
-      return;
+    if(!/^\d{72}$/.test(input)){
+        alert("Coordinate string must be exactly 72 digits.");
+        return;
     }
 
-    words.push(word);
-  }
+    const words = [];
 
-  document.getElementById("decodedSeedOutput")
-          .value = words.join(" ");
+    for(let i=0;i<72;i+=6){
+
+        const coord = input.slice(i,i+6);
+
+        const word = Object.keys(canonicalWall)
+                     .find(key => canonicalWall[key] === coord);
+
+        if(!word){
+            alert("Invalid coordinate: " + coord);
+            return;
+        }
+
+        words.push(word);
+    }
+
+    document.getElementById("decodedSeedOutput")
+            .value = words.join(" ");
 }
 
 // -------- GENERATE STANDARD SEED QR --------
 
 function generateSeedQRFromDecoded(){
 
-  const seed = document.getElementById("decodedSeedOutput")
-              .value.trim();
+    const seed = document.getElementById("decodedSeedOutput")
+                .value.trim();
 
-  if(!seed){
-    alert("No decoded seed words found.");
-    return;
-  }
+    if(!seed){
+        alert("No decoded seed words found.");
+        return;
+    }
 
-  const canvas = document.getElementById("decodedSeedQRCanvas");
-
-  QRCode.toCanvas(canvas, seed, function(error){
-    if(error) console.error(error);
-  });
-
+    generateHighResQR(
+        "decodedSeedQRCanvas",
+        seed,
+        "standard_seed_print.png"
+    );
 }
 
 </script>
@@ -246,5 +269,5 @@ function generateSeedQRFromDecoded(){
 
 
 
-  
-  
+
+
