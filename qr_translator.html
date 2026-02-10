@@ -1,10 +1,11 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>BYOB – QR Translator</title>
 
+<!-- Libraries -->
 <script src="https://unpkg.com/html5-qrcode"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
 
@@ -16,35 +17,37 @@ body {
   padding: 20px;
 }
 
+h2, h3 {
+  text-align: center;
+}
+
 textarea {
   width: 100%;
   font-size: 14px;
+  margin: 5px 0;
 }
 
 button {
   padding: 10px;
   margin: 5px 0;
   width: 100%;
-}
-
-canvas {
-  width: 100%;
-  height: auto;
-  margin-top: 20px;
+  font-size: 16px;
 }
 
 hr {
   margin: 40px 0;
 }
-  
-canvas.display-fit {
-  width: 100%;      /* fit container width */
-  height: auto;     /* maintain aspect ratio */
-  max-width: 400px; /* optional: cap display width on screen */
-  border: 1px solid #ccc;
-  margin-top: 20px;
-}
 
+/* Canvas display scaling for mobile/tablet */
+canvas.display-fit {
+  width: 100%;           /* scale to container */
+  max-width: 400px;      /* cap width */
+  height: auto;          /* maintain aspect ratio */
+  aspect-ratio: 1 / 1;   /* force square display */
+  border: 1px solid #ccc;
+  margin: 20px auto;
+  display: block;
+}
 </style>
 </head>
 <body>
@@ -52,66 +55,37 @@ canvas.display-fit {
 <h2>BYOB – QR Translator</h2>
 
 <!-- ================= ENCODE SECTION ================= -->
-
 <h3>Scan Plaintext QR</h3>
-
 <div id="qr-reader-seed" style="width:100%;"></div>
-
 <button onclick="startSeedScanner()">Start Camera Scanner</button>
 
-<br><br>
-
-<textarea id="seedInput"
-placeholder="Enter 12 seed words here"
-rows="3"></textarea>
-
-<br>
+<textarea id="seedInput" placeholder="Enter 12 seed words here" rows="3"></textarea>
 
 <button onclick="generateCoordinateQR()">Generate Coordinate QR</button>
-
-
 <canvas id="coordinateQRCanvas" class="display-fit"></canvas>
 
 <hr>
 
 <!-- ================= DECODE SECTION ================= -->
-
 <h3>Scan Coordinate QR</h3>
-
 <div id="qr-reader-coord" style="width:100%;"></div>
-
 <button onclick="startCoordinateScanner()">Start Camera Scanner</button>
 
-<br><br>
-
-<textarea id="coordinateInput"
-placeholder="72 digit coordinate string will appear here"
-rows="3"></textarea>
-
-<br>
+<textarea id="coordinateInput" placeholder="72 digit coordinate string will appear here" rows="3"></textarea>
 
 <button onclick="decodeCoordinates()">Decode</button>
 
-<br><br>
-
-<textarea id="decodedSeedOutput"
-placeholder="Decoded 12 seed words will appear here"
-rows="3"></textarea>
-
-<br>
+<textarea id="decodedSeedOutput" placeholder="Decoded 12 seed words will appear here" rows="3"></textarea>
 
 <button onclick="generateSeedQRFromDecoded()">Generate Seed QR</button>
-
 <canvas id="decodedSeedQRCanvas" class="display-fit"></canvas>
 
 <script>
-
 let canonicalWall = {};
 let seedScanner;
 let coordinateScanner;
 
 // -------- LOAD CANONICAL WALL --------
-
 fetch('BOSA_canonical_wall.json')
   .then(resp => resp.json())
   .then(data => {
@@ -123,12 +97,9 @@ fetch('BOSA_canonical_wall.json')
   });
 
 // -------- HIGH RES QR FUNCTION --------
-
 function generateHighResQR(canvasId, text, filename){
-
     const canvas = document.getElementById(canvasId);
     const size = 1200; // print resolution
-
     canvas.width = size;
     canvas.height = size;
 
@@ -142,13 +113,11 @@ function generateHighResQR(canvasId, text, filename){
             alert("QR generation error.");
             return;
         }
-
         downloadCanvas(canvas, filename);
     });
 }
 
 // -------- DOWNLOAD FUNCTION --------
-
 function downloadCanvas(canvas, filename){
     const link = document.createElement("a");
     link.download = filename;
@@ -157,7 +126,6 @@ function downloadCanvas(canvas, filename){
 }
 
 // -------- SEED SCANNER --------
-
 function startSeedScanner(){
     seedScanner = new Html5Qrcode("qr-reader-seed");
     seedScanner.start(
@@ -171,7 +139,6 @@ function startSeedScanner(){
 }
 
 // -------- COORDINATE SCANNER --------
-
 function startCoordinateScanner(){
     coordinateScanner = new Html5Qrcode("qr-reader-coord");
     coordinateScanner.start(
@@ -185,13 +152,9 @@ function startCoordinateScanner(){
 }
 
 // -------- GENERATE COORDINATE QR --------
-
 function generateCoordinateQR(){
-
     const seedWords = document.getElementById("seedInput")
-                      .value.trim()
-                      .toLowerCase()
-                      .split(/\s+/);
+                      .value.trim().toLowerCase().split(/\s+/);
 
     if(seedWords.length !== 12){
         alert("Enter exactly 12 seed words.");
@@ -201,12 +164,10 @@ function generateCoordinateQR(){
     let coordinateString = "";
 
     for(let word of seedWords){
-
         if(!canonicalWall[word]){
             alert("Word not found in canonical wall: " + word);
             return;
         }
-
         coordinateString += canonicalWall[word];
     }
 
@@ -218,11 +179,8 @@ function generateCoordinateQR(){
 }
 
 // -------- DECODE COORDINATES --------
-
 function decodeCoordinates(){
-
-    const input = document.getElementById("coordinateInput")
-                .value.trim();
+    const input = document.getElementById("coordinateInput").value.trim();
 
     if(!/^\d{72}$/.test(input)){
         alert("Coordinate string must be exactly 72 digits.");
@@ -230,33 +188,22 @@ function decodeCoordinates(){
     }
 
     const words = [];
-
-    for(let i=0;i<72;i+=6){
-
+    for(let i=0; i<72; i+=6){
         const coord = input.slice(i,i+6);
-
-        const word = Object.keys(canonicalWall)
-                     .find(key => canonicalWall[key] === coord);
-
+        const word = Object.keys(canonicalWall).find(key => canonicalWall[key] === coord);
         if(!word){
             alert("Invalid coordinate: " + coord);
             return;
         }
-
         words.push(word);
     }
 
-    document.getElementById("decodedSeedOutput")
-            .value = words.join(" ");
+    document.getElementById("decodedSeedOutput").value = words.join(" ");
 }
 
 // -------- GENERATE STANDARD SEED QR --------
-
 function generateSeedQRFromDecoded(){
-
-    const seed = document.getElementById("decodedSeedOutput")
-                .value.trim();
-
+    const seed = document.getElementById("decodedSeedOutput").value.trim();
     if(!seed){
         alert("No decoded seed words found.");
         return;
@@ -268,9 +215,7 @@ function generateSeedQRFromDecoded(){
         "standard_seed_print.png"
     );
 }
-
 </script>
-
 </body>
 </html>
 
