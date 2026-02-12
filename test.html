@@ -108,7 +108,18 @@ function testSave() {
   
   // Test bip32 parsing
   try {
-    const network = bitcoin.networks.testnet;
+    const network = {
+  messagePrefix: '\x18Bitcoin Signed Message:\n',
+  bech32: 'tb',
+  bip32: {
+    public: 0x043587cf,
+    private: 0x04358394
+  },
+  pubKeyHash: 0x6f,
+  scriptHash: 0xc4,
+  wif: 0xef
+};
+
     const node = bip32.fromBase58(xpub, network);
     
     document.getElementById('result').innerHTML = '✅ SUCCESS! XPUB is valid!<br><br>Now deriving addresses...';
