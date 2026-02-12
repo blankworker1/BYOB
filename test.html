@@ -116,47 +116,56 @@ function testSave() {
   }
 
   /* --- Detect Network --- */
-  let network;
-  let versions;
 
-  if (xpub.startsWith("xpub")) {
-    network = bitcoin.networks.bitcoin;
-    versions = { public: 0x0488b21e, private: 0x0488ade4 };
-  } else if (xpub.startsWith("tpub")) {
-    network = bitcoin.networks.testnet;
-    versions = { public: 0x043587cf, private: 0x04358394 };
-  } else {
-    updateStatus(5, "✗ Unknown XPUB format", "error");
-    return;
-  }
+// Determine network and version bytes
+let network;
+let versions;
 
-  /* --- Parse XPUB --- */
-  try {
-
-    const node = bip32.HDKey
-      ? bip32.HDKey.fromExtendedKey(xpub, { versions })
-      : bip32.fromBase58(xpub, network);
-
-    const child = node.derive
-      ? node.derive("m/0/0")
-      : node.derive(0).derive(0);
-
-    const pubkey = child.publicKey || child.publicKey;
-
-    const { address } = bitcoin.payments.p2wpkh({
-      pubkey: pubkey,
-      network: network,
-    });
-
-    document.getElementById("result").innerHTML =
-      "✅ SUCCESS!<br><br>First address:<br>" + address;
-
-    updateStatus(5, "✓ XPUB parsed successfully", "success");
-
-  } catch (e) {
-    updateStatus(5, "✗ XPUB parsing error: " + e.message, "error");
-  }
+if (xpub.startsWith('xpub')) {
+  network = bitcoin.networks.bitcoin;
+  versions = {
+    public: 0x0488b21e,
+    private: 0x0488ade4
+  };
+} else if (xpub.startsWith('tpub')) {
+  network = bitcoin.networks.testnet;
+  versions = {
+    public: 0x043587cf,
+    private: 0x04358394
+  };
+} else {
+  updateStatus(5, '✗ Unknown XPUB prefix', 'error');
+  document.getElementById('result').innerHTML =
+    '❌ Must start with xpub (mainnet) or tpub (testnet)';
+  return;
 }
+
+try {
+  const node = scureBip32.HDKey.fromExtendedKey(xpub, { versions });
+
+  document.getElementById('result').innerHTML =
+    '✅ XPUB valid!<br><br>Deriving first address...';
+
+  // Derive first receive address m/0/0
+  const child = node.derive("m/0/0");
+
+  const { address } = bitcoin.payments.p2wpkh({
+    pubkey: child.publicKey,
+    network: network
+  });
+
+  document.getElementById('result').innerHTML +=
+    '<br><br>First address:<br>' + address;
+
+  updateStatus(5, '✓ XPUB parsed and address derived', 'success');
+
+} catch (e) {
+  updateStatus(5, '✗ XPUB parsing error: ' + e.message, 'error');
+  document.getElementById('result').innerHTML =
+    '❌ Error: ' + e.message;
+}
+
+
 
 /* ================================
    UI HELPER
