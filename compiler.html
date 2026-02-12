@@ -1,7 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <script type="importmap">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BYOB One – Wallet</title>
+<script type="importmap">
 {
   "imports": {
     "bip32": "https://esm.sh/bip32@5.2.0",
@@ -9,408 +12,307 @@
     "bitcoinjs-lib": "https://esm.sh/bitcoinjs-lib@6.1.0"
   }
 }
-    </script>
-    
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BYOB One – Wallet</title>
-    <style>
-        body { font-family: sans-serif; max-width: 480px; margin: auto; padding: 20px; }
-        .screen { display:none; }
-        .screen.active { display:block; }
-        input, button, textarea { font-size:16px; padding:8px; margin:5px 0; width:100%; box-sizing:border-box; }
-        .network-toggle { margin-bottom:10px; }
-        .warning { color:red; font-size:14px; margin-top:5px; }
-        #loadingStatus { background:#fff3cd; padding:15px; margin:10px 0; border:2px solid #ffc107; font-size:14px; line-height:1.6; }
-        .success { background:#d4edda; border-color:#28a745; }
-        .error { background:#ffcccc; border-color:#cc0000; }
-    </style>
+</script>
+<style>
+body { font-family: sans-serif; max-width: 480px; margin: auto; padding: 20px; }
+.screen { display:none; }
+.screen.active { display:block; }
+input, button, textarea { font-size:16px; padding:8px; margin:5px 0; width:100%; box-sizing:border-box; }
+.network-toggle { margin-bottom:10px; }
+.warning { color:red; font-size:14px; margin-top:5px; }
+#loadingStatus { background:#fff3cd; padding:15px; margin:10px 0; border:2px solid #ffc107; font-size:14px; line-height:1.6; }
+.success { background:#d4edda; border-color:#28a745; }
+.error { background:#ffcccc; border-color:#cc0000; }
+</style>
 </head>
 <body>
-    <h2>BYOB One – Wallet</h2>
-    
-    <div id="loadingStatus">⏳ Initializing...</div>
-    
-    <div id="mainApp" style="display:none;">
-        <div class="network-toggle">
-            <label><input type="radio" name="network" value="mainnet"> Mainnet</label>
-            <label><input type="radio" name="network" value="testnet" checked> Testnet</label>
-        </div>
 
-        <div id="walletScreen" class="screen active">
-            <div id="xpubImportSection">
-                <input type="text" id="xpubInput" placeholder="Paste XPUB here">
-                <button onclick="saveXpub()">Save XPUB</button>
-            </div>
-            <div id="walletInfoSection" style="display:none;">
-                <p><strong>Balance:</strong> <span id="balanceDisplay"></span></p>
-                <p><strong>Next Receive Address:</strong></p>
-                <p id="receiveAddress" style="word-break:break-all; font-size:12px;"></p>
-                <div id="qrCode"></div>
-                <button onclick="goToSend()">Send BTC</button>
-            </div>
-        </div>
+<h2>BYOB One – Wallet</h2>
 
-        <div id="sendScreen" class="screen">
-            <p><strong>Destination Address:</strong></p>
-            <input type="text" id="destAddress">
-            <p><strong>Amount (sats):</strong></p>
-            <input type="number" id="sendAmount">
-            <p><strong>Fee rate (sat/vbyte):</strong></p>
-            <input type="range" id="feeSlider" min="1" max="200" value="10" oninput="document.getElementById('feeValue').innerText = this.value">
-            <span id="feeValue">10</span> sat/vB
-            <button onclick="buildTx()">Build TX</button>
-            <button onclick="goToWallet()">Back</button>
-        </div>
+<div id="loadingStatus">⏳ Initializing...</div>
 
-        <div id="signScreen" class="screen">
-            <p>Unsigned TX hex:</p>
-            <textarea id="unsignedTx" rows="6"></textarea>
-            <p>Paste signed TX hex:</p>
-            <textarea id="signedTx" rows="6"></textarea>
-            <button onclick="broadcastTx()">Broadcast TX</button>
-            <button onclick="goToWallet()">Back</button>
-            <div id="txStatus"></div>
+<div id="mainApp" style="display:none;">
+    <div class="network-toggle">
+        <label><input type="radio" name="network" value="mainnet"> Mainnet</label>
+        <label><input type="radio" name="network" value="testnet" checked> Testnet</label>
+    </div>
+
+    <div id="walletScreen" class="screen active">
+        <div id="xpubImportSection">
+            <input type="text" id="xpubInput" placeholder="Paste XPUB here">
+            <button onclick="saveXpub()">Save XPUB</button>
+        </div>
+        <div id="walletInfoSection" style="display:none;">
+            <p><strong>Balance:</strong> <span id="balanceDisplay"></span></p>
+            <p><strong>Next Receive Address:</strong></p>
+            <p id="receiveAddress" style="word-break:break-all; font-size:12px;"></p>
+            <div id="qrCode"></div>
+            <button onclick="goToSend()">Send BTC</button>
         </div>
     </div>
 
-    <script>
-        // Dynamic script loader with multiple fallback URLs
-        const librariesToLoad = [
-            {
-                name: 'qrcode',
-                urls: [
-                    'https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js',
-                    'https://unpkg.com/qrcode-generator@1.4.4/qrcode.min.js',
-                    'https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js'
-                ],
-                check: () => typeof qrcode !== 'undefined'
-            }
-        ];
+    <div id="sendScreen" class="screen">
+        <p><strong>Destination Address:</strong></p>
+        <input type="text" id="destAddress">
+        <p><strong>Amount (sats):</strong></p>
+        <input type="number" id="sendAmount">
+        <p><strong>Fee rate (sat/vbyte):</strong></p>
+        <input type="range" id="feeSlider" min="1" max="200" value="10" oninput="document.getElementById('feeValue').innerText = this.value">
+        <span id="feeValue">10</span> sat/vB
+        <button onclick="buildTx()">Build TX</button>
+        <button onclick="goToWallet()">Back</button>
+    </div>
 
-        let currentLibIndex = 0;
-        let currentUrlIndex = 0;
-        let loadAttempts = 0;
+    <div id="signScreen" class="screen">
+        <p>Unsigned TX hex:</p>
+        <textarea id="unsignedTx" rows="6"></textarea>
+        <p>Paste signed TX hex:</p>
+        <textarea id="signedTx" rows="6"></textarea>
+        <button onclick="broadcastTx()">Broadcast TX</button>
+        <button onclick="goToWallet()">Back</button>
+        <div id="txStatus"></div>
+    </div>
+</div>
 
-        function updateStatus(msg, isError = false) {
-            const status = document.getElementById('loadingStatus');
-            status.innerHTML = msg;
-            if (isError) {
-                status.className = 'error';
-            }
-        }
-
-        function loadNextLibrary() {
-            if (currentLibIndex >= librariesToLoad.length) {
-                // All libraries loaded!
-                updateStatus('✅ All libraries loaded successfully!');
-                document.getElementById('loadingStatus').className = 'success';
-                setTimeout(() => {
-                    document.getElementById('loadingStatus').style.display = 'none';
-                    document.getElementById('mainApp').style.display = 'block';
-                    initApp();
-                }, 1000);
-                return;
-            }
-
-            const lib = librariesToLoad[currentLibIndex];
-            
-            // Check if already loaded (from previous attempt)
-            if (lib.check()) {
-                updateStatus(`✓ ${lib.name} already loaded<br>Loading next library...`);
-                if (lib.onLoad) lib.onLoad();
-                currentLibIndex++;
-                currentUrlIndex = 0;
-                setTimeout(loadNextLibrary, 100);
-                return;
-            }
-
-            // Try next URL
-            if (currentUrlIndex >= lib.urls.length) {
-                updateStatus(`❌ Failed to load ${lib.name} from all CDNs.<br>Please check your internet connection and refresh the page.`, true);
-                return;
-            }
-
-            const url = lib.urls[currentUrlIndex];
-            updateStatus(`⏳ Loading ${lib.name}... (attempt ${currentUrlIndex + 1}/${lib.urls.length})`);
-
-            const script = document.createElement('script');
-            script.src = url;
-            
-            script.onload = function() {
-                // Wait a moment and check if it loaded
-                setTimeout(() => {
-                    if (lib.check()) {
-                        updateStatus(`✓ ${lib.name} loaded successfully`);
-                        if (lib.onLoad) lib.onLoad();
-                        currentLibIndex++;
-                        currentUrlIndex = 0;
-                        setTimeout(loadNextLibrary, 100);
-                    } else {
-                        // Loaded but didn't work, try next URL
-                        currentUrlIndex++;
-                        loadNextLibrary();
-                    }
-                }, 500);
-            };
-
-            script.onerror = function() {
-                updateStatus(`⚠ ${lib.name} failed from ${url.split('/')[2]}, trying next CDN...`);
-                currentUrlIndex++;
-                setTimeout(loadNextLibrary, 100);
-            };
-
-            document.head.appendChild(script);
-        }
-
-
-
-        // Application code
-        let currentNetwork = "testnet";
-        let derivedAddresses = [];
-        let utxos = [];
-
-        function initApp() {
-            window.goToSend = () => showScreen('sendScreen');
-            window.goToWallet = () => showScreen('walletScreen');
-            window.goToSign = () => showScreen('signScreen');
-
-            function showScreen(screenId) {
-                document.querySelectorAll('.screen').forEach(s => s.classList.remove("active"));
-                document.getElementById(screenId).classList.add("active");
-            }
-
-            document.querySelectorAll('input[name="network"]').forEach(radio => {
-                radio.addEventListener("change", () => {
-                    currentNetwork = radio.value;
-                    loadWallet();
-                });
-            });
-
-            function getNetwork() { 
-                return currentNetwork === "mainnet" ? bitcoin.networks.bitcoin : bitcoin.networks.testnet; 
-            }
-            
-            function getApi() { 
-                return currentNetwork === "mainnet" ? "https://mempool.space/api" : "https://mempool.space/testnet/api"; 
-            }
-            
-            function getStorageKey() { 
-                return "byob_xpub_" + currentNetwork; 
-            }
-
-            window.saveXpub = function () {
-                try {
-                    const xpubInput = document.getElementById("xpubInput");
-                    const xpub = xpubInput.value.trim();
-                    
-                    if (!xpub) return alert("Enter XPUB");
-
-                    let xpubNetwork;
-                    if (xpub.startsWith("xpub")) {
-                        xpubNetwork = bitcoin.networks.bitcoin;
-                    } else if (xpub.startsWith("tpub")) {
-                        xpubNetwork = bitcoin.networks.testnet;
-                    } else {
-                        return alert("XPUB must start with 'xpub' (mainnet) or 'tpub' (testnet).");
-                    }
-                    
-                    bip32.fromBase58(xpub, xpubNetwork);
-                    
-                    if ((xpubNetwork === bitcoin.networks.bitcoin && currentNetwork !== "mainnet") ||
-                        (xpubNetwork === bitcoin.networks.testnet && currentNetwork !== "testnet")) {
-                        const networkName = xpubNetwork === bitcoin.networks.bitcoin ? "mainnet" : "testnet";
-                        if (!confirm(`This is a ${networkName} XPUB, but you have ${currentNetwork} selected. Switch to ${networkName}?`)) {
-                            return;
-                        }
-                        document.querySelector(`input[name="network"][value="${networkName}"]`).checked = true;
-                        currentNetwork = networkName;
-                    }
-                    
-                    localStorage.setItem(getStorageKey(), xpub);
-                    loadWallet();
-                } catch (err) {
-                    alert("Invalid XPUB: " + err.message);
-                }
-            }
-
-            async function loadWallet() {
-                const xpub = localStorage.getItem(getStorageKey());
-                
-                if (!xpub) {
-                    document.getElementById("xpubImportSection").style.display = "block";
-                    document.getElementById("walletInfoSection").style.display = "none";
-                    return;
-                }
-                
-                document.getElementById("xpubImportSection").style.display = "none";
-                document.getElementById("walletInfoSection").style.display = "block";
-                document.getElementById("balanceDisplay").innerText = "Loading...";
-                
-                try {
-                    await deriveAddresses(xpub);
-                    await fetchBalance();
-                } catch (e) {
-                    document.getElementById("balanceDisplay").innerText = "Error: " + e.message;
-                    alert("Could not load wallet: " + e.message);
-                }
-            }
-
-            async function deriveAddresses(xpub) {
-                derivedAddresses = [];
-                const node = bip32.fromBase58(xpub, getNetwork());
-                
-                for (let i = 0; i < 20; i++) {
-                    const child = node.derive(0).derive(i);
-                    const { address } = bitcoin.payments.p2wpkh({ 
-                        pubkey: child.publicKey, 
-                        network: getNetwork() 
-                    });
-                    derivedAddresses.push(address);
-                }
-            }
-
-            async function fetchBalance() {
-                utxos = [];
-                let total = 0;
-                const api = getApi();
-                
-                for (let addr of derivedAddresses) {
-                    try {
-                        const res = await fetch(`${api}/address/${addr}/utxo`);
-                        if (!res.ok) continue;
-                        const data = await res.json();
-                        
-                        data.forEach(u => {
-                            utxos.push({ ...u, address: addr });
-                            total += u.value;
-                        });
-                    } catch (e) {
-                        console.error(`Failed to fetch ${addr}:`, e);
-                    }
-                }
-                
-                document.getElementById("balanceDisplay").innerText = total.toLocaleString() + " sats";
-                displayReceive();
-            }
-
-            function displayReceive() {
-                const addr = derivedAddresses[0];
-                document.getElementById("receiveAddress").innerText = addr;
-                
-                const qr = qrcode(0, 'M');
-                qr.addData(addr);
-                qr.make();
-                document.getElementById("qrCode").innerHTML = qr.createImgTag(4);
-            }
-
-            window.buildTx = function () {
-                try {
-                    const dest = document.getElementById("destAddress").value.trim();
-                    const amount = parseInt(document.getElementById("sendAmount").value);
-                    
-                    if (!dest || !amount) return alert("Enter destination and amount");
-
-                    const psbt = new bitcoin.Psbt({ network: getNetwork() });
-                    let inputTotal = 0;
-                    const inputs = [];
-
-                    for (const u of utxos) {
-                        inputs.push(u);
-                        inputTotal += u.value;
-                        if (inputTotal > amount + 1000) break;
-                    }
-
-                    const estimatedFee = 250;
-                    const sendAmountPlusFee = amount + estimatedFee;
-
-                    if (inputTotal < sendAmountPlusFee) {
-                        return alert("Insufficient balance. Need " + (sendAmountPlusFee - inputTotal) + " more sats.");
-                    }
-
-                    inputs.forEach(u => {
-                        psbt.addInput({
-                            hash: u.txid,
-                            index: u.vout,
-                            witnessUtxo: {
-                                script: bitcoin.payments.p2wpkh({ 
-                                    address: u.address, 
-                                    network: getNetwork() 
-                                }).output,
-                                value: u.value
-                            }
-                        });
-                    });
-
-                    psbt.addOutput({ address: dest, value: amount });
-                    const change = inputTotal - amount - estimatedFee;
-                    if (change > 546) {
-                        psbt.addOutput({ address: derivedAddresses[0], value: change });
-                    }
-
-                    document.getElementById("unsignedTx").value = psbt.toHex();
-                    goToSign();
-                } catch(e) {
-                    alert('Error building transaction: ' + e.message);
-                }
-            }
-
-            window.broadcastTx = async function () {
-                try {
-                    const signed = document.getElementById("signedTx").value.trim();
-                    if (!signed) return alert("Paste signed TX");
-                    
-                    const statusDiv = document.getElementById("txStatus");
-                    statusDiv.innerText = "Broadcasting...";
-                    
-                    const res = await fetch(`${getApi()}/tx`, {
-                        method: "POST",
-                        headers: { "Content-Type": "text/plain" },
-                        body: signed
-                    });
-                    
-                    const txid = await res.text();
-                    statusDiv.innerText = res.ok ? "✓ Broadcasted: " + txid : "✗ Error: " + txid;
-                    
-                    if (res.ok) {
-                        setTimeout(() => { 
-                            loadWallet(); 
-                            goToWallet(); 
-                        }, 5000);
-                    }
-                } catch (e) {
-                    document.getElementById("txStatus").innerText = "Network Error: " + e.message;
-                }
-            }
-
-            loadWallet();
-        }
-
-
-    </script>
-
-    <script type="module">
+<script type="module">
 import * as ecc from "tiny-secp256k1";
 import { BIP32Factory } from "bip32";
 import * as bitcoin from "bitcoinjs-lib";
 
 const bip32 = BIP32Factory(ecc);
 
+// expose globally so wallet code works
 window.bip32 = bip32;
 window.bitcoin = bitcoin;
 
-console.log("✅ bip32 + bitcoinjs loaded via ESM");
+// QR code library loader
+const librariesToLoad = [
+    {
+        name: 'qrcode',
+        urls: [
+            'https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js',
+            'https://unpkg.com/qrcode-generator@1.4.4/qrcode.min.js',
+            'https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js'
+        ],
+        check: () => typeof qrcode !== 'undefined'
+    }
+];
 
-// START app only after crypto libs are ready
+let currentLibIndex = 0;
+let currentUrlIndex = 0;
+
+function updateStatus(msg, isError = false) {
+    const status = document.getElementById('loadingStatus');
+    status.innerHTML = msg;
+    status.className = isError ? 'error' : '';
+}
+
+function loadNextLibrary() {
+    if (currentLibIndex >= librariesToLoad.length) {
+        updateStatus('✅ All libraries loaded successfully!');
+        document.getElementById('loadingStatus').className = 'success';
+        setTimeout(() => {
+            document.getElementById('loadingStatus').style.display = 'none';
+            document.getElementById('mainApp').style.display = 'block';
+            initApp();
+        }, 1000);
+        return;
+    }
+
+    const lib = librariesToLoad[currentLibIndex];
+    if (lib.check()) {
+        currentLibIndex++;
+        currentUrlIndex = 0;
+        setTimeout(loadNextLibrary, 100);
+        return;
+    }
+
+    if (currentUrlIndex >= lib.urls.length) {
+        updateStatus(`❌ Failed to load ${lib.name} from all CDNs.`, true);
+        return;
+    }
+
+    const url = lib.urls[currentUrlIndex];
+    updateStatus(`⏳ Loading ${lib.name}... (${currentUrlIndex + 1}/${lib.urls.length})`);
+
+    const script = document.createElement('script');
+    script.src = url;
+
+    script.onload = () => {
+        setTimeout(() => {
+            if (lib.check()) {
+                currentLibIndex++;
+                currentUrlIndex = 0;
+                setTimeout(loadNextLibrary, 100);
+            } else {
+                currentUrlIndex++;
+                loadNextLibrary();
+            }
+        }, 500);
+    };
+
+    script.onerror = () => {
+        currentUrlIndex++;
+        loadNextLibrary();
+    };
+
+    document.head.appendChild(script);
+}
+
+// start loading QR code library after crypto libs ready
 loadNextLibrary();
-            
+
+// ---------------- Wallet App ----------------
+let currentNetwork = "testnet";
+let derivedAddresses = [];
+let utxos = [];
+
+function initApp() {
+    window.goToSend = () => showScreen('sendScreen');
+    window.goToWallet = () => showScreen('walletScreen');
+    window.goToSign = () => showScreen('signScreen');
+
+    function showScreen(screenId) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove("active"));
+        document.getElementById(screenId).classList.add("active");
+    }
+
+    document.querySelectorAll('input[name="network"]').forEach(radio => {
+        radio.addEventListener("change", () => {
+            currentNetwork = radio.value;
+            loadWallet();
+        });
+    });
+
+    function getNetwork() { 
+        return currentNetwork === "mainnet" ? bitcoin.networks.bitcoin : bitcoin.networks.testnet; 
+    }
+
+    function getApi() { 
+        return currentNetwork === "mainnet" ? "https://mempool.space/api" : "https://mempool.space/testnet/api"; 
+    }
+
+    function getStorageKey() { 
+        return "byob_xpub_" + currentNetwork; 
+    }
+
+    window.saveXpub = function () {
+        try {
+            const xpub = document.getElementById("xpubInput").value.trim();
+            if (!xpub) return alert("Enter XPUB");
+
+            let xpubNetwork;
+            if (xpub.startsWith("xpub")) xpubNetwork = bitcoin.networks.bitcoin;
+            else if (xpub.startsWith("tpub")) xpubNetwork = bitcoin.networks.testnet;
+            else return alert("XPUB must start with xpub or tpub");
+
+            bip32.fromBase58(xpub, xpubNetwork);
+
+            if ((xpubNetwork === bitcoin.networks.bitcoin && currentNetwork !== "mainnet") ||
+                (xpubNetwork === bitcoin.networks.testnet && currentNetwork !== "testnet")) {
+                const networkName = xpubNetwork === bitcoin.networks.bitcoin ? "mainnet" : "testnet";
+                if (!confirm(`This is a ${networkName} XPUB. Switch network?`)) return;
+                document.querySelector(`input[name="network"][value="${networkName}"]`).checked = true;
+                currentNetwork = networkName;
+            }
+
+            localStorage.setItem(getStorageKey(), xpub);
+            loadWallet();
+        } catch (err) {
+            alert("Invalid XPUB: " + err.message);
+        }
+    }
+
+    async function loadWallet() {
+        const xpub = localStorage.getItem(getStorageKey());
+        if (!xpub) {
+            document.getElementById("xpubImportSection").style.display = "block";
+            document.getElementById("walletInfoSection").style.display = "none";
+            return;
+        }
+        document.getElementById("xpubImportSection").style.display = "none";
+        document.getElementById("walletInfoSection").style.display = "block";
+        document.getElementById("balanceDisplay").innerText = "Loading...";
+
+        try {
+            await deriveAddresses(xpub);
+            await fetchBalance();
+        } catch (e) {
+            document.getElementById("balanceDisplay").innerText = "Error: " + e.message;
+            alert("Could not load wallet: " + e.message);
+        }
+    }
+
+    async function deriveAddresses(xpub) {
+        derivedAddresses = [];
+        const node = bip32.fromBase58(xpub, getNetwork());
+        for (let i=0;i<20;i++) {
+            const child = node.derive(0).derive(i);
+            const { address } = bitcoin.payments.p2wpkh({ pubkey: child.publicKey, network: getNetwork() });
+            derivedAddresses.push(address);
+        }
+    }
+
+    async function fetchBalance() {
+        utxos = [];
+        let total = 0;
+        for (const addr of derivedAddresses) {
+            try {
+                const res = await fetch(`${getApi()}/address/${addr}/utxo`);
+                if (!res.ok) continue;
+                const data = await res.json();
+                data.forEach(u => { utxos.push({...u,address:addr}); total += u.value; });
+            } catch {}
+        }
+        document.getElementById("balanceDisplay").innerText = total.toLocaleString() + " sats";
+        displayReceive();
+    }
+
+    function displayReceive() {
+        const addr = derivedAddresses[0];
+        document.getElementById("receiveAddress").innerText = addr;
+        const qr = qrcode(0, 'M');
+        qr.addData(addr);
+        qr.make();
+        document.getElementById("qrCode").innerHTML = qr.createImgTag(4);
+    }
+
+    window.buildTx = function() {
+        try {
+            const dest = document.getElementById("destAddress").value.trim();
+            const amount = parseInt(document.getElementById("sendAmount").value);
+            if (!dest || !amount) return alert("Enter destination and amount");
+
+            const psbt = new bitcoin.Psbt({ network: getNetwork() });
+            let inputTotal=0;
+            for (const u of utxos) { psbt.addInput({ hash:u.txid,index:u.vout,witnessUtxo:{script:bitcoin.payments.p2wpkh({address:u.address,network:getNetwork()}).output,value:u.value} }); inputTotal+=u.value; if(inputTotal>amount+1000) break; }
+            const fee = 250;
+            if(inputTotal<amount+fee) return alert("Insufficient balance");
+
+            psbt.addOutput({address:dest,value:amount});
+            const change = inputTotal-amount-fee;
+            if(change>546) psbt.addOutput({address:derivedAddresses[0],value:change});
+            document.getElementById("unsignedTx").value = psbt.toHex();
+            goToSign();
+        } catch(e){ alert("Error building tx: "+e.message); }
+    }
+
+    window.broadcastTx = async function() {
+        try {
+            const signed = document.getElementById("signedTx").value.trim();
+            if(!signed) return alert("Paste signed TX");
+            const statusDiv = document.getElementById("txStatus");
+            statusDiv.innerText="Broadcasting...";
+            const res = await fetch(`${getApi()}/tx`,{method:"POST",headers:{"Content-Type":"text/plain"},body:signed});
+            const txid = await res.text();
+            statusDiv.innerText=res.ok?"✓ Broadcasted: "+txid:"✗ Error: "+txid;
+            if(res.ok) setTimeout(()=>{ loadWallet(); goToWallet(); },5000);
+        } catch(e){ document.getElementById("txStatus").innerText="Network Error: "+e.message; }
+    }
+
+    loadWallet();
+}
 </script>
-    
+
 </body>
 </html>
-
-
-
-
-
-
