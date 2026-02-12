@@ -7,6 +7,7 @@
   "imports": {
     "bip32": "https://esm.sh/bip32@5.2.0",
     "tiny-secp256k1": "https://esm.sh/tiny-secp256k1@2.2.3"
+    "bitcoinjs-lib": "https://esm.sh/bitcoinjs-lib@6.1.0"
   }
 }
     </script>
@@ -394,21 +395,24 @@
 
             loadWallet();
         }
+
+
+
+      <script type="module">
+        import * as ecc from "tiny-secp256k1";
+        import { BIP32Factory } from "bip32";
+        import * as bitcoin from "bitcoinjs-lib";
+
+        const bip32 = BIP32Factory(ecc);
+
+      // expose globally so your existing wallet code works
+       window.bip32 = bip32;
+       window.bitcoin = bitcoin;
+
+       console.log("✅ bip32 + bitcoinjs loaded via ESM");
         
-       </script>
-           <script type="module">
-            import * as ecc from "tiny-secp256k1";
-            import { BIP32Factory } from "bip32";
-
-             const bip32 = BIP32Factory(ecc);
-
-            // expose globally for your existing wallet code
-           window.bip32 = bip32;
-
-           console.log("✅ bip32 loaded via ESM");
-
-               
 </script>
+
 
     
 </body>
