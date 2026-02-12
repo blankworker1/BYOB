@@ -57,6 +57,25 @@ input, button { font-size:16px; padding:10px; margin:10px 0; width:100%; box-siz
 <script src="js/qrcode.min.js"></script>
 <script src="js/html5-qrcode.min.js"></script>
 
+  try {
+  const testNet = bitcoin.networks.testnet;
+
+  const key = scureBip32.HDKey.fromMasterSeed(
+    new Uint8Array(32).fill(1)
+  );
+
+  const child = key.derive("m/0/0");
+
+  const { address } = bitcoin.payments.p2wpkh({
+    pubkey: child.publicKey,
+    network: testNet,
+  });
+
+  updateStatus(3, '✓ Bitcoin engine functional', 'success');
+} catch (e) {
+  updateStatus(3, '✗ Bitcoin engine failed: ' + e.message, 'error');
+}
+
 <script>
 function updateStatus(num, msg, type) {
   const el = document.getElementById('status' + num);
