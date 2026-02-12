@@ -77,25 +77,6 @@
         // Dynamic script loader with multiple fallback URLs
         const librariesToLoad = [
             {
-                name: 'buffer',
-                urls: [
-                    'https://cdn.jsdelivr.net/npm/buffer@6.0.3/index.js',
-                    'https://unpkg.com/buffer@6.0.3/index.js',
-                    'https://bundle.run/buffer@6.0.3'
-                ],
-                check: () => typeof buffer !== 'undefined',
-                onLoad: () => { window.Buffer = buffer.Buffer; }
-            },
-            {
-                name: 'bip32',
-                urls: [
-                    'https://cdn.jsdelivr.net/npm/bip32@2.0.6/src/bip32.min.js',
-                    'https://unpkg.com/bip32@2.0.6/src/bip32.min.js',
-                    'https://cdn.jsdelivr.net/npm/@safeheron/crypto-bip32@2.0.0/dist/index.min.js'
-                ],
-                check: () => typeof bip32 !== 'undefined'
-            },
-            {
                 name: 'bitcoinjs',
                 urls: [
                     'https://cdn.jsdelivr.net/npm/bitcoinjs-lib@6.1.0/dist/bitcoinjs.min.js',
