@@ -1,6 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    
+    <script type="importmap">
+{
+  "imports": {
+    "bip32": "https://esm.sh/bip32@5.2.0",
+    "tiny-secp256k1": "https://esm.sh/tiny-secp256k1@2.2.3"
+  }
+}
+    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BYOB One – Wallet</title>
@@ -404,6 +413,28 @@
 
             loadWallet();
         }
-    </script>
+        
+       </script>
+           <script type="module">
+            import * as ecc from "tiny-secp256k1";
+            import { BIP32Factory } from "bip32";
+
+             const bip32 = BIP32Factory(ecc);
+
+            // expose globally for your existing wallet code
+           window.bip32 = bip32;
+
+           console.log("✅ bip32 loaded via ESM");
+
+               
+</script>
+
+    
 </body>
 </html>
+
+
+
+
+
+
