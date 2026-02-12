@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BYOB One – Simplified Wallet</title>
+    <title>BYOB One – Wallet</title>
     <style>
         body { font-family: sans-serif; max-width: 480px; margin: auto; padding: 20px; }
         .screen { display:none; }
@@ -11,14 +11,15 @@
         input, button, textarea { font-size:16px; padding:8px; margin:5px 0; width:100%; box-sizing:border-box; }
         .network-toggle { margin-bottom:10px; }
         .warning { color:red; font-size:14px; margin-top:5px; }
-        .info { background:#e6f3ff; padding:10px; margin:10px 0; border-left:4px solid #0066cc; }
-        #loadingStatus { background:#fff3cd; padding:15px; margin:10px 0; border:2px solid #ffc107; font-weight:bold; }
+        #loadingStatus { background:#fff3cd; padding:15px; margin:10px 0; border:2px solid #ffc107; font-size:14px; line-height:1.6; }
+        .success { background:#d4edda; border-color:#28a745; }
+        .error { background:#ffcccc; border-color:#cc0000; }
     </style>
 </head>
 <body>
-    <h2>BYOB One – Simplified Wallet</h2>
+    <h2>BYOB One – Wallet</h2>
     
-    <div id="loadingStatus">⏳ Loading libraries... Please wait (this may take 30-60 seconds on slow connections)</div>
+    <div id="loadingStatus">⏳ Initializing...</div>
     
     <div id="mainApp" style="display:none;">
         <div class="network-toggle">
@@ -26,7 +27,6 @@
             <label><input type="radio" name="network" value="testnet" checked> Testnet</label>
         </div>
 
-        <!-- WALLET SCREEN -->
         <div id="walletScreen" class="screen active">
             <div id="xpubImportSection">
                 <input type="text" id="xpubInput" placeholder="Paste XPUB here">
@@ -41,7 +41,6 @@
             </div>
         </div>
 
-        <!-- SEND SCREEN -->
         <div id="sendScreen" class="screen">
             <p><strong>Destination Address:</strong></p>
             <input type="text" id="destAddress">
@@ -54,7 +53,6 @@
             <button onclick="goToWallet()">Back</button>
         </div>
 
-        <!-- SIGN SCREEN -->
         <div id="signScreen" class="screen">
             <p>Unsigned TX hex:</p>
             <textarea id="unsignedTx" rows="6"></textarea>
@@ -66,63 +64,127 @@
         </div>
     </div>
 
-    <!-- Load libraries with timeout detection -->
     <script>
-        let loadStartTime = Date.now();
-        let checkInterval = setInterval(() => {
-            let elapsed = Math.floor((Date.now() - loadStartTime) / 1000);
-            document.getElementById('loadingStatus').innerHTML = 
-                `⏳ Loading libraries... ${elapsed}s elapsed (may take 30-60s on slow connections)`;
-            
-            if (elapsed > 120) {
-                clearInterval(checkInterval);
-                document.getElementById('loadingStatus').innerHTML = 
-                    '❌ Library loading timeout. Please check your internet connection and refresh the page.';
-                document.getElementById('loadingStatus').style.background = '#ffcccc';
-                document.getElementById('loadingStatus').style.borderColor = '#cc0000';
+        // Dynamic script loader with multiple fallback URLs
+        const librariesToLoad = [
+            {
+                name: 'buffer',
+                urls: [
+                    'https://cdn.jsdelivr.net/npm/buffer@6.0.3/index.js',
+                    'https://unpkg.com/buffer@6.0.3/index.js',
+                    'https://bundle.run/buffer@6.0.3'
+                ],
+                check: () => typeof buffer !== 'undefined',
+                onLoad: () => { window.Buffer = buffer.Buffer; }
+            },
+            {
+                name: 'bip32',
+                urls: [
+                    'https://cdn.jsdelivr.net/npm/bip32@2.0.6/src/bip32.min.js',
+                    'https://unpkg.com/bip32@2.0.6/src/bip32.min.js',
+                    'https://bundle.run/bip32@2.0.6'
+                ],
+                check: () => typeof bip32 !== 'undefined'
+            },
+            {
+                name: 'bitcoinjs',
+                urls: [
+                    'https://cdn.jsdelivr.net/npm/bitcoinjs-lib@6.1.0/dist/bitcoinjs.min.js',
+                    'https://unpkg.com/bitcoinjs-lib@6.1.0/dist/bitcoinjs.min.js',
+                    'https://bundle.run/bitcoinjs-lib@5.2.0'
+                ],
+                check: () => typeof bitcoin !== 'undefined'
+            },
+            {
+                name: 'qrcode',
+                urls: [
+                    'https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js',
+                    'https://unpkg.com/qrcode-generator@1.4.4/qrcode.min.js',
+                    'https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js'
+                ],
+                check: () => typeof qrcode !== 'undefined'
             }
-        }, 1000);
-    </script>
-    
-    <script src="https://bundle.run/buffer@6.0.3" onerror="alert('Failed to load buffer library')"></script>
-    <script>if (typeof buffer !== 'undefined') { window.Buffer = buffer.Buffer; document.getElementById('loadingStatus').innerHTML += '<br>✓ Buffer loaded'; }</script>
-    
-    <script src="https://bundle.run/bip32@2.1.0" onerror="alert('Failed to load bip32 library')"></script>
-    <script>if (typeof bip32 !== 'undefined') { document.getElementById('loadingStatus').innerHTML += '<br>✓ BIP32 loaded'; }</script>
-    
-    <script src="https://bundle.run/bitcoinjs-lib@5.2.0" onerror="alert('Failed to load bitcoinjs library')"></script>
-    <script>if (typeof bitcoin !== 'undefined') { document.getElementById('loadingStatus').innerHTML += '<br>✓ BitcoinJS loaded'; }</script>
-    
-    <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js" onerror="alert('Failed to load QR library')"></script>
+        ];
 
-    <script>
-        // Wait for all libraries to load
-        function checkLibrariesLoaded() {
-            if (typeof buffer !== 'undefined' && 
-                typeof bip32 !== 'undefined' && 
-                typeof bitcoin !== 'undefined' && 
-                typeof qrcode !== 'undefined') {
-                
-                clearInterval(checkInterval);
-                document.getElementById('loadingStatus').innerHTML = '✅ All libraries loaded successfully!';
-                document.getElementById('loadingStatus').style.background = '#d4edda';
-                document.getElementById('loadingStatus').style.borderColor = '#28a745';
-                
+        let currentLibIndex = 0;
+        let currentUrlIndex = 0;
+        let loadAttempts = 0;
+
+        function updateStatus(msg, isError = false) {
+            const status = document.getElementById('loadingStatus');
+            status.innerHTML = msg;
+            if (isError) {
+                status.className = 'error';
+            }
+        }
+
+        function loadNextLibrary() {
+            if (currentLibIndex >= librariesToLoad.length) {
+                // All libraries loaded!
+                updateStatus('✅ All libraries loaded successfully!');
+                document.getElementById('loadingStatus').className = 'success';
                 setTimeout(() => {
                     document.getElementById('loadingStatus').style.display = 'none';
                     document.getElementById('mainApp').style.display = 'block';
                     initApp();
                 }, 1000);
+                return;
             }
-        }
-        
-        // Check every 500ms
-        let libCheckInterval = setInterval(checkLibrariesLoaded, 500);
-        
-        // Also check after a delay
-        setTimeout(checkLibrariesLoaded, 3000);
 
-        // --- Application Logic ---
+            const lib = librariesToLoad[currentLibIndex];
+            
+            // Check if already loaded (from previous attempt)
+            if (lib.check()) {
+                updateStatus(`✓ ${lib.name} already loaded<br>Loading next library...`);
+                if (lib.onLoad) lib.onLoad();
+                currentLibIndex++;
+                currentUrlIndex = 0;
+                setTimeout(loadNextLibrary, 100);
+                return;
+            }
+
+            // Try next URL
+            if (currentUrlIndex >= lib.urls.length) {
+                updateStatus(`❌ Failed to load ${lib.name} from all CDNs.<br>Please check your internet connection and refresh the page.`, true);
+                return;
+            }
+
+            const url = lib.urls[currentUrlIndex];
+            updateStatus(`⏳ Loading ${lib.name}... (attempt ${currentUrlIndex + 1}/${lib.urls.length})`);
+
+            const script = document.createElement('script');
+            script.src = url;
+            
+            script.onload = function() {
+                // Wait a moment and check if it loaded
+                setTimeout(() => {
+                    if (lib.check()) {
+                        updateStatus(`✓ ${lib.name} loaded successfully`);
+                        if (lib.onLoad) lib.onLoad();
+                        currentLibIndex++;
+                        currentUrlIndex = 0;
+                        setTimeout(loadNextLibrary, 100);
+                    } else {
+                        // Loaded but didn't work, try next URL
+                        currentUrlIndex++;
+                        loadNextLibrary();
+                    }
+                }, 500);
+            };
+
+            script.onerror = function() {
+                updateStatus(`⚠ ${lib.name} failed from ${url.split('/')[2]}, trying next CDN...`);
+                currentUrlIndex++;
+                setTimeout(loadNextLibrary, 100);
+            };
+
+            document.head.appendChild(script);
+        }
+
+        // Start loading
+        loadNextLibrary();
+
+        // Application code
         let currentNetwork = "testnet";
         let derivedAddresses = [];
         let utxos = [];
@@ -172,10 +234,8 @@
                         return alert("XPUB must start with 'xpub' (mainnet) or 'tpub' (testnet).");
                     }
                     
-                    // Validate XPUB
                     bip32.fromBase58(xpub, xpubNetwork);
                     
-                    // Check network mismatch
                     if ((xpubNetwork === bitcoin.networks.bitcoin && currentNetwork !== "mainnet") ||
                         (xpubNetwork === bitcoin.networks.testnet && currentNetwork !== "testnet")) {
                         const networkName = xpubNetwork === bitcoin.networks.bitcoin ? "mainnet" : "testnet";
@@ -257,7 +317,6 @@
                 const addr = derivedAddresses[0];
                 document.getElementById("receiveAddress").innerText = addr;
                 
-                // Generate QR code
                 const qr = qrcode(0, 'M');
                 qr.addData(addr);
                 qr.make();
@@ -343,7 +402,6 @@
                 }
             }
 
-            // Initial load
             loadWallet();
         }
     </script>
