@@ -1,323 +1,308 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BYOB One – Minimal Wallet</title>
-
-<style>
-body {
-  font-family: sans-serif;
-  max-width: 480px;
-  margin: auto;
-  padding: 20px;
-}
-
-.screen { display:none; }
-.screen.active { display:block; }
-
-input, button, textarea {
-  font-size:16px;
-  padding:8px;
-  margin:5px 0;
-  width:100%;
-  box-sizing:border-box;
-}
-
-canvas {
-  display:block;
-  margin:10px auto;
-}
-
-.network-toggle {
-  margin-bottom:10px;
-}
-
-#xpubScanner, #destScanner {
-  width:100%;
-  height:300px;
-  display:none;
-  border:1px solid #ccc;
-  margin-top:10px;
-}
-
-.warning {
-  color:red;
-  font-size:14px;
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BYOB One – Minimal Wallet</title>
+    <style>
+        body { font-family: sans-serif; max-width: 480px; margin: auto; padding: 20px; }
+        .screen { display:none; }
+        .screen.active { display:block; }
+        input, button, textarea { font-size:16px; padding:8px; margin:5px 0; width:100%; box-sizing:border-box; }
+        canvas { display:block; margin:10px auto; }
+        .network-toggle { margin-bottom:10px; }
+        #xpubScanner, #destScanner { width:100%; height:300px; display:none; border:1px solid #ccc; margin-top:10px; }
+        .warning { color:red; font-size:14px; margin-top:5px; }
+    </style>
 </head>
-
 <body>
+    <h2>BYOB One – Minimal Wallet</h2>
+    <div class="network-toggle">
+        <label><input type="radio" name="network" value="mainnet"> Mainnet</label>
+        <label><input type="radio" name="network" value="testnet" checked> Testnet</label>
+    </div>
 
-<h2>BYOB One – Minimal Wallet</h2>
+    <!-- WALLET SCREEN -->
+    <div id="walletScreen" class="screen active">
+        <div id="xpubImportSection">
+            <input type="text" id="xpubInput" placeholder="Paste XPUB here">
+            <button onclick="saveXpub()">Save XPUB</button>
+            <button onclick="startXpubScan()">Scan XPUB QR</button>
+            <div id="xpubScanner"></div>
+            <div id="cameraWarning" class="warning"></div>
+        </div>
+        <div id="walletInfoSection" style="display:none;">
+            <p><strong>Balance:</strong> <span id="balanceDisplay"></span></p>
+            <p><strong>Next Receive Address:</strong></p>
+            <p id="receiveAddress"></p>
+            <canvas id="receiveQR" width="220" height="220"></canvas>
+            <button onclick="goToSend()">Send BTC</button>
+        </div>
+    </div>
 
-<div class="network-toggle">
-  <label><input type="radio" name="network" value="mainnet"> Mainnet</label>
-  <label><input type="radio" name="network" value="testnet" checked> Testnet</label>
-</div>
+    <!-- SEND SCREEN -->
+    <div id="sendScreen" class="screen">
+        <p><strong>Destination Address:</strong></p>
+        <input type="text" id="destAddress">
+        <button onclick="startDestScan()">Scan Destination QR</button>
+        <div id="destScanner"></div>
+        <div id="destWarning" class="warning"></div>
+        <p><strong>Amount (sats):</strong></p>
+        <input type="number" id="sendAmount">
+        <p><strong>Fee rate (sat/vbyte):</strong></p>
+        <input type="range" id="feeSlider" min="1" max="200" value="10" oninput="document.getElementById('feeValue').innerText = this.value">
+        <span id="feeValue">10</span> sat/vB
+        <button onclick="buildTx()">Build TX</button>
+        <button onclick="goToWallet()">Back</button>
+    </div>
 
-<!-- WALLET SCREEN -->
-<div id="walletScreen" class="screen active">
+    <!-- SIGN SCREEN -->
+    <div id="signScreen" class="screen">
+        <p>Unsigned TX hex:</p>
+        <textarea id="unsignedTx" rows="6"></textarea>
+        <p>Paste signed TX hex:</p>
+        <textarea id="signedTx" rows="6"></textarea>
+        <button onclick="broadcastTx()">Broadcast TX</button>
+        <button onclick="goToWallet()">Back</button>
+        <div id="txStatus"></div>
+    </div>
 
-  <div id="xpubImportSection">
-    <input type="text" id="xpubInput" placeholder="Paste XPUB here">
-    <button onclick="saveXpub()">Save XPUB</button>
-    <button onclick="startXpubScan()">Scan XPUB QR</button>
-    <div id="xpubScanner"></div>
-    <div id="cameraWarning" class="warning"></div>
-  </div>
+    <!-- LIBRARIES (STATIC + STABLE) -->
+    <!-- NOTE: You must have these files in a 'js' subdirectory for this to work -->
+    <script src="js/buffer.min.js"></script>
+    <script> window.Buffer = window.buffer.Buffer; </script>
+    <script src="js/bip32.min.js"></script>
+    <script src="js/bitcoinjs-lib.min.js"></script>
+    <script src="js/qrcode.min.js"></script>
+    <script src="js/html5-qrcode.min.js"></script>
 
-  <div id="walletInfoSection" style="display:none;">
-    <p><strong>Balance:</strong> <span id="balanceDisplay"></span></p>
-    <p><strong>Next Receive Address:</strong></p>
-    <p id="receiveAddress"></p>
-    <canvas id="receiveQR" width="220" height="220"></canvas>
-    <button onclick="goToSend()">Send BTC</button>
-  </div>
+    <script>
+        const { networks, payments, Psbt } = bitcoin;
+        let currentNetwork = "testnet";
+        let derivedAddresses = [];
+        let utxos = [];
+        const walletScreen = document.getElementById("walletScreen");
+        const sendScreen = document.getElementById("sendScreen");
+        const signScreen = document.getElementById("signScreen");
 
-</div>
+        function showScreen(screen){
+            document.querySelectorAll('.screen').forEach(s=>s.classList.remove("active"));
+            screen.classList.add("active");
+        }
+        function goToSend(){ showScreen(sendScreen); }
+        function goToWallet(){ showScreen(walletScreen); }
+        function goToSign(){ showScreen(signScreen); } // Added missing function
 
-<!-- SEND SCREEN -->
-<div id="sendScreen" class="screen">
-  <p><strong>Destination Address:</strong></p>
-  <input type="text" id="destAddress">
-  <button onclick="startDestScan()">Scan Destination QR</button>
-  <div id="destScanner"></div>
-  <div id="destWarning" class="warning"></div>
+        document.querySelectorAll('input[name="network"]').forEach(radio=>{
+            radio.addEventListener("change",()=>{
+                currentNetwork = radio.value;
+                loadWallet();
+            });
+        });
 
-  <p><strong>Amount (sats):</strong></p>
-  <input type="number" id="sendAmount">
+        function getNetwork(){ return currentNetwork==="mainnet"?networks.bitcoin:networks.testnet; }
+        function getApi(){ return currentNetwork==="mainnet"? "https://mempool.space/api": "https://mempool.space/testnet/api"; }
+        function getStorageKey(){ return "byob_xpub_"+currentNetwork; }
 
-  <p><strong>Fee rate (sat/vbyte):</strong></p>
-  <input type="range" id="feeSlider" min="1" max="200" value="10"
-    oninput="document.getElementById('feeValue').innerText = this.value">
-  <span id="feeValue">10</span> sat/vB
+        function saveXpub(){
+            const xpub=document.getElementById("xpubInput").value.trim();
+            if(!xpub) return alert("Enter XPUB");
+            localStorage.setItem(getStorageKey(),xpub);
+            loadWallet();
+        }
 
-  <button onclick="buildTx()">Build TX</button>
-  <button onclick="goToWallet()">Back</button>
-</div>
+        async function loadWallet(){
+            const xpub=localStorage.getItem(getStorageKey());
+            if(!xpub){
+                document.getElementById("xpubImportSection").style.display="block";
+                document.getElementById("walletInfoSection").style.display="none";
+                return;
+            }
+            document.getElementById("xpubImportSection").style.display="none";
+            document.getElementById("walletInfoSection").style.display="block";
+            document.getElementById("balanceDisplay").innerText="Loading...";
+            try {
+                await deriveAddresses(xpub);
+                await fetchBalance();
+            } catch (e) {
+                console.error("Failed to load wallet", e);
+                document.getElementById("balanceDisplay").innerText = "Error loading wallet";
+                alert("Could not load wallet. See console.");
+            }
+        }
 
-<!-- SIGN SCREEN -->
-<div id="signScreen" class="screen">
-  <p>Unsigned TX hex:</p>
-  <textarea id="unsignedTx" rows="6"></textarea>
+        async function deriveAddresses(xpub){
+            derivedAddresses=[];
+            const node=bip32.fromBase58(xpub,getNetwork());
+            for(let i=0;i<20;i++){
+                const child=node.derive(0).derive(i);
+                const {address}=payments.p2wpkh({ pubkey:child.publicKey, network:getNetwork() });
+                derivedAddresses.push(address);
+            }
+        }
 
-  <p>Paste signed TX hex:</p>
-  <textarea id="signedTx" rows="6"></textarea>
+        async function fetchBalance(){
+            utxos=[];
+            let total=0;
+            for(let addr of derivedAddresses){
+                try {
+                  
+                    const res=await fetch(`${getApi()}/address/${addr}/utxo`);
+                    if (!res.ok) throw new Error(`API error for ${addr}: ${res.statusText}`);
+                    const data=await res.json();
+                    data.forEach(u=>{
+                        // CRITICAL FIX: Add address to the UTXO object for later use
+                        utxos.push({...u, address});
+                        total+=u.value;
+                    });
 
-  <button onclick="broadcastTx()">Broadcast TX</button>
-  <button onclick="goToWallet()">Back</button>
-  <div id="txStatus"></div>
-</div>
-
-<!-- LIBRARIES (STATIC + STABLE) -->
-
-<script src="js/buffer.min.js"></script>
-<script>
-  window.Buffer = window.buffer.Buffer;
-</script>
-
-<script src="js/bip32.min.js"></script>
-<script src="js/bitcoinjs-lib.min.js"></script>
-<script src="js/qrcode.min.js"></script>
-<script src="js/html5-qrcode.min.js"></script>
-
-<script>
-const { networks, payments, Psbt } = bitcoin;
-
-let currentNetwork = "testnet";
-let derivedAddresses = [];
-let utxos = [];
-
-const walletScreen = document.getElementById("walletScreen");
-const sendScreen = document.getElementById("sendScreen");
-const signScreen = document.getElementById("signScreen");
-
-function showScreen(screen){
-  document.querySelectorAll('.screen').forEach(s=>s.classList.remove("active"));
-  screen.classList.add("active");
+        } catch (e) {
+            console.error(`Failed to fetch balance for ${addr}:`, e);
+            // Continue to the next address even if one fails
+        }
+    }
+    document.getElementById("balanceDisplay").innerText= total.toLocaleString()+" sats";
+    displayReceive();
 }
-function goToSend(){ showScreen(sendScreen); }
-function goToWallet(){ showScreen(walletScreen); }
-
-document.querySelectorAll('input[name="network"]').forEach(radio=>{
-  radio.addEventListener("change",()=>{
-    currentNetwork = radio.value;
-    loadWallet();
-  });
-});
-
-function getNetwork(){
-  return currentNetwork==="mainnet"?networks.bitcoin:networks.testnet;
-}
-
-function getApi(){
-  return currentNetwork==="mainnet"?
-    "https://mempool.space/api":
-    "https://mempool.space/testnet/api";
-}
-
-function getStorageKey(){
-  return "byob_xpub_"+currentNetwork;
-}
-
-function saveXpub(){
-  const xpub=document.getElementById("xpubInput").value.trim();
-  if(!xpub) return alert("Enter XPUB");
-  localStorage.setItem(getStorageKey(),xpub);
-  loadWallet();
-}
-
-async function loadWallet(){
-  const xpub=localStorage.getItem(getStorageKey());
-  if(!xpub){
-    document.getElementById("xpubImportSection").style.display="block";
-    document.getElementById("walletInfoSection").style.display="none";
-    return;
-  }
-
-  document.getElementById("xpubImportSection").style.display="none";
-  document.getElementById("walletInfoSection").style.display="block";
-  document.getElementById("balanceDisplay").innerText="Loading...";
-
-  await deriveAddresses(xpub);
-  await fetchBalance();
-}
-
-async function deriveAddresses(xpub){
-  derivedAddresses=[];
-  const node=bip32.fromBase58(xpub,getNetwork());
-
-  for(let i=0;i<20;i++){
-    const child=node.derive(0).derive(i);
-    const {address}=payments.p2wpkh({
-      pubkey:child.publicKey,
-      network:getNetwork()
-    });
-    derivedAddresses.push(address);
-  }
-}
-
-async function fetchBalance(){
-  utxos=[];
-  let total=0;
-
-  for(let addr of derivedAddresses){
-    const res=await fetch(`${getApi()}/address/${addr}/utxo`);
-    const data=await res.json();
-
-    data.forEach(u=>{
-      utxos.push(u);
-      total+=u.value;
-    });
-  }
-
-  document.getElementById("balanceDisplay").innerText=
-    total.toLocaleString()+" sats";
-
-  displayReceive();
-}
-
 function displayReceive(){
-  const addr=derivedAddresses[0];
-  document.getElementById("receiveAddress").innerText=addr;
-
-  QRCode.toCanvas(
-    document.getElementById("receiveQR"),
-    addr,
-    { width:220 }
-  );
-}
-
-function startXpubScan(){
-  const scannerDiv=document.getElementById("xpubScanner");
-  scannerDiv.style.display="block";
-
-  const html5QrCode=new Html5Qrcode("xpubScanner");
-
-  html5QrCode.start(
-    { facingMode:"environment" },
-    { fps:10, qrbox:250 },
-    txt=>{
-      html5QrCode.stop();
-      scannerDiv.style.display="none";
-      document.getElementById("xpubInput").value=txt;
-      saveXpub();
-    }
-  );
-}
-
-function startDestScan(){
-  const scannerDiv=document.getElementById("destScanner");
-  scannerDiv.style.display="block";
-
-  const html5QrCode=new Html5Qrcode("destScanner");
-
-  html5QrCode.start(
-    { facingMode:"environment" },
-    { fps:10, qrbox:250 },
-    txt=>{
-      html5QrCode.stop();
-      scannerDiv.style.display="none";
-      document.getElementById("destAddress").value=txt;
-    }
-  );
-}
-
-function buildTx(){
-  const dest=document.getElementById("destAddress").value.trim();
-  const amount=parseInt(document.getElementById("sendAmount").value);
-  if(!dest||!amount) return alert("Enter destination and amount");
-
-  const psbt=new Psbt({network:getNetwork()});
-  let inputTotal=0;
-
-  for(const u of utxos){
-    psbt.addInput({
-      hash:u.txid,
-      index:u.vout,
-      witnessUtxo:{
-        script:payments.p2wpkh({
-          address:u.address||derivedAddresses[0],
-          network:getNetwork()
-        }).output,
-        value:u.value
-      }
+    const addr=derivedAddresses[0];
+    document.getElementById("receiveAddress").innerText=addr;
+    QRCode.toCanvas( document.getElementById("receiveQR"), addr, { width:220 }, (error) => {
+        if (error) console.error(error);
     });
-    inputTotal+=u.value;
-    if(inputTotal>amount+300) break;
-  }
-
-  psbt.addOutput({address:dest,value:amount});
-  const change=inputTotal-amount-300;
-  if(change>546)
-    psbt.addOutput({address:derivedAddresses[0],value:change});
-
-  document.getElementById("unsignedTx").value=psbt.toHex();
-  showScreen(signScreen);
 }
+function startXpubScan(){
+    const scannerDiv=document.getElementById("xpubScanner");
+    const warningDiv=document.getElementById("cameraWarning");
+    scannerDiv.style.display="block";
+    warningDiv.innerText = "";
+    const html5QrCode=new Html5Qrcode("xpubScanner");
+    html5QrCode.start(
+        { facingMode:"environment" },
+        { fps:10, qrbox:250 },
+        txt=>{
+            html5QrCode.stop().then(() => {
+                scannerDiv.style.display="none";
+                document.getElementById("xpubInput").value=txt;
+                saveXpub();
+            }).catch(err => {
+                console.error("Failed to stop scanner", err);
+                warningDiv.innerText = "Error stopping scanner.";
+            });
+        },
+        err=> {
+            // Silently ignore scan errors to keep console clean
+        }
+    ).catch(err => {
+        console.error("Unable to start scanning.", err);
+        warningDiv.innerText = "Cannot start camera. Use HTTPS or allow camera access.";
+    });
+}
+function startDestScan(){
+    const scannerDiv=document.getElementById("destScanner");
+    const warningDiv=document.getElementById("destWarning");
+    scannerDiv.style.display="block";
+    warningDiv.innerText = "";
+    const html5QrCode=new Html5Qrcode("destScanner");
+    html5QrCode.start(
+        { facingMode:"environment" },
+        { fps:10, qrbox:250 },
+        txt=>{
+            html5QrCode.stop().then(() => {
+                scannerDiv.style.display="none";
+                document.getElementById("destAddress").value=txt;
+            }).catch(err => {
+                console.error("Failed to stop destination scanner", err);
+                warningDiv.innerText = "Error stopping scanner.";
+            });
+        },
+        err=> {
+            // Silently ignore scan errors
+        }
+    ).catch(err => {
+        console.error("Unable to start destination scanning.", err);
+        warningDiv.innerText = "Cannot start camera. Use HTTPS or allow camera access.";
+    });
+}
+function buildTx(){
+    const dest=document.getElementById("destAddress").value.trim();
+    const amount=parseInt(document.getElementById("sendAmount").value);
+    const feeRate=parseInt(document.getElementById("feeSlider").value);
+    if(!dest||!amount) return alert("Enter destination and amount");
+    if(isNaN(feeRate)) return alert("Invalid fee rate");
 
+    const psbt=new Psbt({network:getNetwork()});
+    let inputTotal=0;
+    const inputs = [];
+
+    // Select UTXOs
+    for(const u of utxos){
+        inputs.push(u);
+        inputTotal+=u.value;
+        if(inputTotal > amount + 1000) break; // Rough fee estimate to stop selecting inputs
+    }
+
+    const estimatedFee = 250; // A simple fixed fee estimate for now
+    const sendAmountPlusFee = amount + estimatedFee;
+
+    if(inputTotal < sendAmountPlusFee){
+        return alert("Insufficient balance. Need " + (sendAmountPlusFee - inputTotal) + " more sats.");
+    }
+
+    // Add inputs with correct witness scripts
+    inputs.forEach(u => {
+        psbt.addInput({
+            hash:u.txid,
+            index:u.vout,
+            witnessUtxo:{
+                script:payments.p2wpkh({ address:u.address, network:getNetwork() }).output,
+                value:u.value
+            }
+        });
+    });
+
+    psbt.addOutput({address:dest,value:amount});
+    const change=inputTotal-amount-estimatedFee;
+    if(change>546) psbt.addOutput({address:derivedAddresses[0],value:change});
+
+    document.getElementById("unsignedTx").value=psbt.toHex();
+    goToSign();
+}
 async function broadcastTx(){
-  const signed=document.getElementById("signedTx").value.trim();
-  if(!signed) return alert("Paste signed TX");
-
-  const res=await fetch(`${getApi()}/tx`,{
-    method:"POST",
-    headers:{"Content-Type":"text/plain"},
-    body:signed
-  });
-
-  const txid=await res.text();
-  document.getElementById("txStatus").innerText=
-    res.ok?"Broadcasted: "+txid:"Error: "+txid;
+    const signed=document.getElementById("signedTx").value.trim();
+    if(!signed) return alert("Paste signed TX");
+    const statusDiv = document.getElementById("txStatus");
+    statusDiv.innerText = "Broadcasting...";
+    try {
+        const res=await fetch(`${getApi()}/tx`,{
+            method:"POST",
+            headers:{"Content-Type":"text/plain"},
+            body:signed
+        });
+        const txid=await res.text();
+        statusDiv.innerText= res.ok?"✓ Broadcasted: "+txid:"✗ Error: "+txid;
+        if(res.ok){
+            setTimeout(() => {
+                loadWallet(); // Refresh balance
+                goToWallet();
+            }, 5000);
+        }
+    } catch(e) {
+        statusDiv.innerText = "Network Error: " + e.message;
+    }
 }
+loadWallet(); // Refresh balance
+                goToWallet();
+            }, 5000);
+        }
+    } catch(e) {
+        statusDiv.innerText = "Network Error: " + e.message;
+    }
+      }
 
-loadWallet();
-</script>
-</body>
-</html>
-
+<script> 
+<body>
+<html>
 
 
 
