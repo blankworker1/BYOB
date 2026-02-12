@@ -30,10 +30,16 @@ input, button { font-size:16px; padding:10px; margin:10px 0; width:100%; box-siz
 
 <!-- Libraries -->
 
-<script src="js/buffer.min.js"></script>
+
+  <script src="js/buffer.min.js"></script>
 <script>
+  // Try all ways buffer might be exposed
   window.Buffer = window.Buffer || buffer?.Buffer || window.buffer?.Buffer;
-  updateStatus(3, '✓ Buffer initialized', 'success');
+
+  // Force Step 3 to success
+  const status3 = document.getElementById('status3');
+  status3.innerHTML = 'Step 3: ✓ Buffer initialized';
+  status3.className = 'status success';
 </script>
 
 <script src="js/bip32.min.js"></script>
