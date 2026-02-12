@@ -13,12 +13,14 @@ canvas { display:block; margin:10px auto; }
 .network-toggle { margin-bottom:10px; }
 #xpubScanner, #destScanner { width:100%; height:300px; display:none; border:1px solid #ccc; margin-top:10px; }
 .warning { color:red; font-size:14px; margin-top:5px; }
-#debugLog { background:#f0f0f0; padding:10px; margin-top:10px; font-size:12px; font-family:monospace; white-space:pre-wrap; word-wrap:break-word; }
+.loading { color: blue; font-weight: bold; padding:10px; background:#f0f0f0; margin:10px 0; }
 </style>
 </head>
 <body>
 
 <h2>BYOB One – Minimal Wallet</h2>
+
+<div id="libraryStatus" class="loading">Loading libraries... Please wait.</div>
 
 <div class="network-toggle">
   <label><input type="radio" name="network" value="mainnet"> Mainnet</label>
@@ -30,7 +32,7 @@ canvas { display:block; margin:10px auto; }
 
   <div id="xpubImportSection">
     <input type="text" id="xpubInput" placeholder="Paste XPUB here">
-    <button onclick="saveXpub()">Save XPUB</button>
+    <button id="saveBtn" onclick="saveXpub()" disabled>Save XPUB (loading...)</button>
     <button onclick="startXpubScan()">Scan XPUB QR</button>
     <div id="xpubScanner"></div>
     <div id="cameraWarning" class="warning"></div>
@@ -42,8 +44,6 @@ canvas { display:block; margin:10px auto; }
     <canvas id="receiveQR" width="220" height="220"></canvas>
     <button onclick="goToSend()">Send BTC</button>
   </div>
-
-  <div id="debugLog"></div>
 
 </div>
 
@@ -77,46 +77,133 @@ canvas { display:block; margin:10px auto; }
   <div id="txStatus"></div>
 </div>
 
-<!-- Libraries -->
-<script src="https://unpkg.com/bitcoinjs-lib@6.1.0/dist/bitcoinjs.min.js"></script>
-<script src="https://unpkg.com/bip32@2.0.6/browser.js"></script>
-<script src="https://unpkg.com/buffer@6.0.3/index.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.5.3/qrcode.min.js"></script>
-<script src="https://unpkg.com/html5-qrcode@2.3.7/minified/html5-qrcode.min.js"></script>
-
+<!-- Try multiple CDN sources -->
 <script>
-// Debug logger
-function logDebug(msg) {
-  const log = document.getElementById("debugLog");
-  if (log) {
-    const timestamp = new Date().toISOString().substr(11,12);
-    log.innerHTML += timestamp + ": " + msg + "\n";
-    log.scrollTop = log.scrollHeight;
+// Load scripts dynamically with fallbacks
+const scripts = [
+  {
+    name: 'buffer',
+    urls: [
+      'https://cdn.jsdelivr.net/npm/buffer@6.0.3/index.js',
+      'https://unpkg.com/buffer@6.0.3/index.js'
+    ],
+    check: () => typeof buffer !== 'undefined'
+  },
+  {
+    name: 'bip32',
+    urls: [
+      'https://cdn.jsdelivr.net/npm/bip32@2.0.6/src/bip32.min.js',
+      'https://unpkg.com/bip32@2.0.6/browser.js'
+    ],
+    check: () => typeof bip32 !== 'undefined'
+  },
+  {
+    name: 'bitcoinjs',
+    urls: [
+      'https://cdn.jsdelivr.net/npm/bitcoinjs-lib@6.1.0/dist/bitcoinjs.min.js',
+      'https://unpkg.com/bitcoinjs-lib@6.1.0/dist/bitcoinjs.min.js'
+    ],
+    check: () => typeof bitcoin !== 'undefined'
+  },
+  {
+    name: 'qrcode',
+    urls: [
+      'https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js',
+      'https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.5.3/qrcode.min.js'
+    ],
+    check: () => typeof QRCode !== 'undefined'
+  },
+  {
+    name: 'html5-qrcode',
+    urls: [
+      'https://unpkg.com/html5-qrcode@2.3.7/minified/html5-qrcode.min.js'
+    ],
+    check: () => typeof Html5Qrcode !== 'undefined'
   }
-  console.log(msg);
+];
+
+let currentScriptIndex = 0;
+let currentUrlIndex = 0;
+
+function updateLibraryStatus(msg) {
+  document.getElementById('libraryStatus').innerHTML = msg;
 }
+
+function loadNextScript() {
+  if (currentScriptIndex >= scripts.length) {
+    // All scripts loaded successfully
+    updateLibraryStatus('✓ All libraries loaded successfully!');
+    document.getElementById('libraryStatus').style.color = 'green';
+    initApp();
+    return;
+  }
+
+  const scriptInfo = scripts[currentScriptIndex];
+  updateLibraryStatus(`Loading ${scriptInfo.name}... (${currentScriptIndex + 1}/${scripts.length})`);
+
+  // Check if already loaded
+  if (scriptInfo.check()) {
+    currentScriptIndex++;
+    currentUrlIndex = 0;
+    loadNextScript();
+    return;
+  }
+
+  // Try to load from current URL
+  if (currentUrlIndex >= scriptInfo.urls.length) {
+    // All URLs failed for this script
+    updateLibraryStatus(`✗ Failed to load ${scriptInfo.name}. Please check your internet connection and refresh.`);
+    document.getElementById('libraryStatus').style.color = 'red';
+    return;
+  }
+
+  const script = document.createElement('script');
+  script.src = scriptInfo.urls[currentUrlIndex];
+  
+  script.onload = function() {
+    // Wait a bit and check if it loaded
+    setTimeout(() => {
+      if (scriptInfo.check()) {
+        // Success, move to next script
+        currentScriptIndex++;
+        currentUrlIndex = 0;
+        loadNextScript();
+      } else {
+        // Try next URL for same script
+        currentUrlIndex++;
+        loadNextScript();
+      }
+    }, 200);
+  };
+
+  script.onerror = function() {
+    // Try next URL
+    currentUrlIndex++;
+    loadNextScript();
+  };
+
+  document.head.appendChild(script);
+}
+
+// Start loading
+loadNextScript();
 
 // Global variables
 let currentNetwork = "testnet";
 let derivedAddresses = [];
 let utxos = [];
-
-// Wait for all libraries to load
-let checkLibrariesInterval = setInterval(() => {
-  if (typeof bitcoin !== 'undefined' && typeof bip32 !== 'undefined' && typeof buffer !== 'undefined') {
-    clearInterval(checkLibrariesInterval);
-    logDebug("All libraries loaded");
-    initApp();
-  }
-}, 100);
+let appReady = false;
 
 function initApp() {
-  logDebug("Initializing app...");
+  console.log("Initializing app...");
+  appReady = true;
   
   window.Buffer = buffer.Buffer;
-  logDebug("Buffer: " + (window.Buffer ? "✓" : "✗"));
-  logDebug("bitcoin: " + (typeof bitcoin !== 'undefined' ? "✓" : "✗"));
-  logDebug("bip32: " + (typeof bip32 !== 'undefined' ? "✓" : "✗"));
+
+  // Enable the save button
+  const saveBtn = document.getElementById("saveBtn");
+  saveBtn.disabled = false;
+  saveBtn.innerText = "Save XPUB";
 
   const walletScreen = document.getElementById("walletScreen");
   const sendScreen = document.getElementById("sendScreen");
@@ -126,7 +213,6 @@ function initApp() {
   document.querySelectorAll('input[name="network"]').forEach(radio => {
     radio.addEventListener("change", function() {
       currentNetwork = this.value;
-      logDebug("Network changed to: " + currentNetwork);
       loadWallet();
     });
   });
@@ -156,42 +242,30 @@ function initApp() {
 
   // XPUB HANDLING
   window.saveXpub = function() {
-    logDebug("=== saveXpub() called ===");
-    const xpubInput = document.getElementById("xpubInput");
-    logDebug("Input element: " + (xpubInput ? "found" : "NOT FOUND"));
+    if (!appReady) {
+      alert("Please wait for libraries to load");
+      return;
+    }
     
+    const xpubInput = document.getElementById("xpubInput");
     const xpub = xpubInput ? xpubInput.value.trim() : "";
-    logDebug("XPUB length: " + xpub.length);
-    logDebug("XPUB preview: " + (xpub ? xpub.substring(0,20) + "..." : "EMPTY"));
     
     if (!xpub) {
-      logDebug("XPUB is empty - showing alert");
       alert("Enter XPUB");
       return;
     }
     
     try {
       const storageKey = getStorageKey();
-      logDebug("Storage key: " + storageKey);
-      
       localStorage.setItem(storageKey, xpub);
-      logDebug("✓ XPUB saved to localStorage");
-      
-      const verification = localStorage.getItem(storageKey);
-      logDebug("Verification read: " + (verification ? "✓" : "✗"));
-      
-      logDebug("Calling loadWallet()...");
       loadWallet();
     }
     catch (err) {
-      logDebug("ERROR: " + err.message);
-      logDebug("Stack: " + err.stack);
       alert("Error saving/loading XPUB: " + err.message);
     }
   }
 
   window.startXpubScan = function() {
-    logDebug("startXpubScan called");
     const scannerDiv = document.getElementById("xpubScanner");
     const warningDiv = document.getElementById("cameraWarning");
     scannerDiv.style.display = "block";
@@ -199,7 +273,6 @@ function initApp() {
 
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
       warningDiv.innerText = "Camera not supported.";
-      logDebug("Camera not supported");
       return;
     }
 
@@ -211,13 +284,11 @@ function initApp() {
         html5QrCode.stop().then(()=>{
           scannerDiv.style.display="none";
           document.getElementById("xpubInput").value = decodedText.trim();
-          logDebug("QR scanned: " + decodedText.substring(0,20) + "...");
           window.saveXpub();
         });
       }, err=>{}
     ).catch(err => { 
-      warningDiv.innerText="Cannot start camera. Use HTTPS."; 
-      logDebug("Camera error: " + err);
+      warningDiv.innerText="Cannot start camera. Use HTTPS.";
     });
   }
 
@@ -243,132 +314,97 @@ function initApp() {
           document.getElementById("destAddress").value = decodedText.trim();
         });
       }, err=>{}
-    ).catch(err => { warningDiv.innerText="Cannot start camera. Use HTTPS."; console.error(err); });
+    ).catch(err => { warningDiv.innerText="Cannot start camera. Use HTTPS."; });
   }
 
   // LOAD WALLET
   async function loadWallet() {
-    logDebug("=== loadWallet() called ===");
     const storageKey = getStorageKey();
     const stored = localStorage.getItem(storageKey);
-    logDebug("Storage key: " + storageKey);
-    logDebug("Stored value: " + (stored ? stored.substring(0,20) + "..." : "NULL"));
     
     if (!stored) {
-      logDebug("No XPUB in storage - showing import screen");
       document.getElementById("xpubImportSection").style.display = "block";
       document.getElementById("walletInfoSection").style.display = "none";
       return;
     }
     
-    logDebug("XPUB found - switching to wallet screen");
     document.getElementById("xpubImportSection").style.display = "none";
     document.getElementById("walletInfoSection").style.display = "block";
     document.getElementById("balanceDisplay").innerText = "Loading...";
     document.getElementById("receiveAddress").innerText = "Deriving...";
     
     try {
-      logDebug("Starting deriveAddresses...");
       await deriveAddresses(stored);
-      logDebug("Starting fetchBalance...");
       await fetchBalance();
-      logDebug("Wallet loaded successfully");
     }
     catch (err) {
-      logDebug("ERROR in loadWallet: " + err.message);
-      logDebug("Stack: " + err.stack);
       alert("Error loading wallet: " + err.message);
     }
   }
 
   async function deriveAddresses(xpub) {
-    logDebug("=== deriveAddresses() called ===");
     derivedAddresses = [];
     const network = getNetworkObject();
-    logDebug("Network: " + (network === bitcoin.networks.testnet ? "testnet" : "mainnet"));
     
     try {
-      logDebug("Parsing XPUB with bip32...");
       const node = bip32.fromBase58(xpub, network);
-      logDebug("✓ XPUB parsed successfully");
       
       for (let i = 0; i < 20; i++) {
         const child = node.derive(0).derive(i);
         const { address } = bitcoin.payments.p2wpkh({ pubkey: child.publicKey, network: network });
         derivedAddresses.push(address);
-        if (i === 0) {
-          logDebug("First address: " + address);
-        }
       }
-      logDebug("✓ Derived " + derivedAddresses.length + " addresses");
     } catch(error) {
-      logDebug("ERROR deriving addresses: " + error.message);
-      logDebug("Stack: " + error.stack);
       alert("Invalid XPUB: " + error.message);
+      throw error;
     }
   }
 
   async function fetchBalance() {
-    logDebug("=== fetchBalance() called ===");
     utxos = [];
     let total = 0;
     const api = getApiBase();
-    logDebug("API: " + api);
-    logDebug("Checking " + derivedAddresses.length + " addresses...");
     
     for (let i = 0; i < derivedAddresses.length; i++) {
       const address = derivedAddresses[i];
       try {
         const url = `${api}/address/${address}/utxo`;
-        logDebug(`[${i}] Fetching: ${address.substring(0,10)}...`);
         const res = await fetch(url);
         const data = await res.json();
         
         if (data.length > 0) {
-          logDebug(`[${i}] Found ${data.length} UTXO(s)`);
           data.forEach(u => {
             utxos.push({txid: u.txid, vout: u.vout, value: u.value, address: address});
             total += u.value;
           });
         }
       } catch(err) {
-        logDebug(`[${i}] Error: ${err.message}`);
+        console.error("Error fetching", address, err);
       }
     }
     
-    logDebug("✓ Total balance: " + total + " sats");
-    logDebug("✓ Total UTXOs: " + utxos.length);
     document.getElementById("balanceDisplay").innerText = total.toLocaleString() + " sats";
     displayNextReceive();
   }
 
   function displayNextReceive() {
-    logDebug("=== displayNextReceive() called ===");
     const next = derivedAddresses[0];
-    logDebug("Receive address: " + next);
     document.getElementById("receiveAddress").innerText = next;
     
     try {
       QRCode.toCanvas(document.getElementById("receiveQR"), next, { width: 220 });
-      logDebug("✓ QR code generated");
     } catch(err) {
-      logDebug("ERROR generating QR: " + err.message);
+      console.error("QR error:", err);
     }
   }
 
   // TX BUILDER
   window.buildTx = () => {
-    logDebug("=== buildTx() called ===");
     const dest = document.getElementById("destAddress").value.trim();
     const amount = parseInt(document.getElementById("sendAmount").value.trim());
     const feeRate = parseInt(document.getElementById("feeSlider").value.trim());
     
-    logDebug("Dest: " + dest);
-    logDebug("Amount: " + amount);
-    logDebug("Fee rate: " + feeRate);
-    
     if (!dest || !amount) {
-      logDebug("Missing destination or amount");
       return alert("Enter destination and amount");
     }
 
@@ -389,10 +425,7 @@ function initApp() {
         inputTotal += u.value;
       }
       
-      logDebug("Input total: " + inputTotal);
-      
       if (inputTotal < amount) {
-        logDebug("Insufficient balance");
         return alert("Insufficient balance");
       }
       
@@ -401,24 +434,19 @@ function initApp() {
       
       const hex = psbt.toHex();
       document.getElementById("unsignedTx").value = hex;
-      logDebug("✓ TX built, hex length: " + hex.length);
       window.goToSign();
     } catch(err) {
-      logDebug("ERROR building TX: " + err.message);
       alert("Error building TX: " + err.message);
     }
   };
 
   window.broadcastTx = async () => {
-    logDebug("=== broadcastTx() called ===");
     const signedHex = document.getElementById("signedTx").value.trim();
     if (!signedHex) {
-      logDebug("No signed TX");
       return alert("Paste signed TX hex");
     }
     
     const api = getApiBase();
-    logDebug("Broadcasting to: " + api);
     
     try {
       const res = await fetch(`${api}/tx`, {
@@ -427,17 +455,13 @@ function initApp() {
         body: signedHex
       });
       
-      logDebug("Response status: " + res.status);
       const statusText = res.ok ? "✓ TX broadcasted!" : "✗ Error broadcasting TX";
       document.getElementById("txStatus").innerText = statusText;
-      logDebug(statusText);
     } catch(err) {
-      logDebug("ERROR: " + err.message);
       document.getElementById("txStatus").innerText = "Error: " + err.message;
     }
   };
 
-  logDebug("Starting initial loadWallet()...");
   loadWallet();
 }
 </script>
