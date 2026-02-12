@@ -104,8 +104,8 @@ function loadScriptSequentially(index) {
         if (scriptInfo.check()) {
             loadScriptSequentially(index + 1);
         } else {
-            updateStatus(`✗ Failed to initialize \${scriptInfo.name}. Check console.`, true);
-            console.error(`Script for \${scriptInfo.name} loaded but global object not found.`);
+            updateStatus(`✗ Failed to initialize ${scriptInfo.name}. Check console.`, true);
+            console.error(`Script for ${scriptInfo.name} loaded but global object not found.`);
         }
     };
 
