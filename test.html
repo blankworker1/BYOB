@@ -106,57 +106,31 @@ function testBitcoinEngine() {
    TEST XPUB
 ================================ */
 
-function testSave() {
+try {
 
-  updateStatus(4, "Testing save...", "info");
+  // Detect network
+  const network =
+    xpub.startsWith("xpub")
+      ? bitcoin.networks.bitcoin
+      : bitcoin.networks.testnet;
 
-  const xpub = document.getElementById("xpubInput").value.trim();
+  // Let bitcoinjs parse it
+  const node = bitcoin.bip32.fromBase58(xpub, network);
 
-  if (!xpub) {
-    updateStatus(5, "✗ No XPUB entered", "error");
-    return;
-  }
+  const child = node.derivePath("0/0");
 
-  try {
-    localStorage.setItem("test_xpub", xpub);
-    updateStatus(5, "✓ localStorage works", "success");
-  } catch (e) {
-    updateStatus(5, "✗ localStorage error: " + e.message, "error");
-    return;
-  }
+  const { address } = bitcoin.payments.p2wpkh({
+    pubkey: child.publicKey,
+    network: network
+  });
 
-  let network;
-  let versions;
+  document.getElementById("result").innerHTML =
+    "✅ XPUB valid<br><br>First address:<br>" + address;
 
-  if (xpub.startsWith("xpub")) {
-    network = bitcoin.networks.bitcoin;
-    versions = { public: 0x0488b21e, private: 0x0488ade4 };
-  } else if (xpub.startsWith("tpub")) {
-    network = bitcoin.networks.testnet;
-    versions = { public: 0x043587cf, private: 0x04358394 };
-  } else {
-    updateStatus(5, "✗ Unknown XPUB prefix", "error");
-    return;
-  }
+  updateStatus(5, "✓ XPUB parsed and address derived", "success");
 
-  try {
-     const node = bip32.HDKey.fromExtendedKey(xpub);
-
-    const child = node.derive("m/0/0");
-
-    const { address } = bitcoin.payments.p2wpkh({
-      pubkey: child.publicKey,
-      network: network
-    });
-
-    document.getElementById("result").innerHTML =
-      "✅ XPUB valid<br><br>First address:<br>" + address;
-
-    updateStatus(5, "✓ XPUB parsed and address derived", "success");
-
-  } catch (e) {
-    updateStatus(5, "✗ XPUB parsing error: " + e.message, "error");
-  }
+} catch (e) {
+  updateStatus(5, "✗ XPUB parsing error: " + e.message, "error");
 }
 
 
