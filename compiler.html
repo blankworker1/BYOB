@@ -19,6 +19,7 @@ input, button { font-size: 16px; padding: 8px; margin: 5px 0; width: 100%; }
 canvas { display: block; margin: 10px auto; }
 .network-toggle { margin-bottom: 10px; }
 #xpubScanner { width: 100%; height: 300px; display: none; margin-top: 10px; border:1px solid #ccc; }
+.warning { color: red; font-size: 14px; margin-top: 5px; }
 </style>
 </head>
 <body>
@@ -38,6 +39,7 @@ canvas { display: block; margin: 10px auto; }
     <button onclick="saveXpub()">Save XPUB</button>
     <button onclick="startXpubScan()">Scan XPUB QR</button>
     <div id="xpubScanner"></div>
+    <div id="cameraWarning" class="warning"></div>
   </div>
 
   <div id="walletInfoSection" style="display:none;">
@@ -143,10 +145,15 @@ function saveXpub() {
 // QR SCANNER FOR XPUB
 // ------------------
 function startXpubScan() {
-  console.log("Scan button clicked");
-
   const scannerDiv = document.getElementById("xpubScanner");
+  const warningDiv = document.getElementById("cameraWarning");
   scannerDiv.style.display = "block";
+  warningDiv.innerText = "";
+
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    warningDiv.innerText = "Camera not supported in this browser.";
+    return;
+  }
 
   const html5QrCode = new Html5Qrcode("xpubScanner");
 
@@ -154,7 +161,6 @@ function startXpubScan() {
     { facingMode: "environment" },
     { fps: 10, qrbox: 250 },
     (decodedText) => {
-      console.log("QR decoded:", decodedText);
       html5QrCode.stop().then(() => {
         scannerDiv.style.display = "none";
         document.getElementById("xpubInput").value = decodedText.trim();
@@ -164,7 +170,10 @@ function startXpubScan() {
     (errorMessage) => {
       // optional: scan errors
     }
-  ).catch(err => console.error("Unable to start QR scanner:", err));
+  ).catch(err => {
+    console.error("Unable to start QR scanner:", err);
+    warningDiv.innerText = "Cannot start camera. Ensure page is served via HTTPS.";
+  });
 }
 
 // ------------------
@@ -253,6 +262,7 @@ loadWallet();
 
 </body>
 </html>
+
 
 
 
