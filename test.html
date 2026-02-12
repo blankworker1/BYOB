@@ -31,6 +31,10 @@ input, button { font-size:16px; padding:10px; margin:10px 0; width:100%; box-siz
 
 <script src="js/buffer.min.js"></script>
 <script src="js/bip32.min.js"></script>
+  <script>
+  // Expose the library globally so your test.html can access it
+  window.bip32 = scureBip32;
+  </script>
 <script src="js/bitcoinjs-lib.min.js"></script>
 <script src="js/qrcode.min.js"></script>
 <script src="js/html5-qrcode.min.js"></script>
