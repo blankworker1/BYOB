@@ -117,41 +117,58 @@
     // ------------------------------
     // 2. INTEGRATE: Robust Validation into saveXpub
     // ------------------------------
-    function saveXpub(){
-        const xpubInput = document.getElementById("xpubInput");
-        const xpub = xpubInput.value.trim();
-        if (!xpub) return alert("Enter XPUB");
 
-        try {
-            // Determine network from XPUB prefix
-            let network;
-            if (xpub.startsWith("xpub")) {
-                network = bitcoin.networks.bitcoin;
-            } else if (xpub.startsWith("tpub")) {
-                network = bitcoin.networks.testnet;
-            } else {
-                throw new Error("XPUB must start with 'xpub' (mainnet) or 'tpub' (testnet).");
-            }
 
-            // Attempt to parse the key to validate its structure
-            bip32.fromBase58(xpub, network);
+function saveXpub(){
+    const xpubInput = document.getElementById("xpubInput");
+    const xpub = xpubInput.value.trim();
+    if (!xpub) return alert("Enter XPUB");
 
-            // Test localStorage
-            localStorage.setItem("test_xpub", xpub);
-            if (localStorage.getItem("test_xpub") !== xpub) {
-                throw new Error("localStorage is not available or full.");
-            }
-            localStorage.removeItem("test_xpub");
+    let xpubNetwork; // The network the XPUB belongs to
 
-            // If all checks pass, save the XPUB for the currently selected network
-            localStorage.setItem(getStorageKey(), xpub);
-            loadWallet();
-
-        } catch (err) {
-            console.error("XPUB Validation Error:", err);
-            alert("Invalid XPUB: " + err.message);
+    try {
+        // 1. Determine network from the XPUB prefix
+        if (xpub.startsWith("xpub")) {
+            xpubNetwork = bitcoin.networks.bitcoin;
+        } else if (xpub.startsWith("tpub")) {
+            xpubNetwork = bitcoin.networks.testnet;
+        } else {
+            throw new Error("XPUB must start with 'xpub' (mainnet) or 'tpub' (testnet).");
         }
+
+        // 2. Validate the XPUB against its own network
+        bip32.fromBase58(xpub, xpubNetwork);
+
+        // 3. Test localStorage
+        localStorage.setItem("test_xpub", xpub);
+        if (localStorage.getItem("test_xpub") !== xpub) {
+            throw new Error("localStorage is not available or full.");
+        }
+        localStorage.removeItem("test_xpub");
+
+        // 4. If the XPUB's network doesn't match the UI, switch the UI and warn the user
+        if ((xpubNetwork === bitcoin.networks.bitcoin && currentNetwork !== "mainnet") ||
+            (xpubNetwork === bitcoin.networks.testnet && currentNetwork !== "testnet")) {
+            
+            const networkName = xpubNetwork === bitcoin.networks.bitcoin ? "mainnet" : "testnet";
+            if (!confirm(`This is a ${networkName} XPUB, but you have ${currentNetwork} selected. Switch to ${networkName}?`)) {
+                return; // User cancelled
+            }
+            // Update the UI radio button and the global variable
+            document.querySelector(`input[name="network"][value="${networkName}"]`).checked = true;
+            currentNetwork = networkName;
+        }
+
+        // 5. If all checks pass, save the XPUB and reload the wallet
+        localStorage.setItem(getStorageKey(), xpub);
+        loadWallet();
+
+    } catch (err) {
+        console.error("XPUB Validation Error:", err);
+        alert("Invalid XPUB: " + err.message);
     }
+}
+
 
     async function loadWallet(){
         const xpub=localStorage.getItem(getStorageKey());
