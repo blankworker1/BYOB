@@ -78,15 +78,6 @@
         // Dynamic script loader with multiple fallback URLs
         const librariesToLoad = [
             {
-                name: 'bitcoinjs',
-                urls: [
-                    'https://cdn.jsdelivr.net/npm/bitcoinjs-lib@6.1.0/dist/bitcoinjs.min.js',
-                    'https://unpkg.com/bitcoinjs-lib@6.1.0/dist/bitcoinjs.min.js',
-                    'https://github.com/blankworker1/BYOB/blob/main/js/bitcoinjs-lib.min.js'
-                ],
-                check: () => typeof bitcoin !== 'undefined'
-            },
-            {
                 name: 'qrcode',
                 urls: [
                     'https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js',
