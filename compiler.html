@@ -212,7 +212,7 @@ function saveXpub(){
                 if (!res.ok) throw new Error(`API error for ${addr}: ${res.statusText}`);
                 const data=await res.json();
                 data.forEach(u=>{
-                    utxos.push({...u, address});
+                    utxos.push({...u, address: addr});
                     total+=u.value;
                 });
             } catch (e) {
