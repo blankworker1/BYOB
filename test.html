@@ -28,9 +28,16 @@ input, button { font-size:16px; padding:10px; margin:10px 0; width:100%; box-siz
 
 <div id="result" style="margin-top:20px; font-size:16px; font-weight:bold;"></div>
 
-<script src="https://unpkg.com/buffer@6.0.3/index.js"></script>
-<script src="https://unpkg.com/bip32@2.0.6/browser.js"></script>
-<script src="https://unpkg.com/bitcoinjs-lib@6.1.0/dist/bitcoinjs.min.js"></script>
+
+<script src="js/buffer.min.js"></script>
+<script>
+  window.Buffer = window.buffer.Buffer;
+</script>
+
+<script src="js/bip32.min.js"></script>
+<script src="js/bitcoinjs-lib.min.js"></script>
+<script src="js/qrcode.min.js"></script>
+<script src="js/html5-qrcode.min.js"></script>
 
 <script>
 function updateStatus(num, msg, type) {
