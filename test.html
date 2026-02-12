@@ -28,16 +28,16 @@ input, button { font-size:16px; padding:10px; margin:10px 0; width:100%; box-siz
 
 <div id="result" style="margin-top:20px; font-size:16px; font-weight:bold;"></div>
 
-
+<!-- Load libraries -->
 <script src="js/buffer.min.js"></script>
 <script src="js/bip32.min.js"></script>
-  <script>
-  // Expose the library globally so your test.html can access it
+<script>
+  // Expose scureBip32 globally
   window.bip32 = scureBip32;
-  </script>
+  window.Buffer = buffer.Buffer;
+</script>
 <script src="js/bitcoinjs-lib-browser.min.js"></script>
 <script>
-  // Expose it under the name your code expects
   window.bitcoin = window.bitcoinjs || window.Bitcoin || null;
 </script>
 <script src="js/qrcode.min.js"></script>
@@ -50,9 +50,10 @@ function updateStatus(num, msg, type) {
   el.className = 'status ' + type;
 }
 
+// Step 1
 updateStatus(1, '✓ Page loaded', 'success');
 
-// Check libraries
+// Step 2 – check libraries
 setTimeout(() => {
   updateStatus(2, 'Checking libraries...', 'info');
   
@@ -67,7 +68,6 @@ setTimeout(() => {
     if (bufferOK && bip32OK && bitcoinOK) {
       clearInterval(checkInterval);
       updateStatus(2, '✓ All libraries loaded', 'success');
-      window.Buffer = buffer.Buffer;
       updateStatus(3, '✓ Buffer initialized', 'success');
       updateStatus(4, 'Ready to test! Enter XPUB and click button', 'info');
     } else if (checks > 50) {
@@ -108,45 +108,38 @@ function testSave() {
   
   // Test bip32 parsing
   try {
-    const network = {
-  messagePrefix: '\x18Bitcoin Signed Message:\n',
-  bech32: 'tb',
-  bip32: {
-    public: 0x043587cf,
-    private: 0x04358394
-  },
-  pubKeyHash: 0x6f,
-  scriptHash: 0xc4,
-  wif: 0xef
-};
+    const network = bitcoin.networks.testnet;
 
-try {
-  const network = bitcoin.networks.testnet;
+    // Parse XPUB with scureBip32
+    const node = scureBip32.HDKey.fromExtendedKey(xpub);
 
-  // Use HDKey instead of bip32.fromBase58
-  const node = scureBip32.HDKey.fromExtendedKey(xpub);
+    document.getElementById('result').innerHTML =
+      '✅ SUCCESS! XPUB is valid!<br><br>Now deriving addresses...';
 
-  document.getElementById('result').innerHTML =
-    '✅ SUCCESS! XPUB is valid!<br><br>Now deriving addresses...';
+    // Derive first address at m/0/0
+    const child = node.derive("m/0/0");
 
-  // Derive first address (path m/0/0)
-  const child = node.derive("m/0/0");
+    const { address } = bitcoin.payments.p2wpkh({
+      pubkey: child.publicKey,
+      network: network,
+    });
 
-  const { address } = bitcoin.payments.p2wpkh({
-    pubkey: child.publicKey,
-    network: network,
-  });
+    document.getElementById('result').innerHTML +=
+      '<br><br>First address:<br>' + address + '<br><br>🎉 Everything works!';
 
-  document.getElementById('result').innerHTML +=
-    '<br><br>First address:<br>' + address + '<br><br>🎉 Everything works!';
+    updateStatus(5, '✓ XPUB parsed and first address derived', 'success');
 
-} catch (e) {
-  updateStatus(5, '✗ XPUB parsing error: ' + e.message, 'error');
-  document.getElementById('result').innerHTML = '❌ Error: ' + e.message;
-}
-
+  } catch (e) {
+    updateStatus(5, '✗ XPUB parsing error: ' + e.message, 'error');
+    document.getElementById('result').innerHTML = '❌ Error: ' + e.message;
+  }
 }
 </script>
 
 </body>
 </html>
+
+
+
+
+
