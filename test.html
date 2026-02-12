@@ -34,14 +34,29 @@ input, button { font-size:16px; padding:10px; margin:10px 0; width:100%; box-siz
 <script src="js/bip32.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bitcoinjs-lib-browser@5.1.7/bitcoinjs.min.js"></script>
 
+
+
+
 <script>
+
+/* ================================
+   UI HELPER (DEFINE FIRST)
+================================ */
+
+function updateStatus(num, msg, type) {
+  const el = document.getElementById("status" + num);
+  if (!el) return;
+  el.innerHTML = "Step " + num + ": " + msg;
+  el.className = "status " + type;
+}
+
 /* ================================
    INITIAL SETUP
 ================================ */
 
 updateStatus(1, "✓ Page loaded", "success");
 
-// Ensure globals are exposed properly
+// Expose libraries safely
 window.Buffer = window.Buffer || window.buffer?.Buffer;
 window.bip32 = window.bip32 || window.scureBip32;
 window.bitcoin = window.bitcoin || window.bitcoinjs || window.Bitcoin;
@@ -79,10 +94,6 @@ function testBitcoinEngine() {
   try {
     const testNet = bitcoin.networks.testnet;
 
-    const key = bip32.HDKey
-      ? bip32.HDKey.fromMasterSeed(new Uint8Array(32).fill(1))
-      : bip32.fromSeed(new Uint8Array(32).fill(1));
-
     updateStatus(3, "✓ Bitcoin engine functional", "success");
     updateStatus(4, "Ready to test! Enter XPUB.", "info");
 
@@ -106,7 +117,6 @@ function testSave() {
     return;
   }
 
-  /* --- localStorage test --- */
   try {
     localStorage.setItem("test_xpub", xpub);
     updateStatus(5, "✓ localStorage works", "success");
@@ -115,67 +125,42 @@ function testSave() {
     return;
   }
 
-  /* --- Detect Network --- */
+  let network;
+  let versions;
 
-// Determine network and version bytes
-let network;
-let versions;
+  if (xpub.startsWith("xpub")) {
+    network = bitcoin.networks.bitcoin;
+    versions = { public: 0x0488b21e, private: 0x0488ade4 };
+  } else if (xpub.startsWith("tpub")) {
+    network = bitcoin.networks.testnet;
+    versions = { public: 0x043587cf, private: 0x04358394 };
+  } else {
+    updateStatus(5, "✗ Unknown XPUB prefix", "error");
+    return;
+  }
 
-if (xpub.startsWith('xpub')) {
-  network = bitcoin.networks.bitcoin;
-  versions = {
-    public: 0x0488b21e,
-    private: 0x0488ade4
-  };
-} else if (xpub.startsWith('tpub')) {
-  network = bitcoin.networks.testnet;
-  versions = {
-    public: 0x043587cf,
-    private: 0x04358394
-  };
-} else {
-  updateStatus(5, '✗ Unknown XPUB prefix', 'error');
-  document.getElementById('result').innerHTML =
-    '❌ Must start with xpub (mainnet) or tpub (testnet)';
-  return;
+  try {
+    const node = bip32.HDKey
+      ? bip32.HDKey.fromExtendedKey(xpub, { versions })
+      : null;
+
+    const child = node.derive("m/0/0");
+
+    const { address } = bitcoin.payments.p2wpkh({
+      pubkey: child.publicKey,
+      network: network
+    });
+
+    document.getElementById("result").innerHTML =
+      "✅ XPUB valid<br><br>First address:<br>" + address;
+
+    updateStatus(5, "✓ XPUB parsed and address derived", "success");
+
+  } catch (e) {
+    updateStatus(5, "✗ XPUB parsing error: " + e.message, "error");
+  }
 }
 
-try {
-  const node = scureBip32.HDKey.fromExtendedKey(xpub, { versions });
-
-  document.getElementById('result').innerHTML =
-    '✅ XPUB valid!<br><br>Deriving first address...';
-
-  // Derive first receive address m/0/0
-  const child = node.derive("m/0/0");
-
-  const { address } = bitcoin.payments.p2wpkh({
-    pubkey: child.publicKey,
-    network: network
-  });
-
-  document.getElementById('result').innerHTML +=
-    '<br><br>First address:<br>' + address;
-
-  updateStatus(5, '✓ XPUB parsed and address derived', 'success');
-
-} catch (e) {
-  updateStatus(5, '✗ XPUB parsing error: ' + e.message, 'error');
-  document.getElementById('result').innerHTML =
-    '❌ Error: ' + e.message;
-}
-
-
-
-/* ================================
-   UI HELPER
-================================ */
-
-function updateStatus(num, msg, type) {
-  const el = document.getElementById("status" + num);
-  el.innerHTML = "Step " + num + ": " + msg;
-  el.className = "status " + type;
-}
 
 </script>
 
