@@ -82,14 +82,15 @@ canvas { display:block; margin:10px auto; }
 <script src="https://unpkg.com/html5-qrcode@2.3.7/minified/html5-qrcode.min.js"></script>
 
 <script>
+// Global variables
+let currentNetwork = "mainnet";
+let derivedAddresses = [];
+let utxos = [];
+
 document.addEventListener("DOMContentLoaded", () => {
   window.Buffer = window.buffer.Buffer;
   const { networks, payments, Psbt } = bitcoin;
   const bip32 = window.bip32;
-
-  let currentNetwork = "mainnet";
-  let derivedAddresses = [];
-  let utxos = [];
 
   const walletScreen = document.getElementById("walletScreen");
   const sendScreen = document.getElementById("sendScreen");
@@ -104,7 +105,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   function getNetworkObject() {
-    return currentNetwork === "mainnet" ? networks.bitcoin : networks.testnet;
+    return currentNetwork === "mainnet" ? bitcoin.networks.bitcoin : bitcoin.networks.testnet;
   }
 
   function getStorageKey() {
@@ -127,15 +128,17 @@ document.addEventListener("DOMContentLoaded", () => {
   window.goToSign = () => showScreen(signScreen);
 
   // XPUB HANDLING
-  function saveXpub() {
+  window.saveXpub = function() {
     const xpub = document.getElementById("xpubInput").value.trim();
     if (!xpub) return alert("Enter XPUB");
-    try { localStorage.setItem(getStorageKey(), xpub); loadWallet(); }
+    try { 
+      localStorage.setItem(getStorageKey(), xpub); 
+      loadWallet(); 
+    }
     catch (err) { alert("Error saving/loading XPUB: "+err.message); }
   }
-  window.saveXpub = saveXpub;
 
-  function startXpubScan() {
+  window.startXpubScan = function() {
     const scannerDiv = document.getElementById("xpubScanner");
     const warningDiv = document.getElementById("cameraWarning");
     scannerDiv.style.display = "block";
@@ -154,15 +157,14 @@ document.addEventListener("DOMContentLoaded", () => {
         html5QrCode.stop().then(()=>{
           scannerDiv.style.display="none";
           document.getElementById("xpubInput").value = decodedText.trim();
-          saveXpub();
+          window.saveXpub();
         });
       }, err=>{}
     ).catch(err => { warningDiv.innerText="Cannot start camera. Use HTTPS."; console.error(err); });
   }
-  window.startXpubScan = startXpubScan;
 
   // DESTINATION SCANNER
-  function startDestScan() {
+  window.startDestScan = function() {
     const scannerDiv = document.getElementById("destScanner");
     const warningDiv = document.getElementById("destWarning");
     scannerDiv.style.display = "block";
@@ -185,7 +187,6 @@ document.addEventListener("DOMContentLoaded", () => {
       }, err=>{}
     ).catch(err => { warningDiv.innerText="Cannot start camera. Use HTTPS."; console.error(err); });
   }
-  window.startDestScan = startDestScan;
 
   // LOAD WALLET
   async function loadWallet() {
@@ -210,7 +211,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const node = bip32.fromBase58(xpub, network);
       for (let i=0; i<20; i++){
         const child = node.derive(0).derive(i);
-        const { address } = payments.p2wpkh({ pubkey: child.publicKey, network: network });
+        const { address } = bitcoin.payments.p2wpkh({ pubkey: child.publicKey, network: network });
         derivedAddresses.push(address);
       }
     } catch(error){ alert("Invalid XPUB: "+error.message); }
@@ -241,14 +242,14 @@ document.addEventListener("DOMContentLoaded", () => {
     const feeRate = parseInt(document.getElementById("feeSlider").value.trim());
     if(!dest||!amount) return alert("Enter destination and amount");
 
-    const psbt = new Psbt({network:getNetworkObject()});
+    const psbt = new bitcoin.Psbt({network:getNetworkObject()});
     let inputTotal=0;
-    for(let u of utxos){ if(inputTotal>=amount+1000) break; psbt.addInput({hash:u.txid,index:u.vout,witnessUtxo:{script:payments.p2wpkh({address:u.address,network:getNetworkObject()}).output,value:u.value}}); inputTotal+=u.value;}
+    for(let u of utxos){ if(inputTotal>=amount+1000) break; psbt.addInput({hash:u.txid,index:u.vout,witnessUtxo:{script:bitcoin.payments.p2wpkh({address:u.address,network:getNetworkObject()}).output,value:u.value}}); inputTotal+=u.value;}
     if(inputTotal<amount) return alert("Insufficient balance");
     psbt.addOutput({address:dest,value:amount});
     psbt.addOutput({address:derivedAddresses[0],value:inputTotal-amount});
     document.getElementById("unsignedTx").value=psbt.toHex();
-    goToSign();
+    window.goToSign();
   };
 
   window.broadcastTx=async()=>{
