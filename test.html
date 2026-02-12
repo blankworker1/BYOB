@@ -106,15 +106,24 @@ function testBitcoinEngine() {
    TEST XPUB
 ================================ */
 
+   function testSave() {
+
+  updateStatus(4, "Testing save...", "info");
+
+  const xpub = document.getElementById("xpubInput").value.trim();
+
+  if (!xpub) {
+    updateStatus(5, "✗ No XPUB entered", "error");
+    return;
+  }
+
 try {
 
-  // Detect network
   const network =
     xpub.startsWith("xpub")
       ? bitcoin.networks.bitcoin
       : bitcoin.networks.testnet;
 
-  // Let bitcoinjs parse it
   const node = bitcoin.bip32.fromBase58(xpub, network);
 
   const child = node.derivePath("0/0");
@@ -132,6 +141,7 @@ try {
 } catch (e) {
   updateStatus(5, "✗ XPUB parsing error: " + e.message, "error");
 }
+
 
 
 </script>
