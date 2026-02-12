@@ -110,21 +110,28 @@ async function loadWallet() {
 // DERIVATION
 // ------------------
 
-async function deriveAddresses(xpub) {
+    async function deriveAddresses(xpub) {
   derivedAddresses = [];
 
   const network = getNetworkObject();
-  const node = bip32.fromBase58(xpub, network);
+  
+  try {
+    const node = bip32.fromBase58(xpub, network);
 
-  for (let i = 0; i < 20; i++) {
-    const child = node.derive(0).derive(i);
-    const { address } = payments.p2wpkh({
-      pubkey: child.publicKey,
-      network: network
-    });
-    derivedAddresses.push(address);
+    for (let i = 0; i < 20; i++) {
+      const child = node.derive(0).derive(i);
+      const { address } = payments.p2wpkh({
+        pubkey: child.publicKey,
+        network: network
+      });
+      derivedAddresses.push(address);
+    }
+  } catch (error) {
+    alert("Invalid XPUB: " + error.message);
   }
-}
+    }
+    
+
 
 // ------------------
 // FETCH BALANCE
