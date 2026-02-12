@@ -163,8 +163,7 @@
             document.head.appendChild(script);
         }
 
-        // Start loading
-        loadNextLibrary();
+
 
         // Application code
         let currentNetwork = "testnet";
@@ -389,23 +388,26 @@
 
 
     </script>
-    
-      <script type="module">
-        import * as ecc from "tiny-secp256k1";
-        import { BIP32Factory } from "bip32";
-        import * as bitcoin from "bitcoinjs-lib";
 
-        const bip32 = BIP32Factory(ecc);
+    <script type="module">
+import * as ecc from "tiny-secp256k1";
+import { BIP32Factory } from "bip32";
+import * as bitcoin from "bitcoinjs-lib";
 
-      // expose globally so your existing wallet code works
-       window.bip32 = bip32;
-       window.bitcoin = bitcoin;
+const bip32 = BIP32Factory(ecc);
 
-       console.log("✅ bip32 + bitcoinjs loaded via ESM");
-        
+window.bip32 = bip32;
+window.bitcoin = bitcoin;
+
+console.log("✅ bip32 + bitcoinjs loaded via ESM");
+
+// START app only after crypto libs are ready
+loadNextLibrary();
+            
 </script>
 
 
+</script>
     
 </body>
 </html>
