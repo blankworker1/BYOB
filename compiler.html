@@ -67,30 +67,66 @@
         <div id="txStatus"></div>
     </div>
 
-    <!-- LIBRARIES (STATIC + STABLE) -->
-    <!-- NOTE: You must have these files in a 'js' subdirectory for this to work -->
-    <script src="js/buffer.min.js"></script>
-    <script> window.Buffer = window.buffer.Buffer; </script>
-    <script src="js/bip32.min.js"></script>
-    <script src="js/bitcoinjs-lib.min.js"></script>
-    <script src="js/qrcode.min.js"></script>
-    <script src="js/html5-qrcode.min.js"></script>
-
-
 
 <script>
-    // ------------------------------
-    // 1. ADOPT: Global Library Shims for Robustness
-    // ------------------------------
-    // This makes the app more resilient to different library versions or loading orders.
-    window.bip32 = window.bip32 || window.scureBip32;
-    window.bitcoin = window.bitcoin || window.bitcoinjs || window.Bitcoin;
-    window.Buffer = window.Buffer || window.buffer?.Buffer;
-    
-    const { networks, payments, Psbt } = bitcoin;
-    let currentNetwork = "testnet";
-    let derivedAddresses = [];
-    let utxos = [];
+// --- Robust Sequential Library Loader (Fixes the race condition) ---
+const libraryStatusDiv = document.getElementById('libraryStatus');
+// Using the correct libraries for the functions used in the script
+const scriptsToLoad = [
+    { url: 'js/buffer.min.js', check: () => typeof window.Buffer !== 'undefined', name: 'Buffer' },
+    { url: 'js/bip32.min.js', check: () => typeof window.bip32 !== 'undefined', name: 'BIP32' },
+    { url: 'js/bitcoinjs-lib.min.js', check: () => typeof window.bitcoin !== 'undefined', name: 'BitcoinJS' },
+    { url: 'js/qrcode.min.js', check: () => typeof window.QRCode !== 'undefined', name: 'QRCode' },
+    { url: 'js/html5-qrcode.min.js', check: () => typeof window.Html5Qrcode !== 'undefined', name: 'Html5Qrcode' }
+];
+
+function updateStatus(msg, isError = false) {
+    // You can uncomment the line below to see loading status on the page
+    // if (libraryStatusDiv) { libraryStatusDiv.innerHTML = msg; }
+    console.log(msg);
+}
+
+function loadScriptSequentially(index) {
+    if (index >= scriptsToLoad.length) {
+        updateStatus('✓ All libraries loaded successfully!');
+        initApp(); // <-- CRITICAL: Only start the app AFTER all libraries are loaded
+        return;
+    }
+
+    const scriptInfo = scriptsToLoad[index];
+    updateStatus(`Loading \${scriptInfo.name}...`);
+
+    const script = document.createElement('script');
+    script.src = scriptInfo.url;
+    script.async = false; // Important for order
+
+    script.onload = () => {
+        if (scriptInfo.check()) {
+            loadScriptSequentially(index + 1);
+        } else {
+            updateStatus(`✗ Failed to initialize \${scriptInfo.name}. Check console.`, true);
+            console.error(`Script for \${scriptInfo.name} loaded but global object not found.`);
+        }
+    };
+
+    script.onerror = () => {
+        updateStatus(`✗ Failed to load ${scriptInfo.name} from ${scriptInfo.url}.`, true);
+    };
+
+    document.head.appendChild(script);
+}
+
+// --- Application Logic (Moved into initApp) ---
+let currentNetwork = "testnet";
+let derivedAddresses = [];
+let utxos = [];
+let appReady = false;
+
+function initApp() {
+    console.log("Initializing app...");
+    appReady = true;
+    const { networks, payments, Psbt } = bitcoin; // This is now safe to do
+
     const walletScreen = document.getElementById("walletScreen");
     const sendScreen = document.getElementById("sendScreen");
     const signScreen = document.getElementById("signScreen");
@@ -99,9 +135,9 @@
         document.querySelectorAll('.screen').forEach(s=>s.classList.remove("active"));
         screen.classList.add("active");
     }
-    function goToSend(){ showScreen(sendScreen); }
-    function goToWallet(){ showScreen(walletScreen); }
-    function goToSign(){ showScreen(signScreen); }
+    window.goToSend = () => showScreen(sendScreen);
+    window.goToWallet = () => showScreen(walletScreen);
+    window.goToSign = () => showScreen(signScreen);
 
     document.querySelectorAll('input[name="network"]').forEach(radio=>{
         radio.addEventListener("change",()=>{
@@ -114,61 +150,52 @@
     function getApi(){ return currentNetwork==="mainnet"? "https://mempool.space/api": "https://mempool.space/testnet/api"; }
     function getStorageKey(){ return "byob_xpub_"+currentNetwork; }
 
-    // ------------------------------
-    // 2. INTEGRATE: Robust Validation into saveXpub
-    // ------------------------------
+    window.saveXpub = function(){
+        const xpubInput = document.getElementById("xpubInput");
+        const xpub = xpubInput.value.trim();
+        if (!xpub) return alert("Enter XPUB");
 
+        let xpubNetwork;
 
-function saveXpub(){
-    const xpubInput = document.getElementById("xpubInput");
-    const xpub = xpubInput.value.trim();
-    if (!xpub) return alert("Enter XPUB");
-
-    let xpubNetwork; // The network the XPUB belongs to
-
-    try {
-        // 1. Determine network from the XPUB prefix
-        if (xpub.startsWith("xpub")) {
-            xpubNetwork = bitcoin.networks.bitcoin;
-        } else if (xpub.startsWith("tpub")) {
-            xpubNetwork = bitcoin.networks.testnet;
-        } else {
-            throw new Error("XPUB must start with 'xpub' (mainnet) or 'tpub' (testnet).");
-        }
-
-        // 2. Validate the XPUB against its own network
-        bip32.fromBase58(xpub, xpubNetwork);
-
-        // 3. Test localStorage
-        localStorage.setItem("test_xpub", xpub);
-        if (localStorage.getItem("test_xpub") !== xpub) {
-            throw new Error("localStorage is not available or full.");
-        }
-        localStorage.removeItem("test_xpub");
-
-        // 4. If the XPUB's network doesn't match the UI, switch the UI and warn the user
-        if ((xpubNetwork === bitcoin.networks.bitcoin && currentNetwork !== "mainnet") ||
-            (xpubNetwork === bitcoin.networks.testnet && currentNetwork !== "testnet")) {
-            
-            const networkName = xpubNetwork === bitcoin.networks.bitcoin ? "mainnet" : "testnet";
-            if (!confirm(`This is a ${networkName} XPUB, but you have ${currentNetwork} selected. Switch to ${networkName}?`)) {
-                return; // User cancelled
+        try {
+            if (xpub.startsWith("xpub")) {
+                xpubNetwork = bitcoin.networks.bitcoin;
+            } else if (xpub.startsWith("tpub")) {
+                xpubNetwork = bitcoin.networks.testnet;
+            } else {
+                throw new Error("XPUB must start with 'xpub' (mainnet) or 'tpub' (testnet).");
             }
-            // Update the UI radio button and the global variable
-            document.querySelector(`input[name="network"][value="${networkName}"]`).checked = true;
-            currentNetwork = networkName;
+
+            // Validate the XPUB against its own network
+            bip32.fromBase58(xpub, xpubNetwork);
+
+            // Check for localStorage availability
+            localStorage.setItem("test_xpub", xpub);
+            if (localStorage.getItem("test_xpub") !== xpub) {
+                throw new Error("localStorage is not available or full.");
+            }
+            localStorage.removeItem("test_xpub");
+
+            // If the XPUB's network doesn't match the UI, switch the UI
+            if ((xpubNetwork === bitcoin.networks.bitcoin && currentNetwork !== "mainnet") ||
+                (xpubNetwork === bitcoin.networks.testnet && currentNetwork !== "testnet")) {
+                
+                const networkName = xpubNetwork === bitcoin.networks.bitcoin ? "mainnet" : "testnet";
+                if (!confirm(`This is a ${networkName} XPUB, but you have ${currentNetwork} selected. Switch to ${networkName}?`)) {
+                    return;
+                }
+                document.querySelector(`input[name="network"][value="${networkName}"]`).checked = true;
+                currentNetwork = networkName;
+            }
+
+            localStorage.setItem(getStorageKey(), xpub);
+            loadWallet();
+
+        } catch (err) {
+            console.error("XPUB Validation Error:", err);
+            alert("Invalid XPUB: " + err.message);
         }
-
-        // 5. If all checks pass, save the XPUB and reload the wallet
-        localStorage.setItem(getStorageKey(), xpub);
-        loadWallet();
-
-    } catch (err) {
-        console.error("XPUB Validation Error:", err);
-        alert("Invalid XPUB: " + err.message);
     }
-}
-
 
     async function loadWallet(){
         const xpub=localStorage.getItem(getStorageKey());
@@ -190,9 +217,6 @@ function saveXpub(){
         }
     }
 
-    // ------------------------------
-    // 3. KEEP: The existing multi-address derivation logic
-    // ------------------------------
     async function deriveAddresses(xpub){
         derivedAddresses=[];
         const node=bip32.fromBase58(xpub,getNetwork());
@@ -204,20 +228,14 @@ function saveXpub(){
     }
 
     async function fetchBalance(){
-        utxos=[];
-        let total=0;
+        utxos=[]; let total=0;
         for(let addr of derivedAddresses){
             try {
                 const res=await fetch(`${getApi()}/address/${addr}/utxo`);
                 if (!res.ok) throw new Error(`API error for ${addr}: ${res.statusText}`);
                 const data=await res.json();
-                data.forEach(u=>{
-                    utxos.push({...u, address: addr});
-                    total+=u.value;
-                });
-            } catch (e) {
-                console.error(`Failed to fetch balance for \${addr}:`, e);
-            }
+                data.forEach(u=>{ utxos.push({...u, address}); total+=u.value; });
+            } catch (e) { console.error(`Failed to fetch balance for \${addr}:`, e); }
         }
         document.getElementById("balanceDisplay").innerText= total.toLocaleString()+" sats";
         displayReceive();
@@ -226,63 +244,64 @@ function saveXpub(){
     function displayReceive(){
         const addr=derivedAddresses[0];
         document.getElementById("receiveAddress").innerText=addr;
-        QRCode.toCanvas( document.getElementById("receiveQR"), addr, { width:220 }, (error) => {
-            if (error) console.error(error);
-        });
+        QRCode.toCanvas( document.getElementById("receiveQR"), addr, { width:220 }, (error) => { if (error) console.error(error); });
     }
 
-    function startXpubScan(){
-        const scannerDiv=document.getElementById("xpubScanner");
+    
+    window.startXpubScan = function(){
+        const scannerDiv=document.getElementById("xpubScanner"); 
         const warningDiv=document.getElementById("cameraWarning");
-        scannerDiv.style.display="block";
+        scannerDiv.style.display="block"; 
         warningDiv.innerText = "";
         const html5QrCode=new Html5Qrcode("xpubScanner");
         html5QrCode.start(
-            { facingMode:"environment" },
-            { fps:10, qrbox:250 },
+            { facingMode:"environment" }, 
+            { fps:10, qrbox:250 }, 
             txt=>{
-                html5QrCode.stop().then(() => {
-                    scannerDiv.style.display="none";
-                    document.getElementById("xpubInput").value=txt;
-                    saveXpub(); // This will now trigger the enhanced validation
-                }).catch(err => {
-                    console.error("Failed to stop scanner", err);
-                    warningDiv.innerText = "Error stopping scanner.";
+                html5QrCode.stop().then(() => { 
+                    scannerDiv.style.display="none"; 
+                    document.getElementById("xpubInput").value=txt; 
+                    window.saveXpub(); 
+                })
+                .catch(err => { 
+                    console.error("Failed to stop scanner", err); 
+                    warningDiv.innerText = "Error stopping scanner."; 
                 });
-            },
+            }, 
             err=> { /* Silently ignore scan errors */ }
-        ).catch(err => {
-            console.error("Unable to start scanning.", err);
-            warningDiv.innerText = "Cannot start camera. Use HTTPS or allow camera access.";
+        ).catch(err => { 
+            console.error("Unable to start scanning.", err); 
+            warningDiv.innerText = "Cannot start camera. Use HTTPS or allow camera access."; 
         });
     }
 
-    function startDestScan(){
-        const scannerDiv=document.getElementById("destScanner");
+    window.startDestScan = function(){
+        const scannerDiv=document.getElementById("destScanner"); 
         const warningDiv=document.getElementById("destWarning");
-        scannerDiv.style.display="block";
+        scannerDiv.style.display="block"; 
         warningDiv.innerText = "";
         const html5QrCode=new Html5Qrcode("destScanner");
         html5QrCode.start(
-            { facingMode:"environment" },
-            { fps:10, qrbox:250 },
+            { facingMode:"environment" }, 
+            { fps:10, qrbox:250 }, 
             txt=>{
-                html5QrCode.stop().then(() => {
-                    scannerDiv.style.display="none";
-                    document.getElementById("destAddress").value=txt;
-                }).catch(err => {
-                    console.error("Failed to stop destination scanner", err);
-                    warningDiv.innerText = "Error stopping scanner.";
+                html5QrCode.stop().then(() => { 
+                    scannerDiv.style.display="none"; 
+                    document.getElementById("destAddress").value=txt; 
+                })
+                .catch(err => { 
+                    console.error("Failed to stop destination scanner", err); 
+                    warningDiv.innerText = "Error stopping scanner."; 
                 });
-            },
+            }, 
             err=> { /* Silently ignore scan errors */ }
-        ).catch(err => {
-            console.error("Unable to start destination scanning.", err);
-            warningDiv.innerText = "Cannot start camera. Use HTTPS or allow camera access.";
+        ).catch(err => { 
+            console.error("Unable to start destination scanning.", err); 
+            warningDiv.innerText = "Cannot start camera. Use HTTPS or allow camera access."; 
         });
     }
 
-    function buildTx(){
+    window.buildTx = function(){
         const dest=document.getElementById("destAddress").value.trim();
         const amount=parseInt(document.getElementById("sendAmount").value);
         if(!dest||!amount) return alert("Enter destination and amount");
@@ -297,7 +316,7 @@ function saveXpub(){
             if(inputTotal > amount + 1000) break;
         }
 
-        const estimatedFee = 250; // A simple fixed fee estimate for now
+        const estimatedFee = 250;
         const sendAmountPlusFee = amount + estimatedFee;
 
         if(inputTotal < sendAmountPlusFee){
@@ -318,10 +337,11 @@ function saveXpub(){
         psbt.addOutput({address:dest,value:amount});
         const change=inputTotal-amount-estimatedFee;
         if(change>546) psbt.addOutput({address:derivedAddresses[0],value:change});
+
         document.getElementById("unsignedTx").value=psbt.toHex();
         goToSign();
     }
-    async function broadcastTx(){
+    window.broadcastTx = async function(){
         const signed=document.getElementById("signedTx").value.trim();
         if(!signed) return alert("Paste signed TX");
         const statusDiv = document.getElementById("txStatus");
@@ -335,18 +355,14 @@ function saveXpub(){
             const txid=await res.text();
             statusDiv.innerText= res.ok?"✓ Broadcasted: "+txid:"✗ Error: "+txid;
             if(res.ok){
-                setTimeout(() => {
-                    loadWallet(); // Refresh balance
-                    goToWallet();
-                }, 5000);
+                setTimeout(() => { loadWallet(); goToWallet(); }, 5000);
             }
         } catch(e) {
             statusDiv.innerText = "Network Error: " + e.message;
         }
     }
     loadWallet();
-
-    
+}
 
 
 
