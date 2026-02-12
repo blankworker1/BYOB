@@ -65,6 +65,80 @@ input, button, textarea { font-size:16px; padding:8px; margin:5px 0; width:100%;
     </div>
 </div>
 
+<script>
+const librariesToLoad = [
+    {
+        name: "tiny-secp256k1",
+        urls: [
+            "https://cdn.jsdelivr.net/npm/tiny-secp256k1@2.2.3/dist/tiny-secp256k1.umd.js"
+        ],
+        global: "tinysecp256k1"
+    },
+    {
+        name: "bip32",
+        urls: [
+            "https://cdn.jsdelivr.net/npm/@safeheron/crypto-bip32@2.0.0/dist/index.min.js"
+        ],
+        global: "bip32"
+    },
+    {
+        name: "bitcoinjs-lib",
+        urls: [
+            "https://cdn.jsdelivr.net/npm/bitcoinjs-lib-browser@5.1.7/bitcoinjs.min.js"
+        ],
+        global: "bitcoin"
+    },
+    {
+        name: "qrcode",
+        urls: [
+            "https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"
+        ],
+        global: "qrcode"
+    }
+];
+
+let currentLib = 0;
+const statusDiv = document.getElementById("loadingStatus");
+
+function loadNextLibrary() {
+    if (currentLib >= librariesToLoad.length) {
+        statusDiv.innerHTML = "✅ All libraries loaded!";
+        statusDiv.className = "success";
+        setTimeout(() => {
+            statusDiv.style.display = "none";
+            document.getElementById("mainApp").style.display = "block";
+            initApp(); // Start wallet
+        }, 800);
+        return;
+    }
+
+    const lib = librariesToLoad[currentLib];
+    const url = lib.urls[0]; // Only one URL for now
+    
+    statusDiv.innerHTML = `⏳ Loading ${lib.name} (${currentLib + 1}/${librariesToLoad.length})...`;
+
+    const script = document.createElement("script");
+    script.src = url;
+    script.onload = () => {
+        setTimeout(() => {
+            if (window[lib.global]) {
+                statusDiv.innerHTML = `✓ ${lib.name} loaded (${currentLib + 1}/${librariesToLoad.length})`;
+                currentLib++;
+                setTimeout(loadNextLibrary, 200); // load next lib
+            } else {
+                statusDiv.innerHTML = `⚠ ${lib.name} loaded but global not found`;
+            }
+        }, 300);
+    };
+    script.onerror = () => {
+        statusDiv.innerHTML = `❌ Failed to load ${lib.name} from ${url}`;
+    };
+    document.head.appendChild(script);
+}
+
+loadNextLibrary();
+</script>
+    
 <!-- ------------- Library Scripts (UMD, browser-friendly) ------------- -->
 <script src="https://cdn.jsdelivr.net/npm/tiny-secp256k1@2.2.3/dist/tiny-secp256k1.umd.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@safeheron/crypto-bip32@2.0.0/dist/index.min.js"></script>
