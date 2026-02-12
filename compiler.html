@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -19,6 +18,7 @@ body {
 input, button { font-size: 16px; padding: 8px; margin: 5px 0; width: 100%; }
 canvas { display: block; margin: 10px auto; }
 .network-toggle { margin-bottom: 10px; }
+#xpubScanner { width: 100%; height: 300px; display: none; margin-top: 10px; }
 </style>
 </head>
 <body>
@@ -36,6 +36,8 @@ canvas { display: block; margin: 10px auto; }
   <div id="xpubImportSection">
     <input type="text" id="xpubInput" placeholder="Paste XPUB here">
     <button onclick="saveXpub()">Save XPUB</button>
+    <button onclick="startXpubScan()">Scan XPUB QR</button>
+    <div id="xpubScanner"></div>
   </div>
 
   <div id="walletInfoSection" style="display:none;">
@@ -64,10 +66,11 @@ canvas { display: block; margin: 10px auto; }
 <script src="https://unpkg.com/bip32@2.0.6/browser.js"></script>
 <script src="https://unpkg.com/buffer@6.0.3/index.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.5.3/qrcode.min.js"></script>
+<script src="https://unpkg.com/html5-qrcode@2.3.7/minified/html5-qrcode.min.js"></script>
 
 <!-- 2️⃣ Main Wallet Script -->
 <script>
-window.Buffer = window.buffer.Buffer; // ensure Buffer is defined
+window.Buffer = window.buffer.Buffer;
 
 const { networks, payments } = bitcoin;
 const bip32 = window.bip32;
@@ -131,6 +134,32 @@ function saveXpub() {
   loadWallet();
 }
 
+// ------------------
+// QR SCANNER FOR XPUB
+// ------------------
+function startXpubScan() {
+  const scannerDiv = document.getElementById("xpubScanner");
+  scannerDiv.style.display = "block";
+
+  const html5QrCode = new Html5Qrcode("xpubScanner");
+
+  html5QrCode.start(
+    { facingMode: "environment" },
+    { fps: 10, qrbox: 250 },
+    (decodedText) => {
+      html5QrCode.stop().then(() => {
+        scannerDiv.style.display = "none";
+        document.getElementById("xpubInput").value = decodedText.trim();
+        saveXpub();
+      }).catch(err => console.error("Stop failed:", err));
+    },
+    (errorMessage) => { /* optional scan errors */ }
+  ).catch(err => console.error("Unable to start QR scanner:", err));
+}
+
+// ------------------
+// LOAD WALLET
+// ------------------
 async function loadWallet() {
   const stored = localStorage.getItem(getStorageKey());
   if (!stored) {
