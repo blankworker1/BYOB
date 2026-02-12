@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BYOB One - Debug Version</title>
+<style>
+body { font-family: sans-serif; max-width:480px; margin:auto; padding:20px; }
+.status { background:#f0f0f0; padding:15px; margin:10px 0; font-size:14px; border-left:4px solid #333; }
+.success { border-left-color: green; }
+.error { border-left-color: red; }
+.info { border-left-color: blue; }
+input, button { font-size:16px; padding:10px; margin:10px 0; width:100%; box-sizing:border-box; }
+</style>
+</head>
+<body>
+
+<h2>BYOB One – Debug Test</h2>
+
+<div id="status1" class="status">Step 1: Loading page...</div>
+<div id="status2" class="status">Step 2: Waiting...</div>
+<div id="status3" class="status">Step 3: Waiting...</div>
+<div id="status4" class="status">Step 4: Waiting...</div>
+<div id="status5" class="status">Step 5: Waiting...</div>
+
+<input type="text" id="xpubInput" placeholder="Paste testnet XPUB here">
+<button id="saveBtn" onclick="testSave()">Click to Test Save</button>
+
+<div id="result" style="margin-top:20px; font-size:16px; font-weight:bold;"></div>
+
+<script src="https://unpkg.com/buffer@6.0.3/index.js"></script>
+<script src="https://unpkg.com/bip32@2.0.6/browser.js"></script>
+<script src="https://unpkg.com/bitcoinjs-lib@6.1.0/dist/bitcoinjs.min.js"></script>
+
+<script>
+function updateStatus(num, msg, type) {
+  const el = document.getElementById('status' + num);
+  el.innerHTML = 'Step ' + num + ': ' + msg;
+  el.className = 'status ' + type;
+}
+
+updateStatus(1, '✓ Page loaded', 'success');
+
+// Check libraries
+setTimeout(() => {
+  updateStatus(2, 'Checking libraries...', 'info');
+  
+  let checks = 0;
+  const checkInterval = setInterval(() => {
+    checks++;
+    
+    const bufferOK = typeof buffer !== 'undefined';
+    const bip32OK = typeof bip32 !== 'undefined';
+    const bitcoinOK = typeof bitcoin !== 'undefined';
+    
+    if (bufferOK && bip32OK && bitcoinOK) {
+      clearInterval(checkInterval);
+      updateStatus(2, '✓ All libraries loaded', 'success');
+      window.Buffer = buffer.Buffer;
+      updateStatus(3, '✓ Buffer initialized', 'success');
+      updateStatus(4, 'Ready to test! Enter XPUB and click button', 'info');
+    } else if (checks > 50) {
+      clearInterval(checkInterval);
+      updateStatus(2, '✗ Library timeout: buffer=' + bufferOK + ', bip32=' + bip32OK + ', bitcoin=' + bitcoinOK, 'error');
+    }
+  }, 100);
+}, 500);
+
+function testSave() {
+  updateStatus(4, 'Testing save...', 'info');
+  
+  const xpub = document.getElementById('xpubInput').value.trim();
+  
+  if (!xpub) {
+    updateStatus(5, '✗ No XPUB entered!', 'error');
+    document.getElementById('result').innerHTML = '❌ Please paste an XPUB first';
+    return;
+  }
+  
+  updateStatus(5, 'XPUB length: ' + xpub.length + ' chars', 'info');
+  
+  // Test localStorage
+  try {
+    localStorage.setItem('test_xpub', xpub);
+    const retrieved = localStorage.getItem('test_xpub');
+    
+    if (retrieved === xpub) {
+      updateStatus(5, '✓ localStorage works!', 'success');
+    } else {
+      updateStatus(5, '✗ localStorage failed verification', 'error');
+      return;
+    }
+  } catch(e) {
+    updateStatus(5, '✗ localStorage error: ' + e.message, 'error');
+    return;
+  }
+  
+  // Test bip32 parsing
+  try {
+    const network = bitcoin.networks.testnet;
+    const node = bip32.fromBase58(xpub, network);
+    
+    document.getElementById('result').innerHTML = '✅ SUCCESS! XPUB is valid!<br><br>Now deriving addresses...';
+    
+    // Derive first address
+    const child = node.derive(0).derive(0);
+    const { address } = bitcoin.payments.p2wpkh({ pubkey: child.publicKey, network: network });
+    
+    document.getElementById('result').innerHTML += '<br><br>First address:<br>' + address + '<br><br>🎉 Everything works!';
+    
+  } catch(e) {
+    updateStatus(5, '✗ XPUB parsing error: ' + e.message, 'error');
+    document.getElementById('result').innerHTML = '❌ Error: ' + e.message;
+  }
+}
+</script>
+
+</body>
+</html>
