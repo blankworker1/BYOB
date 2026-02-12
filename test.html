@@ -36,9 +36,15 @@ input, button { font-size:16px; padding:10px; margin:10px 0; width:100%; box-siz
   window.bip32 = scureBip32;
   window.Buffer = buffer.Buffer;
 </script>
-<script src="js/bitcoinjs-lib-browser.min.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/bitcoinjs-lib-browser@5.1.7/bitcoinjs.min.js"></script>
 <script>
-  window.bitcoin = window.bitcoinjs || window.Bitcoin || null;
+  // Assign bitcoin globally for your code
+  window.bitcoin = window.bitcoinjs || null;
+
+  if (!window.bitcoin || !window.bitcoin.networks) {
+    console.error("bitcoinjs-lib failed to load or 'networks' missing");
+  }
 </script>
 <script src="js/qrcode.min.js"></script>
 <script src="js/html5-qrcode.min.js"></script>
