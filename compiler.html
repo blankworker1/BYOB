@@ -75,7 +75,7 @@ const scriptsToLoad = [
     { url: 'https://bundle.run/buffer@6.0.3', check: () => typeof window.Buffer !== 'undefined', name: 'Buffer' },
     { url: 'https://unpkg.com/bip32@2.0.6/browser.js', check: () => typeof window.bip32 !== 'undefined', name: 'BIP32' },
     { url: 'https://unpkg.com/bitcoinjs-lib@6.1.0/dist/bitcoinjs-lib.min.js', check: () => typeof window.bitcoin !== 'undefined', name: 'BitcoinJS' },
-    { url: 'https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js', check: () => typeof window.QRCode !== 'undefined', name: 'QRCodeJS' },
+    { url: 'https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js', check: () => typeof window.QRCode !== 'undefined', name: 'QRCode' },
     { url: 'https://unpkg.com/html5-qrcode@2.3.7/minified/html5-qrcode.min.js', check: () => typeof window.Html5Qrcode !== 'undefined', name: 'Html5Qrcode' }
 ];
 
