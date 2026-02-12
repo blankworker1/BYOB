@@ -120,20 +120,31 @@ function testSave() {
   wif: 0xef
 };
 
-    const node = bip32.fromBase58(xpub, network);
-    
-    document.getElementById('result').innerHTML = '✅ SUCCESS! XPUB is valid!<br><br>Now deriving addresses...';
-    
-    // Derive first address
-    const child = node.derive(0).derive(0);
-    const { address } = bitcoin.payments.p2wpkh({ pubkey: child.publicKey, network: network });
-    
-    document.getElementById('result').innerHTML += '<br><br>First address:<br>' + address + '<br><br>🎉 Everything works!';
-    
-  } catch(e) {
-    updateStatus(5, '✗ XPUB parsing error: ' + e.message, 'error');
-    document.getElementById('result').innerHTML = '❌ Error: ' + e.message;
-  }
+try {
+  const network = bitcoin.networks.testnet;
+
+  // Use HDKey instead of bip32.fromBase58
+  const node = scureBip32.HDKey.fromExtendedKey(xpub);
+
+  document.getElementById('result').innerHTML =
+    '✅ SUCCESS! XPUB is valid!<br><br>Now deriving addresses...';
+
+  // Derive first address (path m/0/0)
+  const child = node.derive("m/0/0");
+
+  const { address } = bitcoin.payments.p2wpkh({
+    pubkey: child.publicKey,
+    network: network,
+  });
+
+  document.getElementById('result').innerHTML +=
+    '<br><br>First address:<br>' + address + '<br><br>🎉 Everything works!';
+
+} catch (e) {
+  updateStatus(5, '✗ XPUB parsing error: ' + e.message, 'error');
+  document.getElementById('result').innerHTML = '❌ Error: ' + e.message;
+}
+
 }
 </script>
 
