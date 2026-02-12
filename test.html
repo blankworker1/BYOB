@@ -56,9 +56,9 @@ setTimeout(() => {
   const checkInterval = setInterval(() => {
     checks++;
     
-    const bufferOK = typeof buffer !== 'undefined';
-    const bip32OK = typeof bip32 !== 'undefined';
-    const bitcoinOK = typeof bitcoin !== 'undefined';
+    const bufferOK = typeof window.buffer !== 'undefined';
+    const bip32OK = typeof window.bip32 !== 'undefined';
+    const bitcoinOK = typeof window.bitcoin !== 'undefined';
     
     if (bufferOK && bip32OK && bitcoinOK) {
       clearInterval(checkInterval);
