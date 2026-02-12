@@ -13,10 +13,14 @@
         .network-toggle { margin-bottom:10px; }
         #xpubScanner, #destScanner { width:100%; height:300px; display:none; border:1px solid #ccc; margin-top:10px; }
         .warning { color:red; font-size:14px; margin-top:5px; }
+        #errorLog { background:#ffe6e6; border:2px solid red; padding:10px; margin:10px 0; display:none; font-size:12px; white-space:pre-wrap; }
     </style>
 </head>
 <body>
     <h2>BYOB One – Minimal Wallet</h2>
+    
+    <div id="errorLog"></div>
+    
     <div class="network-toggle">
         <label><input type="radio" name="network" value="mainnet"> Mainnet</label>
         <label><input type="radio" name="network" value="testnet" checked> Testnet</label>
@@ -34,7 +38,7 @@
         <div id="walletInfoSection" style="display:none;">
             <p><strong>Balance:</strong> <span id="balanceDisplay"></span></p>
             <p><strong>Next Receive Address:</strong></p>
-            <p id="receiveAddress"></p>
+            <p id="receiveAddress" style="word-break:break-all;"></p>
             <canvas id="receiveQR" width="220" height="220"></canvas>
             <button onclick="goToSend()">Send BTC</button>
         </div>
@@ -68,7 +72,6 @@
     </div>
 
     <!-- LIBRARIES (CDN - RELIABLE LOADING) -->
-    <!-- NOTE: These will work if you have an internet connection. No local files needed. -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/es6-promise/4.2.8/es6-promise.auto.min.js"></script>
     <script src="https://bundle.run/buffer@6.0.3"></script>
     <script> window.Buffer = window.buffer.Buffer; </script>
@@ -78,6 +81,19 @@
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 
     <script>
+        // Global error handler
+        window.onerror = function(msg, url, line, col, error) {
+            showError('JavaScript Error:\n' + msg + '\nLine: ' + line + '\n' + (error ? error.stack : ''));
+            return false;
+        };
+
+        function showError(msg) {
+            const log = document.getElementById('errorLog');
+            log.style.display = 'block';
+            log.innerHTML += new Date().toLocaleTimeString() + ': ' + msg + '\n\n';
+            console.error(msg);
+        }
+
         // --- Application Logic ---
         let currentNetwork = "testnet";
         let derivedAddresses = [];
@@ -89,8 +105,12 @@
         window.goToSign = () => showScreen('signScreen');
 
         function showScreen(screenId) {
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove("active"));
-            document.getElementById(screenId).classList.add("active");
+            try {
+                document.querySelectorAll('.screen').forEach(s => s.classList.remove("active"));
+                document.getElementById(screenId).classList.add("active");
+            } catch(e) {
+                showError('showScreen error: ' + e.message);
+            }
         }
 
         document.querySelectorAll('input[name="network"]').forEach(radio => {
@@ -105,25 +125,35 @@
         function getStorageKey() { return "byob_xpub_" + currentNetwork; }
 
         window.saveXpub = function () {
-            const xpubInput = document.getElementById("xpubInput");
-            const xpub = xpubInput.value.trim();
-            if (!xpub) return alert("Enter XPUB");
-
-            let xpubNetwork;
             try {
+                showError('saveXpub called');
+                const xpubInput = document.getElementById("xpubInput");
+                const xpub = xpubInput.value.trim();
+                showError('XPUB value: ' + (xpub ? xpub.substring(0,20) + '...' : 'EMPTY'));
+                
+                if (!xpub) return alert("Enter XPUB");
+
+                let xpubNetwork;
                 if (xpub.startsWith("xpub")) {
                     xpubNetwork = bitcoin.networks.bitcoin;
+                    showError('Detected mainnet XPUB');
                 } else if (xpub.startsWith("tpub")) {
                     xpubNetwork = bitcoin.networks.testnet;
+                    showError('Detected testnet XPUB');
                 } else {
                     throw new Error("XPUB must start with 'xpub' (mainnet) or 'tpub' (testnet).");
                 }
+                
+                showError('Validating XPUB...');
                 bip32.fromBase58(xpub, xpubNetwork);
+                showError('XPUB validated successfully');
+                
                 localStorage.setItem("test_xpub", xpub);
                 if (localStorage.getItem("test_xpub") !== xpub) {
                     throw new Error("localStorage is not available or full.");
                 }
                 localStorage.removeItem("test_xpub");
+                showError('localStorage test passed');
 
                 if ((xpubNetwork === bitcoin.networks.bitcoin && currentNetwork !== "mainnet") ||
                     (xpubNetwork === bitcoin.networks.testnet && currentNetwork !== "testnet")) {
@@ -133,71 +163,121 @@
                     }
                     document.querySelector(`input[name="network"][value="${networkName}"]`).checked = true;
                     currentNetwork = networkName;
+                    showError('Switched network to ' + networkName);
                 }
+                
                 localStorage.setItem(getStorageKey(), xpub);
+                showError('XPUB saved, calling loadWallet...');
                 loadWallet();
             } catch (err) {
-                console.error("XPUB Validation Error:", err);
-                alert("Invalid XPUB: " + err.message);
+                showError("saveXpub error: " + err.message + '\n' + err.stack);
+                alert("Error: " + err.message);
             }
         }
 
         async function loadWallet() {
-            const xpub = localStorage.getItem(getStorageKey());
-            if (!xpub) {
-                document.getElementById("xpubImportSection").style.display = "block";
-                document.getElementById("walletInfoSection").style.display = "none";
-                return;
-            }
-            document.getElementById("xpubImportSection").style.display = "none";
-            document.getElementById("walletInfoSection").style.display = "block";
-            document.getElementById("balanceDisplay").innerText = "Loading...";
             try {
+                showError('loadWallet called');
+                const xpub = localStorage.getItem(getStorageKey());
+                showError('Retrieved XPUB: ' + (xpub ? xpub.substring(0,20) + '...' : 'NULL'));
+                
+                if (!xpub) {
+                    showError('No XPUB found - showing import screen');
+                    document.getElementById("xpubImportSection").style.display = "block";
+                    document.getElementById("walletInfoSection").style.display = "none";
+                    return;
+                }
+                
+                showError('Switching to wallet info section');
+                document.getElementById("xpubImportSection").style.display = "none";
+                document.getElementById("walletInfoSection").style.display = "block";
+                document.getElementById("balanceDisplay").innerText = "Loading...";
+                
+                showError('Calling deriveAddresses...');
                 await deriveAddresses(xpub);
+                showError('Addresses derived: ' + derivedAddresses.length);
+                
+                showError('Calling fetchBalance...');
                 await fetchBalance();
+                showError('Balance fetched successfully');
             } catch (e) {
-                console.error("Failed to load wallet", e);
+                showError("loadWallet error: " + e.message + '\n' + e.stack);
                 document.getElementById("balanceDisplay").innerText = "Error loading wallet";
-                alert("Could not load wallet. See console.");
+                alert("Could not load wallet: " + e.message);
             }
         }
 
         async function deriveAddresses(xpub) {
-            derivedAddresses = [];
-            const node = bip32.fromBase58(xpub, getNetwork());
-            for (let i = 0; i < 20; i++) {
-                const child = node.derive(0).derive(i);
-                const { address } = bitcoin.payments.p2wpkh({ pubkey: child.publicKey, network: getNetwork() });
-                derivedAddresses.push(address);
+            try {
+                showError('deriveAddresses called');
+                derivedAddresses = [];
+                const node = bip32.fromBase58(xpub, getNetwork());
+                showError('XPUB parsed, deriving addresses...');
+                
+                for (let i = 0; i < 20; i++) {
+                    const child = node.derive(0).derive(i);
+                    const { address } = bitcoin.payments.p2wpkh({ pubkey: child.publicKey, network: getNetwork() });
+                    derivedAddresses.push(address);
+                    if (i === 0) showError('First address: ' + address);
+                }
+                showError('Derived ' + derivedAddresses.length + ' addresses');
+            } catch(e) {
+                showError('deriveAddresses error: ' + e.message + '\n' + e.stack);
+                throw e;
             }
         }
 
         async function fetchBalance() {
-            utxos = [];
-            let total = 0;
-            for (let addr of derivedAddresses) {
-                try {
-                    const res = await fetch(`${getApi()}/address/${addr}/utxo`);
-                    if (!res.ok) throw new Error(`API error for ${addr}: ${res.statusText}`);
-                    const data = await res.json();
-                    data.forEach(u => {
-                        utxos.push({ ...u, address: addr });
-                        total += u.value;
-                    });
-                } catch (e) {
-                    console.error(`Failed to fetch balance for ${addr}:`, e);
+            try {
+                showError('fetchBalance called');
+                utxos = [];
+                let total = 0;
+                const api = getApi();
+                showError('Using API: ' + api);
+                
+                for (let i = 0; i < derivedAddresses.length; i++) {
+                    const addr = derivedAddresses[i];
+                    try {
+                        const url = `${api}/address/${addr}/utxo`;
+                        const res = await fetch(url);
+                        if (!res.ok) throw new Error(`API error for ${addr}: ${res.statusText}`);
+                        const data = await res.json();
+                        
+                        if (data.length > 0) {
+                            showError(`Address ${i}: found ${data.length} UTXOs`);
+                            data.forEach(u => {
+                                utxos.push({ ...u, address: addr });
+                                total += u.value;
+                            });
+                        }
+                    } catch (e) {
+                        showError(`Failed to fetch ${addr}: ${e.message}`);
+                    }
                 }
+                
+                showError('Total balance: ' + total + ' sats');
+                document.getElementById("balanceDisplay").innerText = total.toLocaleString() + " sats";
+                displayReceive();
+            } catch(e) {
+                showError('fetchBalance error: ' + e.message + '\n' + e.stack);
+                throw e;
             }
-            document.getElementById("balanceDisplay").innerText = total.toLocaleString() + " sats";
-            displayReceive();
         }
 
         function displayReceive() {
-            const addr = derivedAddresses[0];
-            document.getElementById("receiveAddress").innerText = addr;
-            QRCode.toCanvas(document.getElementById("receiveQR"), addr, { width: 220 }, (error) => {
-                if (error) console.error(error);
-            });
+            try {
+                showError('displayReceive called');
+                const addr = derivedAddresses[0];
+                document.getElementById("receiveAddress").innerText = addr;
+                showError('Generating QR for: ' + addr);
+                
+                QRCode.toCanvas(document.getElementById("receiveQR"), addr, { width: 220 }, (error) => {
+                    if (error) showError('QR generation error: ' + error.message);
+                    else showError('QR generated successfully');
+                });
+            } catch(e) {
+                showError('displayReceive error: ' + e.message + '\n' + e.stack);
+            }
         }
 
         window.startXpubScan = function () {
@@ -214,15 +294,14 @@
                         scannerDiv.style.display = "none";
                         document.getElementById("xpubInput").value = txt;
                         window.saveXpub();
-                    })
-                        .catch(err => {
-                            console.error("Failed to stop scanner", err);
-                            warningDiv.innerText = "Error stopping scanner.";
-                        });
+                    }).catch(err => {
+                        showError("Failed to stop scanner: " + err.message);
+                        warningDiv.innerText = "Error stopping scanner.";
+                    });
                 },
                 err => { /* Silently ignore scan errors */ }
             ).catch(err => {
-                console.error("Unable to start scanning.", err);
+                showError("Unable to start scanning: " + err.message);
                 warningDiv.innerText = "Cannot start camera. Use HTTPS or allow camera access.";
             });
         }
@@ -240,66 +319,71 @@
                     html5QrCode.stop().then(() => {
                         scannerDiv.style.display = "none";
                         document.getElementById("destAddress").value = txt;
-                    })
-                        .catch(err => {
-                            console.error("Failed to stop destination scanner", err);
-                            warningDiv.innerText = "Error stopping scanner.";
-                        });
+                    }).catch(err => {
+                        showError("Failed to stop destination scanner: " + err.message);
+                        warningDiv.innerText = "Error stopping scanner.";
+                    });
                 },
                 err => { /* Silently ignore scan errors */ }
             ).catch(err => {
-                console.error("Unable to start destination scanning.", err);
+                showError("Unable to start destination scanning: " + err.message);
                 warningDiv.innerText = "Cannot start camera. Use HTTPS or allow camera access.";
             });
         }
 
         window.buildTx = function () {
-            const dest = document.getElementById("destAddress").value.trim();
-            const amount = parseInt(document.getElementById("sendAmount").value);
-            if (!dest || !amount) return alert("Enter destination and amount");
+            try {
+                const dest = document.getElementById("destAddress").value.trim();
+                const amount = parseInt(document.getElementById("sendAmount").value);
+                if (!dest || !amount) return alert("Enter destination and amount");
 
-            const psbt = new bitcoin.Psbt({ network: getNetwork() });
-            let inputTotal = 0;
-            const inputs = [];
+                const psbt = new bitcoin.Psbt({ network: getNetwork() });
+                let inputTotal = 0;
+                const inputs = [];
 
-            for (const u of utxos) {
-                inputs.push(u);
-                inputTotal += u.value;
-                if (inputTotal > amount + 1000) break;
-            }
+                for (const u of utxos) {
+                    inputs.push(u);
+                    inputTotal += u.value;
+                    if (inputTotal > amount + 1000) break;
+                }
 
-            const estimatedFee = 250;
-            const sendAmountPlusFee = amount + estimatedFee;
+                const estimatedFee = 250;
+                const sendAmountPlusFee = amount + estimatedFee;
 
-            if (inputTotal < sendAmountPlusFee) {
-                return alert("Insufficient balance. Need " + (sendAmountPlusFee - inputTotal) + " more sats.");
-            }
+                if (inputTotal < sendAmountPlusFee) {
+                    return alert("Insufficient balance. Need " + (sendAmountPlusFee - inputTotal) + " more sats.");
+                }
 
-            inputs.forEach(u => {
-                psbt.addInput({
-                    hash: u.txid,
-                    index: u.vout,
-                    witnessUtxo: {
-                        script: bitcoin.payments.p2wpkh({ address: u.address, network: getNetwork() }).output,
-                        value: u.value
-                    }
+                inputs.forEach(u => {
+                    psbt.addInput({
+                        hash: u.txid,
+                        index: u.vout,
+                        witnessUtxo: {
+                            script: bitcoin.payments.p2wpkh({ address: u.address, network: getNetwork() }).output,
+                            value: u.value
+                        }
+                    });
                 });
-            });
 
-            psbt.addOutput({ address: dest, value: amount });
-            const change = inputTotal - amount - estimatedFee;
-            if (change > 546) psbt.addOutput({ address: derivedAddresses[0], value: change });
+                psbt.addOutput({ address: dest, value: amount });
+                const change = inputTotal - amount - estimatedFee;
+                if (change > 546) psbt.addOutput({ address: derivedAddresses[0], value: change });
 
-            document.getElementById("unsignedTx").value = psbt.toHex();
-            goToSign();
+                document.getElementById("unsignedTx").value = psbt.toHex();
+                goToSign();
+            } catch(e) {
+                showError('buildTx error: ' + e.message + '\n' + e.stack);
+                alert('Error building transaction: ' + e.message);
+            }
         }
 
         window.broadcastTx = async function () {
-            const signed = document.getElementById("signedTx").value.trim();
-            if (!signed) return alert("Paste signed TX");
-            const statusDiv = document.getElementById("txStatus");
-            statusDiv.innerText = "Broadcasting...";
             try {
+                const signed = document.getElementById("signedTx").value.trim();
+                if (!signed) return alert("Paste signed TX");
+                const statusDiv = document.getElementById("txStatus");
+                statusDiv.innerText = "Broadcasting...";
+                
                 const res = await fetch(`${getApi()}/tx`, {
                     method: "POST",
                     headers: { "Content-Type": "text/plain" },
@@ -311,11 +395,13 @@
                     setTimeout(() => { loadWallet(); goToWallet(); }, 5000);
                 }
             } catch (e) {
-                statusDiv.innerText = "Network Error: " + e.message;
+                showError('broadcastTx error: ' + e.message);
+                document.getElementById("txStatus").innerText = "Network Error: " + e.message;
             }
         }
 
         // Initial load
+        showError('Page loaded, calling loadWallet...');
         loadWallet();
     </script>
 </body>
@@ -326,5 +412,6 @@
 
 
 
-            
-            
+
+
+
