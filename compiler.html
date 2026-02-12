@@ -18,7 +18,7 @@ body {
 input, button { font-size: 16px; padding: 8px; margin: 5px 0; width: 100%; }
 canvas { display: block; margin: 10px auto; }
 .network-toggle { margin-bottom: 10px; }
-#xpubScanner { width: 100%; height: 300px; display: none; margin-top: 10px; }
+#xpubScanner { width: 100%; height: 300px; display: none; margin-top: 10px; border:1px solid #ccc; }
 </style>
 </head>
 <body>
@@ -130,14 +130,21 @@ function getStorageKey() {
 function saveXpub() {
   const xpub = document.getElementById("xpubInput").value.trim();
   if (!xpub) return alert("Enter XPUB");
-  localStorage.setItem(getStorageKey(), xpub);
-  loadWallet();
+
+  try {
+    localStorage.setItem(getStorageKey(), xpub);
+    loadWallet();
+  } catch (err) {
+    alert("Error saving/loading XPUB: " + err.message);
+  }
 }
 
 // ------------------
 // QR SCANNER FOR XPUB
 // ------------------
 function startXpubScan() {
+  console.log("Scan button clicked");
+
   const scannerDiv = document.getElementById("xpubScanner");
   scannerDiv.style.display = "block";
 
@@ -147,13 +154,16 @@ function startXpubScan() {
     { facingMode: "environment" },
     { fps: 10, qrbox: 250 },
     (decodedText) => {
+      console.log("QR decoded:", decodedText);
       html5QrCode.stop().then(() => {
         scannerDiv.style.display = "none";
         document.getElementById("xpubInput").value = decodedText.trim();
         saveXpub();
       }).catch(err => console.error("Stop failed:", err));
     },
-    (errorMessage) => { /* optional scan errors */ }
+    (errorMessage) => {
+      // optional: scan errors
+    }
   ).catch(err => console.error("Unable to start QR scanner:", err));
 }
 
@@ -209,13 +219,17 @@ async function fetchBalance() {
   const api = getApiBase();
 
   for (let address of derivedAddresses) {
-    const res = await fetch(`${api}/address/${address}/utxo`);
-    const data = await res.json();
-    if (data.length > 0) {
-      data.forEach(u => {
-        utxos.push({ txid: u.txid, vout: u.vout, value: u.value, address: address });
-        total += u.value;
-      });
+    try {
+      const res = await fetch(`${api}/address/${address}/utxo`);
+      const data = await res.json();
+      if (data.length > 0) {
+        data.forEach(u => {
+          utxos.push({ txid: u.txid, vout: u.vout, value: u.value, address: address });
+          total += u.value;
+        });
+      }
+    } catch (err) {
+      console.error("Error fetching balance for address", address, err);
     }
   }
 
@@ -239,9 +253,6 @@ loadWallet();
 
 </body>
 </html>
-
-
-
 
 
 
