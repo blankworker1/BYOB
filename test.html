@@ -29,17 +29,25 @@ input, button { font-size:16px; padding:10px; margin:10px 0; width:100%; box-siz
 <div id="result" style="margin-top:20px; font-size:16px; font-weight:bold;"></div>
 
 <!-- Libraries -->
+
 <script src="js/buffer.min.js"></script>
+<script>
+  window.Buffer = window.Buffer || buffer?.Buffer || window.buffer?.Buffer;
+  updateStatus(3, '✓ Buffer initialized', 'success');
+</script>
+
 <script src="js/bip32.min.js"></script>
 <script>
   // Expose scureBip32 globally
   window.bip32 = scureBip32;
 </script>
+  
 <script src="js/bitcoinjs.min.js"></script>
 <script>
   // Expose bitcoinjs-lib globally
   window.bitcoin = window.bitcoinjs || window.Bitcoin || null;
 </script>
+  
 <script src="js/qrcode.min.js"></script>
 <script src="js/html5-qrcode.min.js"></script>
 
