@@ -1,23 +1,76 @@
+
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  ...
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BYOB One - Minimal Wallet</title>
+<style>
+body {
+  font-family: sans-serif;
+  margin: 0;
+  padding: 20px;
+  max-width: 480px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.screen { display: none; }
+.screen.active { display: block; }
+input, button { font-size: 16px; padding: 8px; margin: 5px 0; width: 100%; }
+canvas { display: block; margin: 10px auto; }
+.network-toggle { margin-bottom: 10px; }
+</style>
 </head>
 <body>
 
+<h2>BYOB One – Minimal Wallet</h2>
 
-  <!-- 1️⃣ External Libraries (PLACE FIRST) -->
-  <script src="https://unpkg.com/bitcoinjs-lib@6.1.0/dist/bitcoinjs.min.js"></script>
-  <script src="https://unpkg.com/bip32@2.0.6/browser.js"></script>
-  <script src="https://unpkg.com/buffer@6.0.3/index.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.5.3/qrcode.min.js"></script>
+<div class="network-toggle">
+  <label><input type="radio" name="network" value="mainnet" checked> Mainnet</label>
+  <label><input type="radio" name="network" value="testnet"> Testnet</label>
+</div>
 
-  <!-- 2️⃣ Your Main Script (PLACE SECOND) -->
-  
-  <script>
+<!-- Wallet Screen -->
+<div id="walletScreen" class="screen active">
+
+  <div id="xpubImportSection">
+    <input type="text" id="xpubInput" placeholder="Paste XPUB here">
+    <button onclick="saveXpub()">Save XPUB</button>
+  </div>
+
+  <div id="walletInfoSection" style="display:none;">
+    <p><strong>Balance:</strong> <span id="balanceDisplay"></span></p>
+    <p><strong>Next Receive Address:</strong> <span id="receiveAddress"></span></p>
+    <canvas id="receiveQR" width="220" height="220"></canvas>
+    <button onclick="goToSend()">Send BTC</button>
+  </div>
+
+</div>
+
+<!-- Send Screen -->
+<div id="sendScreen" class="screen">
+  <p>Send Screen – Coming Soon</p>
+  <button onclick="goToWallet()">Back</button>
+</div>
+
+<!-- Sign Screen -->
+<div id="signScreen" class="screen">
+  <p>Sign Screen – Coming Soon</p>
+  <button onclick="goToWallet()">Back</button>
+</div>
+
+<!-- 1️⃣ External Libraries -->
+<script src="https://unpkg.com/bitcoinjs-lib@6.1.0/dist/bitcoinjs.min.js"></script>
+<script src="https://unpkg.com/bip32@2.0.6/browser.js"></script>
+<script src="https://unpkg.com/buffer@6.0.3/index.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.5.3/qrcode.min.js"></script>
+
+<!-- 2️⃣ Main Wallet Script -->
+<script>
+window.Buffer = window.buffer.Buffer; // ensure Buffer is defined
+
 const { networks, payments } = bitcoin;
 const bip32 = window.bip32;
-const Buffer = window.buffer.Buffer;
 
 let currentNetwork = "mainnet";
 let derivedAddresses = [];
@@ -30,14 +83,12 @@ const signScreen = document.getElementById("signScreen");
 // ------------------
 // SCREEN CONTROL
 // ------------------
-
 function showScreen(screen) {
   walletScreen.classList.remove("active");
   sendScreen.classList.remove("active");
   signScreen.classList.remove("active");
   screen.classList.add("active");
 }
-
 function goToSend() { showScreen(sendScreen); }
 function goToWallet() { showScreen(walletScreen); }
 function goToSign() { showScreen(signScreen); }
@@ -45,7 +96,6 @@ function goToSign() { showScreen(signScreen); }
 // ------------------
 // NETWORK TOGGLE
 // ------------------
-
 document.querySelectorAll('input[name="network"]').forEach(radio => {
   radio.addEventListener("change", function() {
     currentNetwork = this.value;
@@ -74,24 +124,20 @@ function getStorageKey() {
 // ------------------
 // XPUB HANDLING
 // ------------------
-
 function saveXpub() {
   const xpub = document.getElementById("xpubInput").value.trim();
   if (!xpub) return alert("Enter XPUB");
-
   localStorage.setItem(getStorageKey(), xpub);
   loadWallet();
 }
 
 async function loadWallet() {
   const stored = localStorage.getItem(getStorageKey());
-
   if (!stored) {
     document.getElementById("xpubImportSection").style.display = "block";
     document.getElementById("walletInfoSection").style.display = "none";
     return;
   }
-
   document.getElementById("xpubImportSection").style.display = "none";
   document.getElementById("walletInfoSection").style.display = "block";
 
@@ -107,36 +153,27 @@ async function loadWallet() {
 }
 
 // ------------------
-// DERIVATION
+// DERIVE ADDRESSES
 // ------------------
-
-    async function deriveAddresses(xpub) {
+async function deriveAddresses(xpub) {
   derivedAddresses = [];
-
   const network = getNetworkObject();
-  
+
   try {
     const node = bip32.fromBase58(xpub, network);
-
     for (let i = 0; i < 20; i++) {
       const child = node.derive(0).derive(i);
-      const { address } = payments.p2wpkh({
-        pubkey: child.publicKey,
-        network: network
-      });
+      const { address } = payments.p2wpkh({ pubkey: child.publicKey, network: network });
       derivedAddresses.push(address);
     }
   } catch (error) {
     alert("Invalid XPUB: " + error.message);
   }
-    }
-    
-
+}
 
 // ------------------
 // FETCH BALANCE
 // ------------------
-
 async function fetchBalance() {
   utxos = [];
   let total = 0;
@@ -145,50 +182,34 @@ async function fetchBalance() {
   for (let address of derivedAddresses) {
     const res = await fetch(`${api}/address/${address}/utxo`);
     const data = await res.json();
-
     if (data.length > 0) {
       data.forEach(u => {
-        utxos.push({
-          txid: u.txid,
-          vout: u.vout,
-          value: u.value,
-          address: address
-        });
+        utxos.push({ txid: u.txid, vout: u.vout, value: u.value, address: address });
         total += u.value;
       });
     }
   }
 
-  document.getElementById("balanceDisplay").innerText =
-    total.toLocaleString() + " sats";
-
+  document.getElementById("balanceDisplay").innerText = total.toLocaleString() + " sats";
   displayNextReceive();
 }
 
 // ------------------
-// NEXT RECEIVE
+// DISPLAY NEXT RECEIVE ADDRESS
 // ------------------
-
 function displayNextReceive() {
   const next = derivedAddresses[0];
   document.getElementById("receiveAddress").innerText = next;
-
-  QRCode.toCanvas(
-    document.getElementById("receiveQR"),
-    next,
-    { width: 220 }
-  );
+  QRCode.toCanvas(document.getElementById("receiveQR"), next, { width: 220 });
 }
 
 // ------------------
-
 loadWallet();
 
 </script>
 
 </body>
 </html>
-
 
 
 
