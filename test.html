@@ -56,7 +56,7 @@ input, button { font-size:16px; padding:10px; margin:10px 0; width:100%; box-siz
   
 <script src="js/qrcode.min.js"></script>
 <script src="js/html5-qrcode.min.js"></script>
-
+<script>
   try {
   const testNet = bitcoin.networks.testnet;
 
@@ -69,13 +69,14 @@ input, button { font-size:16px; padding:10px; margin:10px 0; width:100%; box-siz
   const { address } = bitcoin.payments.p2wpkh({
     pubkey: child.publicKey,
     network: testNet,
+    
   });
 
   updateStatus(3, '✓ Bitcoin engine functional', 'success');
 } catch (e) {
   updateStatus(3, '✗ Bitcoin engine failed: ' + e.message, 'error');
 }
-
+<script>
 <script>
 function updateStatus(num, msg, type) {
   const el = document.getElementById('status' + num);
@@ -96,17 +97,31 @@ setTimeout(() => {
     const bufferOK = typeof window.Buffer !== 'undefined';
     const bip32OK = typeof window.bip32 !== 'undefined';
     const bitcoinOK = typeof window.bitcoin !== 'undefined';
+    
+  if (bufferOK && bip32OK && bitcoinOK) {
+  clearInterval(checkInterval);
+  updateStatus(2, '✓ All libraries loaded', 'success');
 
-    if (bufferOK && bip32OK && bitcoinOK) {
-      clearInterval(checkInterval);
-      updateStatus(2, '✓ All libraries loaded', 'success');
-      window.Buffer = buffer.Buffer;
-      updateStatus(3, '✓ Buffer initialized', 'success');
-      updateStatus(4, 'Ready to test! Enter XPUB and click button', 'info');
-    } else if (checks > 50) {
-      clearInterval(checkInterval);
-      updateStatus(2, '✗ Library timeout: buffer=' + bufferOK + ', bip32=' + bip32OK + ', bitcoin=' + bitcoinOK, 'error');
-    }
+  try {
+    const testNet = bitcoin.networks.testnet;
+
+    const key = scureBip32.HDKey.fromMasterSeed(
+      new Uint8Array(32).fill(1)
+    );
+
+    const child = key.derive("m/0/0");
+
+    const { address } = bitcoin.payments.p2wpkh({
+      pubkey: child.publicKey,
+      network: testNet,
+    });
+
+    updateStatus(3, '✓ Bitcoin engine functional', 'success');
+    updateStatus(4, 'Ready to test! Enter XPUB and click button', 'info');
+
+  } catch (e) {
+    updateStatus(3, '✗ Bitcoin engine failed: ' + e.message, 'error');
+  }
   }, 100);
 }, 500);
 
