@@ -140,9 +140,7 @@ function testSave() {
   }
 
   try {
-    const node = bip32.HDKey
-      ? bip32.HDKey.fromExtendedKey(xpub, { versions })
-      : null;
+     const node = bip32.HDKey.fromExtendedKey(xpub);
 
     const child = node.derive("m/0/0");
 
