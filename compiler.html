@@ -144,7 +144,8 @@ function saveXpub() {
 // ------------------
 // QR SCANNER FOR XPUB
 // ------------------
-function startXpubScan() {
+
+  function startXpubScan() {
   const scannerDiv = document.getElementById("xpubScanner");
   const warningDiv = document.getElementById("cameraWarning");
   scannerDiv.style.display = "block";
@@ -172,9 +173,16 @@ function startXpubScan() {
     }
   ).catch(err => {
     console.error("Unable to start QR scanner:", err);
-    warningDiv.innerText = "Cannot start camera. Ensure page is served via HTTPS.";
+    if (err.message.includes("NotAllowedError")) {
+      warningDiv.innerText = "Camera access denied. Please allow camera access.";
+    } else if (err.message.includes("NotFoundError")) {
+      warningDiv.innerText = "No camera found. Please connect a camera.";
+    } else {
+      warningDiv.innerText = "Cannot start camera. Ensure page is served via HTTPS.";
+    }
   });
-}
+  }
+  
 
 // ------------------
 // LOAD WALLET
