@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>BYOB One - Debug Version</title>
+
 <style>
 body { font-family: sans-serif; max-width:480px; margin:auto; padding:20px; }
 .status { background:#f0f0f0; padding:15px; margin:10px 0; font-size:14px; border-left:4px solid #333; }
@@ -24,181 +25,150 @@ input, button { font-size:16px; padding:10px; margin:10px 0; width:100%; box-siz
 <div id="status5" class="status">Step 5: Waiting...</div>
 
 <input type="text" id="xpubInput" placeholder="Paste XPUB or TPUB here">
-<button id="saveBtn" onclick="testSave()">Click to Test Save</button>
+<button onclick="testSave()">Click to Test Save</button>
 
-<div id="result" style="margin-top:20px; font-size:16px; font-weight:bold;"></div>
+<div id="result" style="margin-top:20px;font-size:16px;font-weight:bold;"></div>
 
-<!-- Libraries -->
-
-
-  <script src="js/buffer.min.js"></script>
-<script>
-  // Try all ways buffer might be exposed
-  window.Buffer = window.Buffer || buffer?.Buffer || window.buffer?.Buffer;
-
-  // Force Step 3 to success
-  const status3 = document.getElementById('status3');
-  status3.innerHTML = 'Step 3: ✓ Buffer initialized';
-  status3.className = 'status success';
-</script>
-
+<!-- LIBRARIES (ORDER MATTERS) -->
+<script src="js/buffer.min.js"></script>
 <script src="js/bip32.min.js"></script>
-<script>
-  // Expose scureBip32 globally
-  window.bip32 = scureBip32;
-</script>
-  
 <script src="js/bitcoinjs.min.js"></script>
+
 <script>
-  // Expose bitcoinjs-lib globally
-  window.bitcoin = window.bitcoinjs || window.Bitcoin || null;
-</script>
-  
-<script src="js/qrcode.min.js"></script>
-<script src="js/html5-qrcode.min.js"></script>
-<script>
-  try {
-  const testNet = bitcoin.networks.testnet;
+/* ================================
+   INITIAL SETUP
+================================ */
 
-  const key = scureBip32.HDKey.fromMasterSeed(
-    new Uint8Array(32).fill(1)
-  );
+updateStatus(1, "✓ Page loaded", "success");
 
-  const child = key.derive("m/0/0");
+// Ensure globals are exposed properly
+window.Buffer = window.Buffer || window.buffer?.Buffer;
+window.bip32 = window.bip32 || window.scureBip32;
+window.bitcoin = window.bitcoin || window.bitcoinjs || window.Bitcoin;
 
-  const { address } = bitcoin.payments.p2wpkh({
-    pubkey: child.publicKey,
-    network: testNet,
-    
-  });
+/* ================================
+   LIBRARY CHECK
+================================ */
 
-  updateStatus(3, '✓ Bitcoin engine functional', 'success');
-} catch (e) {
-  updateStatus(3, '✗ Bitcoin engine failed: ' + e.message, 'error');
-}
-<script>
-<script>
-function updateStatus(num, msg, type) {
-  const el = document.getElementById('status' + num);
-  el.innerHTML = 'Step ' + num + ': ' + msg;
-  el.className = 'status ' + type;
-}
-
-updateStatus(1, '✓ Page loaded', 'success');
-
-// Step 2 & 3: Check libraries
 setTimeout(() => {
-  updateStatus(2, 'Checking libraries...', 'info');
 
-  let checks = 0;
-  const checkInterval = setInterval(() => {
-    checks++;
+  const bufferOK = typeof window.Buffer !== "undefined";
+  const bip32OK = typeof window.bip32 !== "undefined";
+  const bitcoinOK = typeof window.bitcoin !== "undefined";
 
-    const bufferOK = typeof window.Buffer !== 'undefined';
-    const bip32OK = typeof window.bip32 !== 'undefined';
-    const bitcoinOK = typeof window.bitcoin !== 'undefined';
-    
   if (bufferOK && bip32OK && bitcoinOK) {
-  clearInterval(checkInterval);
-  updateStatus(2, '✓ All libraries loaded', 'success');
+    updateStatus(2, "✓ All libraries loaded", "success");
+    testBitcoinEngine();
+  } else {
+    updateStatus(
+      2,
+      "✗ Library load failed: buffer=" + bufferOK +
+      ", bip32=" + bip32OK +
+      ", bitcoin=" + bitcoinOK,
+      "error"
+    );
+  }
 
+}, 500);
+
+/* ================================
+   TEST BITCOIN ENGINE
+================================ */
+
+function testBitcoinEngine() {
   try {
     const testNet = bitcoin.networks.testnet;
 
-    const key = scureBip32.HDKey.fromMasterSeed(
-      new Uint8Array(32).fill(1)
-    );
+    const key = bip32.HDKey
+      ? bip32.HDKey.fromMasterSeed(new Uint8Array(32).fill(1))
+      : bip32.fromSeed(new Uint8Array(32).fill(1));
 
-    const child = key.derive("m/0/0");
-
-    const { address } = bitcoin.payments.p2wpkh({
-      pubkey: child.publicKey,
-      network: testNet,
-    });
-
-    updateStatus(3, '✓ Bitcoin engine functional', 'success');
-    updateStatus(4, 'Ready to test! Enter XPUB and click button', 'info');
+    updateStatus(3, "✓ Bitcoin engine functional", "success");
+    updateStatus(4, "Ready to test! Enter XPUB.", "info");
 
   } catch (e) {
-    updateStatus(3, '✗ Bitcoin engine failed: ' + e.message, 'error');
+    updateStatus(3, "✗ Bitcoin engine failed: " + e.message, "error");
   }
-  
+}
 
-// Step 4 & 5: Test save and XPUB parsing
+/* ================================
+   TEST XPUB
+================================ */
+
 function testSave() {
-  updateStatus(4, 'Testing save...', 'info');
 
-  const xpub = document.getElementById('xpubInput').value.trim();
+  updateStatus(4, "Testing save...", "info");
+
+  const xpub = document.getElementById("xpubInput").value.trim();
 
   if (!xpub) {
-    updateStatus(5, '✗ No XPUB entered!', 'error');
-    document.getElementById('result').innerHTML = '❌ Please paste an XPUB first';
+    updateStatus(5, "✗ No XPUB entered", "error");
     return;
   }
 
-  updateStatus(5, 'XPUB length: ' + xpub.length + ' chars', 'info');
-
-  // Test localStorage
+  /* --- localStorage test --- */
   try {
-    localStorage.setItem('test_xpub', xpub);
-    const retrieved = localStorage.getItem('test_xpub');
-
-    if (retrieved === xpub) {
-      updateStatus(5, '✓ localStorage works!', 'success');
-    } else {
-      updateStatus(5, '✗ localStorage failed verification', 'error');
-      return;
-    }
-  } catch(e) {
-    updateStatus(5, '✗ localStorage error: ' + e.message, 'error');
+    localStorage.setItem("test_xpub", xpub);
+    updateStatus(5, "✓ localStorage works", "success");
+  } catch (e) {
+    updateStatus(5, "✗ localStorage error: " + e.message, "error");
     return;
   }
 
-  // Determine network and BIP32 version
-  let network, versions;
-  if (xpub.startsWith('xpub')) {
+  /* --- Detect Network --- */
+  let network;
+  let versions;
+
+  if (xpub.startsWith("xpub")) {
     network = bitcoin.networks.bitcoin;
     versions = { public: 0x0488b21e, private: 0x0488ade4 };
-  } else if (xpub.startsWith('tpub')) {
+  } else if (xpub.startsWith("tpub")) {
     network = bitcoin.networks.testnet;
     versions = { public: 0x043587cf, private: 0x04358394 };
   } else {
-    updateStatus(5, '✗ Unknown XPUB format', 'error');
-    document.getElementById('result').innerHTML = '❌ XPUB must start with xpub (mainnet) or tpub (testnet)';
+    updateStatus(5, "✗ Unknown XPUB format", "error");
     return;
   }
 
-  // Parse XPUB
+  /* --- Parse XPUB --- */
   try {
-    const node = scureBip32.HDKey.fromExtendedKey(xpub, { versions });
 
-    document.getElementById('result').innerHTML =
-      '✅ SUCCESS! XPUB is valid!<br><br>Deriving first address...';
+    const node = bip32.HDKey
+      ? bip32.HDKey.fromExtendedKey(xpub, { versions })
+      : bip32.fromBase58(xpub, network);
 
-    // Derive first child (m/0/0)
-    const child = node.derive("m/0/0");
+    const child = node.derive
+      ? node.derive("m/0/0")
+      : node.derive(0).derive(0);
+
+    const pubkey = child.publicKey || child.publicKey;
 
     const { address } = bitcoin.payments.p2wpkh({
-      pubkey: child.publicKey,
+      pubkey: pubkey,
       network: network,
     });
 
-    document.getElementById('result').innerHTML +=
-      '<br><br>First address:<br>' + address + '<br><br>🎉 Everything works!';
+    document.getElementById("result").innerHTML =
+      "✅ SUCCESS!<br><br>First address:<br>" + address;
 
-    updateStatus(5, '✓ XPUB parsed and address derived', 'success');
+    updateStatus(5, "✓ XPUB parsed successfully", "success");
 
   } catch (e) {
-    updateStatus(5, '✗ XPUB parsing error: ' + e.message, 'error');
-    document.getElementById('result').innerHTML = '❌ Error: ' + e.message;
+    updateStatus(5, "✗ XPUB parsing error: " + e.message, "error");
   }
 }
+
+/* ================================
+   UI HELPER
+================================ */
+
+function updateStatus(num, msg, type) {
+  const el = document.getElementById("status" + num);
+  el.innerHTML = "Step " + num + ": " + msg;
+  el.className = "status " + type;
+}
+
 </script>
 
 </body>
 </html>
-
-
-
-
-
