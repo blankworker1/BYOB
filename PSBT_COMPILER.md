@@ -665,13 +665,25 @@ android {
 - Comment complex Bitcoin logic (PSBT structure, descriptor derivation)
 - Keep functions under 50 lines where possible
 
-**Error Handling Philosophy:** - **User-facing errors:** Always provide actionable guidance - ❌ "Error 404" - ✅ "Cannot reach node - check Tailscale connection" - **Developer errors:** Log stack traces for debugging - **Network errors:** Implement retry logic with exponential backoff 
+### Error Handling Philosophy:
 
-### **Performance Considerations:** - UTXO fetching: Batch requests, don't query per address - QR generation: Offload to background thread - Balance updates: Debounce rapid refreshes (max 1/second) 
+- User-facing errors: Always provide actionable guidance - ❌ "Error 404" - ✅ "Cannot reach node - check Tailscale connection" 
+- Developer errors: Log stack traces for debugging
+- Network errors: Implement retry logic with exponential backoff 
 
-### **Accessibility:** - All interactive elements have content descriptions - Support TalkBack screen reader - Ensure 4.5:1 contrast ratio for text --- 
+### Performance Considerations:
 
-## 📄 License & Legal **Recommended License:** MIT or GPL-3.0 (for Bitcoin ecosystem compatibility) 
+- UTXO fetching: Batch requests, don't query per address
+- QR generation: Offload to background thread
+- Balance updates: Debounce rapid refreshes (max 1/second) 
+
+### Accessibility:
+
+- All interactive elements have content descriptions - Support TalkBack screen reader - Ensure 4.5:1 contrast ratio for text --- 
+
+## 📄 License & Legal 
+
+**Recommended License:** MIT or GPL-3.0 (for Bitcoin ecosystem compatibility) 
 
 
 ## Summary Checklist 
