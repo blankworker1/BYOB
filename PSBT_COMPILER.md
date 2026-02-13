@@ -482,7 +482,7 @@ class MainActivity : AppCompatActivity() {
 
 ## 🚀 Development Roadmap
 
-### **Phase 1: MVP**
+### Phase 1: MVP
 **Goal:** Basic send/receive functionality
 
 - [ ] Screen 1: Launch + xpub scanning
@@ -495,7 +495,7 @@ class MainActivity : AppCompatActivity() {
 
 **Deliverable:** APK that can scan xpub, display balance, create and broadcast simple PSBTs
 
-### **Phase 2: Polish **
+### Phase 2: Polish
 **Goal:** Production-ready UX
 
 - [ ] Auto-session clearing on app background
@@ -509,7 +509,7 @@ class MainActivity : AppCompatActivity() {
 
 **Deliverable:** User-friendly app ready for community beta testing
 
-### **Phase 3: Advanced Features**
+### Phase 3: Advanced Features
 **Goal:** Power user functionality
 
 - [ ] Testnet/mainnet toggle in settings
