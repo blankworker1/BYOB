@@ -94,20 +94,20 @@ It begins with:
 
 You wouldn’t:
 
-Jump into the ocean before learning to swim.
+- Jump into the ocean before learning to swim.
 
-Drive a car without lessons.
+- Drive a car without lessons.
 
-Invest in a business you don’t understand.
+- Invest in a business you don’t understand.
 
 
 But in crypto, people are told to:
 
-Buy first
+- Buy first
 
-Learn later
+- Learn later
 
-Hope for the best
+- Hope for the best
 
 
 The Zero Risk Onboarding Model reverses that.
@@ -121,26 +121,31 @@ Participation Without Capital
 
 This is like:
 
-Installing a safe in your home before you own gold.
+- Wearing a helmet when you go cycling.
 
-Setting up life-saving equipment at the beach before an emergency.
+- Buying a fire extinguisher.
 
-Opening a bank account with no money in it.
+- Opening a bank account before you start work.
 
+- Installing a safe in your home before you own gold.
 
-You connect to the public ledger.
-You see how it works.
-You understand custody.
+You can:
+
+- See how it works.
+
+- Understand self custody.
+
+- Connect to the public ledger.
 
 But you risk nothing.
 
-No tokens.
-No speculation.
-No exposure.
+- No tokens.
+
+- No speculation.
+
+- No exposure.
 
 You are simply present.
-
-And presence is power.
 
 
 ---
@@ -153,14 +158,13 @@ Testnet is that pool.
 
 You:
 
-Send transactions.
+- Send transactions.
 
-Receive tokens.
+- Receive tokens.
 
-Practice signing.
+- Practice signing.
 
-Explore peer-to-peer exchange.
-
+- Explore peer-to-peer exchange of value.
 
 The rules are real.
 
@@ -183,11 +187,12 @@ Only when you are ready.
 
 And only if you choose.
 
-Here you may introduce value — but carefully.
+Here you may introduce value - but carefully.
 
 BYOB’s principle:
 
 > Only invest what you can literally afford to lose.
+
 
 
 
