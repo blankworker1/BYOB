@@ -1,6 +1,77 @@
-# ONBOARDING
+# BYOB Economic Ladder
 
-**The Zero Risk Onboarding Model**
+
+### Step ZERO: Legitimacy Without Capital
+
+- Mainnet anchored
+  
+- Publicly verifiable
+  
+- No investment or risk
+
+You can participate in the public ledger without risking money.
+
+This proves:
+
+- You understand custody
+  
+- You understand structure
+  
+- You can operate sovereign tools
+  
+ZERO = Participate without capital.
+
+--- 
+
+### Step ONE-T: Competence Without Consequence
+
+- Real network rules
+
+- Real transactions
+  
+- Real peer-to-peer flow
+
+- Real economic experience using testnet tokens.
+
+You learn:
+
+- Address handling
+  
+- UTXO mechanics
+  
+- Fee selection
+  
+- PSBT Signing and Broadcast flow
+  
+T = Aquire skills without risk.
+
+---
+
+### Step ONE-M : Value Without Compulsion
+
+Self sovereignty at the flip of a switch.
+
+Only store what you cannot afford to lose.
+
+Layer M does not add risk, it simply allows value.
+
+That means:
+
+- One small transaction
+
+- One small UTXO
+
+- One small live interaction
+
+- One step at a time.
+
+M = Action based on knowledge.
+
+---
+
+## ONBOARDING
+
+### The Zero Risk Onboarding Model
 
 A way to enter Bitcoin without fear, pressure, or exposure.
 
@@ -19,7 +90,7 @@ It begins with:
 
 ---
 
-## Imagine This
+### Imagine This
 
 You wouldn’t:
 
@@ -44,7 +115,7 @@ The Zero Risk Onboarding Model reverses that.
 
 ---
 
-## Stage 1: ZERO
+### Step 1: ZERO
 
 Participation Without Capital
 
@@ -74,7 +145,7 @@ And presence is power.
 
 ---
 
-## Stage 2: ONE - T (Train / Test)
+## Step 2: ONE - T (Train / Test)
 
 Now imagine learning to swim in a pool instead of the ocean.
 
@@ -106,7 +177,7 @@ You build muscle memory without financial consequence.
 
 ---
 
-## Stage 3: ONE - M (Money)
+## Step 3: ONE - M (Money)
 
 Only when you are ready.
 
@@ -232,77 +303,6 @@ Peer-to-peer exchange
 
 
 When they are ready - they Become Their Own Bank.
-
----
-
-## The BYOB Economic Ladder
-
-
-### ZERO: Legitimacy Without Capital
-
-- Mainnet anchored
-  
-- Publicly verifiable
-  
-- No investment or risk
-
-You can participate in the public ledger without risking money.
-
-This proves:
-
-- You understand custody
-  
-- You understand structure
-  
-- You can operate sovereign tools
-  
-ZERO = Participate without capital.
-
---- 
-
-### ONE-T: Competence Without Consequence
-
-- Real network rules
-
-- Real transactions
-  
-- Real peer-to-peer flow
-
-- Real economic experience using testnet tokens.
-
-You learn:
-
-- Address handling
-  
-- UTXO mechanics
-  
-- Fee selection
-  
-- PSBT Signing and Broadcast flow
-  
-T = Aquire skills without risk.
-
----
-
-### ONE-M : Value Without Compulsion
-
-Self sovereignty at the flip of a switch.
-
-Only store what you cannot afford to lose.
-
-Layer M does not add risk, it simply allows value.
-
-That means:
-
-- One small transaction
-
-- One small UTXO
-
-- One small live interaction
-
-- One step at a time.
-
-M = Action based on knowledge.
 
 
 
