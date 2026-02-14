@@ -239,44 +239,65 @@ When they are ready - they Become Their Own Bank.
 
 **ZERO — Legitimacy Without Capital**
 
-Mainnet anchored
-Publicly verifiable
-No value required
-No exposure
+- Mainnet anchored
+  
+- Publicly verifiable
+  
+- No investment or risk
+
 You can participate in the public ledger without risking money.
+
 This proves:
-You understand custody
-You understand structure
-You can operate sovereign tools
-ZERO = Participation without capital.
+
+- You understand custody
+  
+- You understand structure
+  
+- You can operate sovereign tools
+  
+ZERO = Participate without capital.
 
 
 **ONE T — Competence Without Consequence**
-Real network rules
-Real transactions
-Real peer-to-peer flow
-No scarcity
+
+- Real network rules
+
+- Real transactions
+  
+- Real peer-to-peer flow
+
+- Real economic experience using testnet tokens.
+
 You learn:
-Address handling
-UTXO mechanics
-Fee selection
-Signing flow
-Broadcasting
-T = Skill without loss.
+
+- Address handling
+  
+- UTXO mechanics
+  
+- Fee selection
+  
+- PSBT Signing and Broadcast flow
+  
+T = Aquire skills without risk.
 
 **ONE M — Value Without Compulsion**
-Here’s the critical refinement.
-Layer M does not require risk.
-It simply allows value.
-Users are encouraged to:
-Only invest what you cannot afford to lose
-(Literally zero-impact capital)
+
+Self sovereignty at the flip of a switch.
+
+Only store what you cannot afford to lose.
+
+Layer M does not add risk, it simply allows value.
+
 That means:
-One small transaction
-One small UTXO
-One small live interaction
-The goal is not speculation.
-The goal is lived sovereignty.
+
+- One small transaction
+
+- One small UTXO
+
+- One small live interaction
+
+- One step at a time.
+
 M = Action based on knowledge.
 
 
