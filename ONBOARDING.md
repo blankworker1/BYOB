@@ -260,7 +260,7 @@ ZERO = Participate without capital.
 
 --- 
 
-### ONE T — Competence Without Consequence
+### ONE-T — Competence Without Consequence
 
 - Real network rules
 
@@ -284,7 +284,7 @@ T = Aquire skills without risk.
 
 ---
 
-### ONE M — Value Without Compulsion
+### ONE-M — Value Without Compulsion
 
 Self sovereignty at the flip of a switch.
 
