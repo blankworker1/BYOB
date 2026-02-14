@@ -233,6 +233,56 @@ Peer-to-peer exchange
 
 When they are ready - they Become Their Own Bank.
 
+---
+
+## The BYOB Economic Ladder
+
+**ZERO — Legitimacy Without Capital**
+
+Mainnet anchored
+Publicly verifiable
+No value required
+No exposure
+You can participate in the public ledger without risking money.
+This proves:
+You understand custody
+You understand structure
+You can operate sovereign tools
+ZERO = Participation without capital.
+
+
+**ONE T — Competence Without Consequence**
+Real network rules
+Real transactions
+Real peer-to-peer flow
+No scarcity
+You learn:
+Address handling
+UTXO mechanics
+Fee selection
+Signing flow
+Broadcasting
+T = Skill without loss.
+
+**ONE M — Value Without Compulsion**
+Here’s the critical refinement.
+Layer M does not require risk.
+It simply allows value.
+Users are encouraged to:
+Only invest what you cannot afford to lose
+(Literally zero-impact capital)
+That means:
+One small transaction
+One small UTXO
+One small live interaction
+The goal is not speculation.
+The goal is lived sovereignty.
+M = Action based on knowledge.
+
+
+
+
+
 
 
 
