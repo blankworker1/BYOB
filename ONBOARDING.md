@@ -237,7 +237,8 @@ When they are ready - they Become Their Own Bank.
 
 ## The BYOB Economic Ladder
 
-**ZERO — Legitimacy Without Capital**
+
+### ZERO — Legitimacy Without Capital
 
 - Mainnet anchored
   
@@ -257,8 +258,9 @@ This proves:
   
 ZERO = Participate without capital.
 
+--- 
 
-**ONE T — Competence Without Consequence**
+### ONE T — Competence Without Consequence
 
 - Real network rules
 
@@ -280,7 +282,9 @@ You learn:
   
 T = Aquire skills without risk.
 
-**ONE M — Value Without Compulsion**
+---
+
+### ONE M — Value Without Compulsion
 
 Self sovereignty at the flip of a switch.
 
