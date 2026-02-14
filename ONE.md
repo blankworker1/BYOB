@@ -1,6 +1,6 @@
 # BYOB ONE — Dual Operational Layers
 
-Where Zero provides the preparedness, One builds the operational system.
+Zero provides the preparedness, One builds the operational system.
 
 A system built on two layers:
 
