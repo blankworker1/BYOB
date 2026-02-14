@@ -202,11 +202,11 @@ As a structural rule.
 
 This might mean:
 
-One small transaction.
+- One small transaction.
 
-One tiny UTXO.
+- One tiny UTXO.
 
-One practical experiment.
+- One practical experiment.
 
 
 You are not speculating.
@@ -235,26 +235,26 @@ Activate value later — if at all.
 
 This reduces:
 
-Fear
+- Fear
 
-Scams
+- Scams
 
-Panic
+- Panic
 
-FOMO
+- FOMO
 
-Irresponsible exposure
+- Irresponsible exposure
 
 
 And increases:
 
-Confidence
+- Confidence
 
-Competence
+- Competence
 
-Personal responsibility
+- Personal responsibility
 
-Long-term stability
+- Long-term stability
 
 
 
@@ -276,7 +276,9 @@ Zero Risk Onboarding creates a third path:
 
 
 No hype.
+
 No urgency.
+
 No forced capital.
 
 Just learning, skill, and optional value.
@@ -286,7 +288,7 @@ Just learning, skill, and optional value.
 
 ## The Outcome
 
-By the time someone understands ONE - M:
+By the time someone understands the BYOB model.
 
 They are not a gambler.
 
@@ -294,17 +296,17 @@ They are capable.
 
 They understand:
 
-Custody
+- Self Custody
 
-Transactions
+- Transactions
 
-Fees
+- Fees
 
-Signing
+- Signing
 
-Broadcast
+- Blockchain 
 
-Peer-to-peer exchange
+- Peer-to-peer exchange
 
 
 When they are ready - they Become Their Own Bank.
