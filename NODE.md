@@ -22,7 +22,7 @@ Here is the high-level process:
 
 ---
 
-#### 1. Resource Allocation & Server Provisioning
+### Resource Allocation & Server Provisioning
 
 The key to success on the free tier is using resources efficiently. Start with the minimum and scale up only if needed.
 
@@ -47,7 +47,7 @@ This ensures your server's address never changes if you reboot it. This is free 
 4.  Give it a name like `umbrel-static-ip` and click **Create**.
 
 
-#### 2. Required Apps To Be Installed in Umbrel OS
+### Required Apps To Be Installed in Umbrel OS
 
 Once Umbrel OS is running, you will install these three apps directly from its App Store.
 
@@ -57,7 +57,7 @@ Once Umbrel OS is running, you will install these three apps directly from its A
 
 *   **Tailscale:** A VPN service that creates a secure, private network between your devices and your cloud node, eliminating the need to expose ports to the public internet.
 
-#### 3. Configuring the Firewall
+### Configuring the Firewall
 
 Oracle Cloud has a "double firewall" that often blocks access. You must configure both layers.
 
@@ -86,7 +86,7 @@ The default Oracle OS image has aggressive `iptables` rules that block traffic e
     sudo netfilter-persistent save
     ```
 
-#### 4. Installation and Configuration Steps
+### Installation and Configuration Steps
 
 Now that the server is prepared, you can install and configure the software.
 
@@ -193,6 +193,10 @@ echo '{"id":3,"method":"blockchain.headers.subscribe","params":[]}' | nc localho
 
 Compare this height to a public Testnet4 block explorer (e.g., mempool.space/testnet4) to confirm your node is fully synced.
 
+10. **Clean Up Firewall**
+
+For maximum security, you can now delete the Ingress Rule for Port 80 in the Oracle Console Security List, as all access will go through Tailscale.
+
 ---
 
 ## Workshop: Sharing Tailscale Access
@@ -283,7 +287,7 @@ Provide these instructions to workshop participants:
    - Tap **Test Connection**
    - Should show: âœ… **Connected to Umbrel node**
 
-### D. Troubleshooting for Attendees
+### Troubleshooting for Attendees
 
 **Problem: "Cannot reach node"**
 - **Check**: Is Tailscale VPN enabled on your device?
@@ -299,7 +303,7 @@ Provide these instructions to workshop participants:
 - **This is normal** if the blockchain is still catching up
 - Check the current block height vs. expected height
 
-### E. Post-Workshop Cleanup
+### Post-Workshop Cleanup
 
 After the workshop:
 
@@ -454,18 +458,11 @@ Status: Synced
    - Balance should display (even if 0 sats)
    - Transaction history should load (even if empty)
 
-**If successful: You're ready for the first BYOB workshop!**
+**If successful: You're ready to run the first BYOB workshop!**
 
 
 
-
-
-
-
-
-
-
-### D. Load Testing (Optional but Recommended)
+### D. Load Testing
 
 Simulate multiple users connecting simultaneously:
 
@@ -534,8 +531,6 @@ Your setup is workshop-ready when:
 âœ… Multiple simultaneous connections don't crash the system
 âœ… Mobile hotspot backup tested and working
 
-**You're now ready to run a successful Bitcoin workshop!**
-
 ---
 
 ## Quick Reference Card for Workshop Day
@@ -554,26 +549,11 @@ Print this and keep it handy:
 **Emergency Contacts:**
 - Oracle Support: (if instance down)
 - Tailscale Support: (if VPN issues)
-- Your backup plan: (mobile hotspot, local testnet, etc.)
+- Your backup plan: (mobile hotspot, local testnet, etc
 
+---
 
-
-
-
-
-5.  **Configure Tailscale:**
-    *   Open the Tailscale app in Umbrel.
-    *   It will provide an authentication URL. Click it to log in with your Tailscale account and authorize your new node.
-    *   Once connected, you can access your Umbrel dashboard securely using its private Tailscale IP address (e.g., `100.x.x.x`).
-
-
-
-
-
-
-6.  **Clean Up Firewall:** For maximum security, you can now delete the Ingress Rule for Port 80 in the Oracle Console Security List, as all access will go through Tailscale.
-
-#### 5. Why This Setup Works Well
+## Why This Setup Works Well
 
 *   **Zero Cost:** You get a powerful, private development server for $0/month using the Oracle Free Tier.
 
@@ -584,12 +564,10 @@ Print this and keep it handy:
 
 
 
-This is the first draft of a step-by-step blueprint for running a full Umbrel node with Electrs and Tailscale on the Oracle Cloud Free Tier, specifically optimized for Testnet4. It's designed to be a zero-cost, secure, and fast way to spin up a personal development environment. 
 
-I've done my best to make it clear and accurate, but I'm sure the collective 
-knowledge here could make it even better. If you follow this guide, please share your experience - what worked, what didn't, and any optimizations you discovered. 
 
-Your feedback is invaluable for turning this into a truly community-vetted resource.
+
+
 
 
 
