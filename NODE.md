@@ -122,6 +122,12 @@ Now that the server is prepared, you can install and configure the software.
 
 This is the first draft of a step-by-step blueprint for running a full Umbrel node with Electrs and Tailscale on the Oracle Cloud Free Tier, specifically optimized for Testnet4. It's designed to be a zero-cost, secure, and fast way to spin up a personal development environment. 
 
-I've done my best to make it clear and accurate, but I'm sure the collective knowledge here could make it even better. If you follow this guide, please share your experience—what worked, what didn't, and any optimizations you discovered. 
+I've done my best to make it clear and accurate, but I'm sure the collective 
+knowledge here could make it even better. If you follow this guide, please share your experience - what worked, what didn't, and any optimizations you discovered. 
 
-Your feedback is invaluable for turning this into a truly community-vetted resource
+Your feedback is invaluable for turning this into a truly community-vetted resource.
+
+
+
+
+
