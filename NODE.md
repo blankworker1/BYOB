@@ -1,10 +1,12 @@
 # NODE
 
-### UMBREL OS - Free, Private Bitcoin Testnet Node on Oracle Cloud
+### Free, Private Bitcoin Testnet Node on Oracle Cloud
 
-This guide provides a complete, step-by-step blueprint for running a private Bitcoin Testnet4 node with an indexer on the Oracle Cloud Free Tier. 
+This guide provides a complete, step-by-step blueprint for running a private Bitcoin Testnet4 node with an indexer using Umbrel OS on the Oracle Cloud Free Tier. 
 
-This setup is perfect for developers, enthusiasts, or anyone wanting to experiment with Bitcoin applications without any hardware cost or risk to real funds. By using Testnet4, the entire blockchain is small enough to fit comfortably within the free tier's storage limits, allowing for fast setup and experimentation.
+This setup is perfect for developers, enthusiasts, or anyone wanting to experiment with Bitcoin applications without any hardware cost or risk to real funds. 
+
+By using Testnet4, the entire blockchain is small enough to fit comfortably within the free tier's storage limits, allowing for fast setup and experimentation.
 
 Here is the high-level process:
 
